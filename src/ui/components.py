@@ -94,23 +94,10 @@ def render_left_showcase_card(total_count: int = 65, avg_followers: str = "35K",
     """
 
 def render_center_topbar() -> str:
-    # Strictly NO icon in front of Dashboard text, pure black text, fresh sky blue bars
+    # Strictly NO icon and NO lines in front or across from Dashboard text
     return """
-    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid #E2E8F0;">
-        <div>
-            <span style="font-size: 1.05rem; font-weight: 800; color: #000000; letter-spacing: -0.2px;">Dashboard</span>
-        </div>
-        <div style="display: flex; gap: 8px; align-items: center;">
-            <div style="width: 50px; height: 6px; background: #E0F2FE; border-radius: 9999px; overflow: hidden;">
-                <div style="width: 80%; height: 100%; background: #0284C7; border-radius: 9999px;"></div>
-            </div>
-            <div style="width: 50px; height: 6px; background: #E0F2FE; border-radius: 9999px; overflow: hidden;">
-                <div style="width: 60%; height: 100%; background: #38BDF8; border-radius: 9999px;"></div>
-            </div>
-            <div style="width: 50px; height: 6px; background: #E0F2FE; border-radius: 9999px; overflow: hidden;">
-                <div style="width: 40%; height: 100%; background: #7DD3FC; border-radius: 9999px;"></div>
-            </div>
-        </div>
+    <div style="margin-bottom: 16px;">
+        <span style="font-size: 1.05rem; font-weight: 800; color: #000000; letter-spacing: -0.2px;">Dashboard</span>
     </div>
     """
 

@@ -49,23 +49,10 @@ export const DashboardControlCard: React.FC<DashboardControlCardProps> = ({
 
   return (
     <div className="bg-white border border-[#E2E8F0] hover:border-[#BAE6FD] rounded-[20px] p-5 shadow-[0_8px_24px_-6px_rgba(0,0,0,0.04)] hover:shadow-[0_12px_28px_-6px_rgba(2,132,199,0.08)] transition-all h-full flex flex-col justify-between">
-      {/* Top Bar with NO icon in front of Dashboard */}
+      {/* Clean Dashboard Title (Zero Lines, Zero Icons) */}
       <div>
-        <div className="flex justify-between items-center pb-3 mb-4 border-b border-[#E2E8F0]">
-          <div>
-            <span className="text-lg font-black text-black tracking-tight">Dashboard</span>
-          </div>
-          <div className="flex gap-2 items-center">
-            <div className="w-12 h-1.5 bg-[#E0F2FE] rounded-full overflow-hidden">
-              <div className="w-[80%] h-full bg-[#0284C7] rounded-full" />
-            </div>
-            <div className="w-12 h-1.5 bg-[#E0F2FE] rounded-full overflow-hidden">
-              <div className="w-[60%] h-full bg-[#38BDF8] rounded-full" />
-            </div>
-            <div className="w-12 h-1.5 bg-[#E0F2FE] rounded-full overflow-hidden">
-              <div className="w-[40%] h-full bg-[#7DD3FC] rounded-full" />
-            </div>
-          </div>
+        <div className="mb-4">
+          <span className="text-lg font-black text-black tracking-tight">Dashboard</span>
         </div>
 
         {/* Form Inputs Grid */}
