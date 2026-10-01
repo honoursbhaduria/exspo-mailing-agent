@@ -18,7 +18,7 @@ def get_theme_css() -> str:
        1. GLOBAL RESET & TYPOGRAPHY - ALL TEXT IS 100% PURE BLACK (#000000)
        ======================================================================== */
     :root {
-        --primary-color: #0284C7 !important;
+        --primary-color: #000000 !important;
         --background-color: #F4F7FC !important;
         --secondary-background-color: #FFFFFF !important;
         --text-color: #000000 !important;
@@ -405,7 +405,7 @@ def get_theme_css() -> str:
         color: #000000 !important;
     }
 
-    /* Active Tab: Pure Black Text with solid underline directly below */
+    /* Active Tab: Pure Black Text with solid underline directly below (ZERO BLUE) */
     .stTabs [aria-selected="true"] {
         background: transparent !important;
         border: none !important;
@@ -423,9 +423,29 @@ def get_theme_css() -> str:
         font-size: 0.96rem !important;
     }
 
+    /* Force all tab highlight indicators to pure black (NO BLUE LINE) */
+    div[data-baseweb="tab-highlight"],
+    [data-baseweb="tab-highlight"],
     .stTabs [data-baseweb="tab-highlight"],
-    .stTabs [data-baseweb="tab-border"] {
-        display: none !important;
+    [data-testid="stTabs"] [data-baseweb="tab-highlight"],
+    div[role="tablist"] + div {
+        background-color: #000000 !important;
+        background: #000000 !important;
+        height: 3px !important;
+        bottom: 0 !important;
+    }
+
+    div[data-baseweb="tab-border"],
+    .stTabs [data-baseweb="tab-border"],
+    [data-baseweb="tab-border"] {
+        background-color: #E2E8F0 !important;
+        background: #E2E8F0 !important;
+        height: 2px !important;
+    }
+
+    /* Ensure no blue line from Streamlit primary color leaking into tabs */
+    .stTabs, [data-testid="stTabs"] {
+        --primary-color: #000000 !important;
     }
 
     /* ========================================================================
