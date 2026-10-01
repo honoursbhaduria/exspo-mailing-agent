@@ -169,7 +169,7 @@ export const TabsSection: React.FC = () => {
           TAB 1: DISCOVERED RECORDS (PAGINATED WITH CSV EXPORT)
           ========================================================================= */}
       {activeTab === 'records' && (
-        <div className="bg-white border border-[#E2E8F0] rounded-[20px] p-6 shadow-[0_8px_24px_-6px_rgba(0,0,0,0.04)]">
+        <div className="bg-white/90 backdrop-blur-md border border-[#E2E8F0] rounded-[20px] p-6 shadow-[0_8px_30px_rgba(0,0,0,0.04)]">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-5">
             <div>
               <h2 className="text-xl font-black text-black">Discovered Micro-Influencer Records</h2>
@@ -279,7 +279,7 @@ export const TabsSection: React.FC = () => {
           TAB 2: CLASSIFICATION ENGINE
           ========================================================================= */}
       {activeTab === 'classification' && (
-        <div className="bg-white border border-[#E2E8F0] rounded-[20px] p-6 shadow-[0_8px_24px_-6px_rgba(0,0,0,0.04)]">
+        <div className="bg-white/90 backdrop-blur-md border border-[#E2E8F0] rounded-[20px] p-6 shadow-[0_8px_30px_rgba(0,0,0,0.04)]">
           <div className="flex justify-between items-center mb-5">
             <div>
               <h2 className="text-xl font-black text-black">Quantitative Filtering & Brand-Fit Classification</h2>
@@ -394,7 +394,7 @@ export const TabsSection: React.FC = () => {
           TAB 3: PROFILE CONTEXT & THEMES
           ========================================================================= */}
       {activeTab === 'enrichment' && (
-        <div className="bg-white border border-[#E2E8F0] rounded-[20px] p-6 shadow-[0_8px_24px_-6px_rgba(0,0,0,0.04)]">
+        <div className="bg-white/90 backdrop-blur-md border border-[#E2E8F0] rounded-[20px] p-6 shadow-[0_8px_30px_rgba(0,0,0,0.04)]">
           <div className="mb-5">
             <h2 className="text-xl font-black text-black">Profile Enrichment Context</h2>
             <p className="text-xs font-semibold text-[#333333] mt-0.5">
@@ -441,7 +441,9 @@ export const TabsSection: React.FC = () => {
                 <div className="mt-3">
                   <div className="text-xs font-bold text-[#333333]">Contact Email</div>
                   <div className="font-mono text-sm font-black text-black mt-1 bg-white border border-[#CBD5E1] px-2.5 py-1.5 rounded-lg inline-block">
-                    {currentCreator.contact_email || 'collab@' + currentCreator.handle + '.com'}
+                    {currentCreator.contact_email && currentCreator.contact_email.trim() && currentCreator.contact_email !== 'Not Found'
+                      ? currentCreator.contact_email
+                      : 'Not Found'}
                   </div>
                 </div>
               </div>
@@ -490,7 +492,7 @@ export const TabsSection: React.FC = () => {
           TAB 4: AI PERSONALIZATION
           ========================================================================= */}
       {activeTab === 'personalization' && (
-        <div className="bg-white border border-[#E2E8F0] rounded-[20px] p-6 shadow-[0_8px_24px_-6px_rgba(0,0,0,0.04)]">
+        <div className="bg-white/90 backdrop-blur-md border border-[#E2E8F0] rounded-[20px] p-6 shadow-[0_8px_30px_rgba(0,0,0,0.04)]">
           <div className="mb-5">
             <h2 className="text-xl font-black text-black">Dual Message Personalization Studio</h2>
             <p className="text-xs font-semibold text-[#333333] mt-0.5">
@@ -614,7 +616,7 @@ export const TabsSection: React.FC = () => {
           TAB 5: OUTREACH AUDIT LOG
           ========================================================================= */}
       {activeTab === 'tracker' && (
-        <div className="bg-white border border-[#E2E8F0] rounded-[20px] p-6 shadow-[0_8px_24px_-6px_rgba(0,0,0,0.04)]">
+        <div className="bg-white/90 backdrop-blur-md border border-[#E2E8F0] rounded-[20px] p-6 shadow-[0_8px_30px_rgba(0,0,0,0.04)]">
           <div className="flex justify-between items-center mb-5">
             <div>
               <h2 className="text-xl font-black text-black">Outreach Dispatch &amp; Audit Trail</h2>

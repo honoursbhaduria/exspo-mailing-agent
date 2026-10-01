@@ -139,8 +139,8 @@ Return ONLY a valid JSON object with the following schema:
         # Instagram DM (15 - 30 words)
         instagram_dm = (
             f"Hey {first_name}! Loved your recent posts on {primary_theme.lower()}. "
-            f"Your aesthetic is amazing and our team at {kwargs['brand_name']} would love to collaborate on our upcoming campaign. "
-            f"Can we share the brief?"
+            f"Our team at {kwargs['brand_name']} would love to collaborate on our upcoming campaign. "
+            f"Can we send the brief?"
         )
 
         email_words = len(email_pitch.split())

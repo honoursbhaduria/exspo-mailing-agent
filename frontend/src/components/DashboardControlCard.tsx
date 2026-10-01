@@ -48,7 +48,7 @@ export const DashboardControlCard: React.FC<DashboardControlCardProps> = ({
   };
 
   return (
-    <div className="bg-white border border-[#E2E8F0] hover:border-[#BAE6FD] rounded-[20px] p-5 shadow-[0_8px_24px_-6px_rgba(0,0,0,0.04)] hover:shadow-[0_12px_28px_-6px_rgba(2,132,199,0.08)] transition-all h-full flex flex-col justify-between">
+    <div className="bg-white/90 backdrop-blur-md border border-[#E2E8F0] hover:border-[#BAE6FD] rounded-[20px] p-5 shadow-[0_8px_30px_rgba(0,0,0,0.04)] hover:shadow-[0_12px_28px_-6px_rgba(2,132,199,0.08)] transition-all h-full flex flex-col justify-between">
       {/* Clean Dashboard Title (Zero Lines, Zero Icons) */}
       <div>
         <div className="mb-4">

@@ -4,6 +4,7 @@ import AudienceReachCard from './components/AudienceReachCard';
 import DashboardControlCard from './components/DashboardControlCard';
 import FeedActivityCard from './components/FeedActivityCard';
 import TabsSection from './components/TabsSection';
+import BackgroundPattern from './components/ui/BackgroundPattern';
 import { api } from './services/api';
 
 export const App: React.FC = () => {
@@ -36,7 +37,10 @@ export const App: React.FC = () => {
   }, []);
 
   return (
-    <div className="min-h-screen py-8 px-4 sm:px-6 lg:px-8 max-w-[1340px] mx-auto">
+    <div className="min-h-screen py-8 px-4 sm:px-6 lg:px-8 max-w-[1340px] mx-auto relative">
+      {/* Background Gradient & Grid Pattern with Blur */}
+      <BackgroundPattern />
+
       {/* 1. Hero Header */}
       <HeroHeader />
 

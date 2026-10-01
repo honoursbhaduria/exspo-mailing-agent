@@ -48,15 +48,39 @@ def get_theme_css() -> str:
         color: #000000 !important;
     }
 
-    /* Base Canvas - Bright, Fresh, Clean Sky Ambient (NO DARK COLORS) */
+    /* Base Canvas - User requested Linear Gradient & Vertical Grid Pattern with Blur */
     .stApp {
-        background-color: #F4F7FC !important;
-        background-image: 
-            radial-gradient(circle at 12% 10%, rgba(186, 230, 253, 0.45) 0%, transparent 35%),
-            radial-gradient(circle at 88% 12%, rgba(224, 231, 255, 0.5) 0%, transparent 35%),
-            radial-gradient(circle at 85% 85%, rgba(224, 242, 254, 0.4) 0%, transparent 35%),
-            radial-gradient(circle at 15% 88%, rgba(186, 230, 253, 0.45) 0%, transparent 35%) !important;
+        background: linear-gradient(
+            to bottom,
+            #fff 0%,
+            #fff 40%,
+            rgba(255, 255, 255, 0) 100%
+        ),
+        linear-gradient(to right, #0ed2da, #5f29c7) !important;
         background-attachment: fixed !important;
+        position: relative;
+    }
+
+    .stApp::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        background-image: linear-gradient(90deg, #ccc 1px, transparent 1px);
+        background-size: 50px 100%;
+        pointer-events: none;
+        mask-image: linear-gradient(
+            to bottom,
+            rgba(0, 0, 0, 1) 0%,
+            rgba(0, 0, 0, 0) 70%
+        );
+        -webkit-mask-image: linear-gradient(
+            to bottom,
+            rgba(0, 0, 0, 1) 0%,
+            rgba(0, 0, 0, 0) 70%
+        );
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        z-index: 0;
     }
 
     .block-container {

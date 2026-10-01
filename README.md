@@ -126,16 +126,36 @@ SIMULATION_MODE=True
 ```
 > **Note:** The system includes complete fallback generators and a sandbox simulator, so it runs out-of-the-box even without active API keys!
 
-### 3. Launch Interactive Streamlit Dashboard
-```bash
-streamlit run app.py
-```
-Open **`http://localhost:8501`** to view the Landing Page and enter the Outreach Workspace.
+### 3. Launch Interactive Dashboards & API
 
-### 4. Run Headless CLI Pipeline
+#### Option A: Production React + TypeScript + Tailwind CSS v4 Frontend (Recommended)
+```bash
+# 1. Start FastAPI Backend (Terminal 1)
+./venv/bin/python3 -m uvicorn server:app --host 0.0.0.0 --port 8000
+
+# 2. Start Vite React Frontend (Terminal 2)
+cd frontend
+npm install
+npm run dev
+```
+Open **`http://localhost:3000`** to view the fullstack React dashboard with live proxy to FastAPI on port 8000.
+
+#### Option B: Streamlit Python Dashboard
+```bash
+./venv/bin/streamlit run app.py --server.port 8501
+```
+Open **`http://localhost:8501`** in your browser.
+
+### 4. Run Automated Unit Test Suite
+To run the automated verification suite validating all 5 assignment requirements:
+```bash
+./venv/bin/python -m unittest discover -s tests -v
+```
+
+### 5. Run Headless CLI Pipeline
 To run the full end-to-end automated pipeline in the terminal:
 ```bash
-python run_pipeline.py
+./venv/bin/python run_pipeline.py
 ```
 
 ---
@@ -145,3 +165,5 @@ python run_pipeline.py
 1. **Meta Graph API Compliance**: Meta prohibits automated cold DMs from unofficial bots to creator personal inboxes. To ensure platform compliance, our system generates the DM and provides a 1-click manual dispatch workflow + simulated audit log.
 2. **Anti-Hallucination Email Policy**: As required by Section 3, missing contact emails are strictly marked as `"Not Found"`. Creators without public emails are automatically routed to the Instagram DM outreach workflow.
 3. **Safe Simulation Mode**: A global simulation toggle guarantees that evaluators can run the entire pipeline end-to-end without sending unsolicited emails to real creators or requiring paid credentials.
+4. **Idempotency & Deduplication**: Prevents sending duplicate pitches to the same handle or email, maintaining a verifiable audit trail in `data/outreach_log.csv`.
+
