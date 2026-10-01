@@ -86,7 +86,7 @@ def root():
 def get_raw_influencers(limit: int = 100):
     if not RAW_DATA_PATH.exists():
         raise HTTPException(status_code=404, detail="No raw influencer data found. Run discovery first.")
-    df = pd.read_csv(RAW_DATA_PATH)
+    df = pd.read_csv(RAW_DATA_PATH).fillna("")
     return {
         "total": len(df),
         "limit": limit,
@@ -97,11 +97,12 @@ def get_raw_influencers(limit: int = 100):
 def trigger_discovery(niche: str = Query(DEFAULT_NICHE), limit: int = Query(65)):
     try:
         df = run_discovery_cli(niche=niche, limit=limit)
+        df_clean = df.fillna("")
         return {
             "status": "success",
             "discovered_count": len(df),
             "niche": niche,
-            "sample": df[["name", "handle", "follower_count", "engagement_rate"]].head(5).to_dict(orient="records")
+            "sample": df_clean[["name", "handle", "follower_count", "engagement_rate"]].head(5).to_dict(orient="records")
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -121,7 +122,7 @@ def filter_influencers(req: FilterRequest):
         min_engagement=req.min_engagement,
         target_niche=req.target_niche
     )
-    processed_df = classifier.process_dataset(enriched_df)
+    processed_df = classifier.process_dataset(enriched_df).fillna("")
 
     passed = processed_df[processed_df["qualification_status"] == "PASSED"]
     failed = processed_df[processed_df["qualification_status"] == "FAILED"]
@@ -130,6 +131,7 @@ def filter_influencers(req: FilterRequest):
         "total_evaluated": len(processed_df),
         "passed_count": len(passed),
         "failed_count": len(failed),
+        "results": processed_df.to_dict(orient="records"),
         "passed_influencers": passed.to_dict(orient="records"),
         "failed_influencers": failed.to_dict(orient="records")
     }
@@ -198,7 +200,7 @@ def send_outreach(req: SendEmailRequest):
 @app.get("/api/outreach/tracker")
 def get_outreach_tracker():
     tracker = OutreachTracker()
-    log_df = tracker._load_log()
+    log_df = tracker._load_log().fillna("")
     stats = tracker.get_stats()
     return {
         "stats": stats,

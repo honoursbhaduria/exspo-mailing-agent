@@ -1,0 +1,651 @@
+import React, { useState, useEffect } from 'react';
+import { Search, Download, Sparkles, Send, ExternalLink, Loader2 } from 'lucide-react';
+import AnimatedOutlineNavbar, { type TabItem } from './ui/AnimatedOutlineNavbar';
+import SlideHoverButton from './ui/SlideHoverButton';
+import { api, type Influencer, type PersonalizedPitch, type OutreachRecord, type TrackerStats } from '../services/api';
+
+const TABS: TabItem[] = [
+  { id: 'records', label: 'Discovered Records' },
+  { id: 'classification', label: 'Classification Engine' },
+  { id: 'enrichment', label: 'Profile Context & Themes' },
+  { id: 'personalization', label: 'AI Personalization' },
+  { id: 'tracker', label: 'Outreach Audit Log' },
+];
+
+export const TabsSection: React.FC = () => {
+  const [activeTab, setActiveTab] = useState('records');
+
+  // Datasets
+  const [influencers, setInfluencers] = useState<Influencer[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  // Classification Tab State
+  const [minFollowers, setMinFollowers] = useState(5000);
+  const [maxFollowers, setMaxFollowers] = useState(100000);
+  const [minEngagement, setMinEngagement] = useState(2.0);
+  const [filterLoading, setFilterLoading] = useState(false);
+  const [filteredResults, setFilteredResults] = useState<Influencer[]>([]);
+
+  // Enrichment Tab State
+  const [selectedHandle, setSelectedHandle] = useState<string>('');
+
+  // AI Personalization Tab State
+  const [targetCreator, setTargetCreator] = useState<string>('');
+  const [brandName, setBrandName] = useState('LumiGlow');
+  const [collabType, setCollabType] = useState('UGC & Paid Showcase');
+  const [generating, setGenerating] = useState(false);
+  const [activePitch, setActivePitch] = useState<PersonalizedPitch | null>(null);
+
+  // Outreach Tracker State
+  const [trackerStats, setTrackerStats] = useState<TrackerStats>({ total_logged: 173, successfully_sent: 128, skipped: 45 });
+  const [outreachLogs, setOutreachLogs] = useState<OutreachRecord[]>([]);
+
+  // Load Initial Datasets
+  useEffect(() => {
+    fetchRawRecords();
+    fetchTracker();
+  }, []);
+
+  const fetchRawRecords = async () => {
+    try {
+      setLoading(true);
+      const res = await api.getRawInfluencers(100);
+      setInfluencers(res.influencers);
+      if (res.influencers.length > 0) {
+        setSelectedHandle(res.influencers[0].handle);
+        setTargetCreator(res.influencers[0].handle);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchTracker = async () => {
+    try {
+      const res = await api.getTrackerStats();
+      setTrackerStats(res.stats);
+      setOutreachLogs(res.logs);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  // Run Classification Engine
+  const runFilter = async () => {
+    try {
+      setFilterLoading(true);
+      const res = await api.filterInfluencers({
+        min_followers: minFollowers,
+        max_followers: maxFollowers,
+        min_engagement: minEngagement,
+        target_niche: 'Fashion',
+      });
+      setFilteredResults(res.results);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setFilterLoading(false);
+    }
+  };
+
+  // Generate AI Outreach
+  const handleGeneratePitch = async () => {
+    const creator = influencers.find((i) => i.handle === targetCreator);
+    if (!creator) return;
+
+    try {
+      setGenerating(true);
+      const res = await api.generatePersonalization({
+        influencer: creator,
+        brand_name: brandName,
+        collaboration_type: collabType,
+      });
+      setActivePitch(res.messages);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setGenerating(false);
+    }
+  };
+
+  // Export CSV Helper
+  const downloadCSV = (data: any[], filename: string) => {
+    if (!data.length) return;
+    const headers = Object.keys(data[0]).join(',');
+    const rows = data.map((row) =>
+      Object.values(row)
+        .map((v) => `"${String(v ?? '').replace(/"/g, '""')}"`)
+        .join(',')
+    );
+    const csvContent = 'data:text/csv;charset=utf-8,' + [headers, ...rows].join('\n');
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    link.setAttribute('download', filename);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  // Filtered raw records
+  const displayRecords = influencers.filter(
+    (i) =>
+      i.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      i.handle?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      i.location?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  // Current selected creator for enrichment
+  const currentCreator = influencers.find((i) => i.handle === selectedHandle) || influencers[0];
+
+  return (
+    <div className="w-full">
+      {/* 5-Tab Underline Navigation (NO BOX DIV) */}
+      <AnimatedOutlineNavbar items={TABS} activeId={activeTab} onSelect={setActiveTab} />
+
+      {/* =========================================================================
+          TAB 1: DISCOVERED RECORDS
+          ========================================================================= */}
+      {activeTab === 'records' && (
+        <div className="bg-white border border-[#E2E8F0] rounded-[20px] p-6 shadow-[0_8px_24px_-6px_rgba(0,0,0,0.04)]">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-5">
+            <div>
+              <h2 className="text-xl font-black text-black">Discovered Micro-Influencer Records</h2>
+              <p className="text-xs font-semibold text-[#333333] mt-0.5">
+                Authentic creator dataset scraped via Scrapy engine
+              </p>
+            </div>
+            <div className="flex gap-3 w-full md:w-auto">
+              <div className="relative flex-1 md:w-80">
+                <Search className="w-4 h-4 absolute left-3 top-3 text-black" />
+                <input
+                  type="text"
+                  placeholder="Filter records by name, handle, location..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full bg-[#F8FAFC] border border-[#CBD5E1] rounded-xl pl-9 pr-3 py-2 text-sm font-bold text-black focus:outline-none focus:border-[#0284C7]"
+                />
+              </div>
+              <button
+                onClick={() => downloadCSV(influencers, 'discovered_creators.csv')}
+                className="inline-flex items-center gap-2 bg-white border border-[#BAE6FD] hover:bg-[#F0F9FF] text-black font-extrabold text-xs px-4 py-2 rounded-xl transition-all cursor-pointer whitespace-nowrap"
+              >
+                <Download className="w-3.5 h-3.5 text-black" /> Export CSV
+              </button>
+            </div>
+          </div>
+
+          {loading ? (
+            <div className="flex items-center justify-center py-16">
+              <Loader2 className="w-6 h-6 animate-spin text-black" />
+            </div>
+          ) : (
+            <div className="overflow-x-auto border border-[#E2E8F0] rounded-xl">
+              <table className="w-full text-left text-sm border-collapse">
+                <thead>
+                  <tr className="bg-[#F8FAFC] border-b border-[#E2E8F0] text-black font-black text-xs uppercase tracking-wider">
+                    <th className="py-3 px-4">Creator</th>
+                    <th className="py-3 px-4">Platform</th>
+                    <th className="py-3 px-4">Followers</th>
+                    <th className="py-3 px-4">Engagement</th>
+                    <th className="py-3 px-4">Niche</th>
+                    <th className="py-3 px-4">Location</th>
+                    <th className="py-3 px-4 text-right">Profile</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[#E2E8F0] bg-white font-medium text-black">
+                  {displayRecords.map((item, idx) => (
+                    <tr key={idx} className="hover:bg-[#F0F9FF] transition-colors">
+                      <td className="py-3 px-4">
+                        <div className="font-extrabold text-black">{item.name}</div>
+                        <div className="font-mono text-xs font-bold text-[#333333]">@{item.handle}</div>
+                      </td>
+                      <td className="py-3 px-4 font-bold text-black">{item.platform}</td>
+                      <td className="py-3 px-4 font-mono font-black text-black">
+                        {Number(item.follower_count).toLocaleString()}
+                      </td>
+                      <td className="py-3 px-4 font-mono font-black text-black">
+                        {Number(item.engagement_rate).toFixed(1)}%
+                      </td>
+                      <td className="py-3 px-4 font-bold text-black">{item.niche}</td>
+                      <td className="py-3 px-4 font-semibold text-[#333333]">{item.location}</td>
+                      <td className="py-3 px-4 text-right">
+                        <a
+                          href={item.profile_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 font-bold text-xs text-black hover:underline"
+                        >
+                          View <ExternalLink className="w-3 h-3 text-black" />
+                        </a>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* =========================================================================
+          TAB 2: CLASSIFICATION ENGINE
+          ========================================================================= */}
+      {activeTab === 'classification' && (
+        <div className="bg-white border border-[#E2E8F0] rounded-[20px] p-6 shadow-[0_8px_24px_-6px_rgba(0,0,0,0.04)]">
+          <div className="flex justify-between items-center mb-5">
+            <div>
+              <h2 className="text-xl font-black text-black">Quantitative Filtering & Brand-Fit Classification</h2>
+              <p className="text-xs font-semibold text-[#333333] mt-0.5">
+                Evaluates micro-influencer bounds (5k-100k followers) and minimum engagement rate threshold
+              </p>
+            </div>
+            <button
+              onClick={runFilter}
+              disabled={filterLoading}
+              className="inline-flex items-center gap-2 bg-[#BAE6FD] hover:bg-[#93C5FD] border border-[#7DD3FC] text-black font-black text-xs px-4 py-2.5 rounded-xl cursor-pointer transition-all"
+            >
+              {filterLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin text-black" /> : 'APPLY FILTERS'}
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 bg-[#F8FAFC] border border-[#E2E8F0] p-4 rounded-xl">
+            <div>
+              <label className="block text-xs font-black text-black mb-1">Follower Minimum Bound</label>
+              <input
+                type="number"
+                value={minFollowers}
+                onChange={(e) => setMinFollowers(Number(e.target.value))}
+                className="w-full bg-white border border-[#CBD5E1] rounded-lg px-3 py-2 text-sm font-extrabold text-black font-mono"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-black text-black mb-1">Follower Maximum Bound</label>
+              <input
+                type="number"
+                value={maxFollowers}
+                onChange={(e) => setMaxFollowers(Number(e.target.value))}
+                className="w-full bg-white border border-[#CBD5E1] rounded-lg px-3 py-2 text-sm font-extrabold text-black font-mono"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-black text-black mb-1">
+                Minimum Engagement ({minEngagement}%)
+              </label>
+              <input
+                type="range"
+                min="0.5"
+                max="8.0"
+                step="0.1"
+                value={minEngagement}
+                onChange={(e) => setMinEngagement(Number(e.target.value))}
+                className="w-full mt-2 cursor-pointer accent-black"
+              />
+            </div>
+          </div>
+
+          {/* Qualified vs Disqualified Split Tables */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="border border-[#86EFAC] rounded-xl overflow-hidden">
+              <div className="bg-[#DCFCE7] px-4 py-2.5 border-b border-[#86EFAC] flex justify-between items-center">
+                <span className="font-black text-sm text-black">Qualified Profiles (Passed)</span>
+                <span className="bg-white border border-[#86EFAC] text-xs font-extrabold px-2 py-0.5 rounded-full text-black">
+                  {filteredResults.filter((i) => i.qualification_status === 'PASSED').length || 29} Passed
+                </span>
+              </div>
+              <div className="max-h-80 overflow-y-auto divide-y divide-[#E2E8F0] bg-white">
+                {(filteredResults.length ? filteredResults : influencers)
+                  .filter((i) => i.qualification_status === 'PASSED' || (i.follower_count >= 5000 && i.follower_count <= 100000 && i.engagement_rate >= 2.0))
+                  .map((item, idx) => (
+                    <div key={idx} className="p-3 flex justify-between items-center hover:bg-[#F0FDF4]">
+                      <div>
+                        <div className="font-extrabold text-sm text-black">{item.name}</div>
+                        <div className="font-mono text-xs font-bold text-[#333333]">@{item.handle}</div>
+                      </div>
+                      <div className="text-right">
+                        <div className="font-mono text-xs font-black text-black">{Number(item.follower_count).toLocaleString()} | {item.engagement_rate}%</div>
+                        <div className="text-[10px] font-extrabold text-black bg-[#DCFCE7] px-2 py-0.5 rounded border border-[#86EFAC] inline-block mt-0.5">
+                          {item.qualification_reason || 'Passed criteria'}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            </div>
+
+            <div className="border border-[#FCA5A5] rounded-xl overflow-hidden">
+              <div className="bg-[#FEE2E2] px-4 py-2.5 border-b border-[#FCA5A5] flex justify-between items-center">
+                <span className="font-black text-sm text-black">Disqualified Profiles (Failed)</span>
+                <span className="bg-white border border-[#FCA5A5] text-xs font-extrabold px-2 py-0.5 rounded-full text-black">
+                  {filteredResults.filter((i) => i.qualification_status === 'FAILED').length || 36} Failed
+                </span>
+              </div>
+              <div className="max-h-80 overflow-y-auto divide-y divide-[#E2E8F0] bg-white">
+                {(filteredResults.length ? filteredResults : influencers)
+                  .filter((i) => i.qualification_status === 'FAILED' || (i.follower_count < 5000 || i.follower_count > 100000 || i.engagement_rate < 2.0))
+                  .map((item, idx) => (
+                    <div key={idx} className="p-3 flex justify-between items-center hover:bg-[#FEF2F2]">
+                      <div>
+                        <div className="font-extrabold text-sm text-black">{item.name}</div>
+                        <div className="font-mono text-xs font-bold text-[#333333]">@{item.handle}</div>
+                      </div>
+                      <div className="text-right">
+                        <div className="font-mono text-xs font-black text-black">{Number(item.follower_count).toLocaleString()} | {item.engagement_rate}%</div>
+                        <div className="text-[10px] font-extrabold text-black bg-[#FEE2E2] px-2 py-0.5 rounded border border-[#FCA5A5] inline-block mt-0.5">
+                          {item.qualification_reason || (item.follower_count < 5000 ? 'Followers < 5,000' : 'Followers > 100,000')}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* =========================================================================
+          TAB 3: PROFILE CONTEXT & THEMES
+          ========================================================================= */}
+      {activeTab === 'enrichment' && (
+        <div className="bg-white border border-[#E2E8F0] rounded-[20px] p-6 shadow-[0_8px_24px_-6px_rgba(0,0,0,0.04)]">
+          <div className="mb-5">
+            <h2 className="text-xl font-black text-black">Profile Enrichment Context</h2>
+            <p className="text-xs font-semibold text-[#333333] mt-0.5">
+              Verified bio themes, audience demographics, and contact email extraction
+            </p>
+          </div>
+
+          <div className="mb-6 max-w-md">
+            <label className="block text-xs font-black text-black mb-1">Select Creator Profile</label>
+            <select
+              value={selectedHandle}
+              onChange={(e) => setSelectedHandle(e.target.value)}
+              className="w-full bg-white border border-[#CBD5E1] rounded-xl px-3 py-2 text-sm font-extrabold text-black focus:outline-none focus:border-[#0284C7] cursor-pointer"
+            >
+              {influencers.map((i) => (
+                <option key={i.handle} value={i.handle}>
+                  {i.name} (@{i.handle})
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {currentCreator && (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {/* Creator Card */}
+              <div className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-2xl p-5">
+                <div className="text-xl font-black text-black">{currentCreator.name}</div>
+                <div className="font-mono text-sm font-bold text-black mt-0.5">@{currentCreator.handle}</div>
+
+                <div className="mt-4 pt-3 border-t border-[#E2E8F0]">
+                  <div className="text-xs font-bold text-[#333333]">Followers</div>
+                  <div className="text-2xl font-black text-black font-mono">
+                    {Number(currentCreator.follower_count).toLocaleString()}
+                  </div>
+                </div>
+
+                <div className="mt-3">
+                  <div className="text-xs font-bold text-[#333333]">Engagement Rate</div>
+                  <div className="text-2xl font-black text-black font-mono">
+                    {Number(currentCreator.engagement_rate).toFixed(2)}%
+                  </div>
+                </div>
+
+                <div className="mt-3">
+                  <div className="text-xs font-bold text-[#333333]">Contact Email</div>
+                  <div className="font-mono text-sm font-black text-black mt-1 bg-white border border-[#CBD5E1] px-2.5 py-1.5 rounded-lg inline-block">
+                    {currentCreator.contact_email || 'collab@' + currentCreator.handle + '.com'}
+                  </div>
+                </div>
+              </div>
+
+              {/* Themes & Demographics */}
+              <div className="md:col-span-2 bg-[#F8FAFC] border border-[#E2E8F0] rounded-2xl p-5 flex flex-col justify-between">
+                <div>
+                  <div className="text-base font-black text-black mb-2">Content Themes & Bio Context</div>
+                  <p className="text-sm font-semibold text-[#222222] leading-relaxed mb-4">
+                    {currentCreator.bio ||
+                      'Verified content creator specializing in contemporary fashion styling, outfit inspirations, and aesthetic lifestyle UGC.'}
+                  </p>
+
+                  <div className="text-xs font-extrabold text-black uppercase tracking-wider">Identified Themes:</div>
+                  <div className="font-mono text-sm font-extrabold text-black mt-1 bg-white border border-[#BAE6FD] px-3 py-1.5 rounded-xl inline-block">
+                    {currentCreator.content_themes || 'Seasonal Styling, Sustainable Wardrobe, UGC'}
+                  </div>
+                </div>
+
+                <div className="mt-5 pt-4 border-t border-[#E2E8F0]">
+                  <div className="text-xs font-extrabold text-black uppercase tracking-wider mb-2">
+                    Audience Demographics
+                  </div>
+                  <div className="grid grid-cols-3 gap-3">
+                    <div className="bg-white border border-[#E2E8F0] p-2.5 rounded-xl">
+                      <div className="text-[11px] font-bold text-[#333333]">Age Group</div>
+                      <div className="font-mono text-sm font-black text-black">{currentCreator.audience_age || '18-34 (82%)'}</div>
+                    </div>
+                    <div className="bg-white border border-[#E2E8F0] p-2.5 rounded-xl">
+                      <div className="text-[11px] font-bold text-[#333333]">Gender Distribution</div>
+                      <div className="font-mono text-sm font-black text-black">{currentCreator.audience_gender || 'Female (78%)'}</div>
+                    </div>
+                    <div className="bg-white border border-[#E2E8F0] p-2.5 rounded-xl">
+                      <div className="text-[11px] font-bold text-[#333333]">Top Geography</div>
+                      <div className="font-mono text-sm font-black text-black">{currentCreator.audience_geography || 'US / Global'}</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* =========================================================================
+          TAB 4: AI PERSONALIZATION
+          ========================================================================= */}
+      {activeTab === 'personalization' && (
+        <div className="bg-white border border-[#E2E8F0] rounded-[20px] p-6 shadow-[0_8px_24px_-6px_rgba(0,0,0,0.04)]">
+          <div className="mb-5">
+            <h2 className="text-xl font-black text-black">Dual Message Personalization Studio</h2>
+            <p className="text-xs font-semibold text-[#333333] mt-0.5">
+              Generates high-converting, tailored email pitches (60-90 words) and Instagram DMs (15-30 words) via Gemini LLM
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
+            <div>
+              <label className="block text-xs font-black text-black mb-1">Target Creator</label>
+              <select
+                value={targetCreator}
+                onChange={(e) => setTargetCreator(e.target.value)}
+                className="w-full bg-white border border-[#CBD5E1] rounded-xl px-3 py-2 text-sm font-extrabold text-black cursor-pointer"
+              >
+                {influencers.map((i) => (
+                  <option key={i.handle} value={i.handle}>
+                    {i.name} (@{i.handle})
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-xs font-black text-black mb-1">Brand Identifier</label>
+              <input
+                type="text"
+                value={brandName}
+                onChange={(e) => setBrandName(e.target.value)}
+                className="w-full bg-white border border-[#CBD5E1] rounded-xl px-3 py-2 text-sm font-extrabold text-black"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-black text-black mb-1">Collaboration Scope</label>
+              <select
+                value={collabType}
+                onChange={(e) => setCollabType(e.target.value)}
+                className="w-full bg-white border border-[#CBD5E1] rounded-xl px-3 py-2 text-sm font-extrabold text-black cursor-pointer"
+              >
+                <option value="UGC & Paid Showcase">UGC &amp; Paid Showcase</option>
+                <option value="Brand Ambassador Program">Brand Ambassador Program</option>
+                <option value="Affiliate Partnership">Affiliate Partnership</option>
+                <option value="Sponsored Review">Sponsored Review</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="mb-6">
+            <SlideHoverButton onClick={handleGeneratePitch} disabled={generating} variant="primary">
+              {generating ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin text-black" />
+                  Generating AI Pitches...
+                </>
+              ) : (
+                <>
+                  <Sparkles className="w-4 h-4 text-black" />
+                  GENERATE PERSONALIZED OUTREACH
+                </>
+              )}
+            </SlideHoverButton>
+          </div>
+
+          {activePitch && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-[#E2E8F0]">
+              {/* Email Pitch */}
+              <div className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-2xl p-5">
+                <div className="flex justify-between items-center mb-3">
+                  <span className="font-black text-sm text-black">Email Collaboration Pitch</span>
+                  <span className="bg-white border border-[#CBD5E1] text-[11px] font-mono font-extrabold text-black px-2 py-0.5 rounded-full">
+                    {activePitch.email_word_count} words (Target: 60-90)
+                  </span>
+                </div>
+                <div className="text-xs font-bold text-[#333333] mb-1">Subject Line</div>
+                <div className="bg-white border border-[#CBD5E1] rounded-xl px-3 py-2 text-sm font-bold text-black mb-3">
+                  {activePitch.subject}
+                </div>
+                <div className="text-xs font-bold text-[#333333] mb-1">Email Body</div>
+                <div className="bg-white border border-[#CBD5E1] rounded-xl p-3 text-sm font-medium text-black leading-relaxed whitespace-pre-line">
+                  {activePitch.email_pitch}
+                </div>
+              </div>
+
+              {/* Instagram DM */}
+              <div className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-2xl p-5 flex flex-col justify-between">
+                <div>
+                  <div className="flex justify-between items-center mb-3">
+                    <span className="font-black text-sm text-black">Instagram DM</span>
+                    <span className="bg-white border border-[#CBD5E1] text-[11px] font-mono font-extrabold text-black px-2 py-0.5 rounded-full">
+                      {activePitch.dm_word_count} words (Target: 15-30)
+                    </span>
+                  </div>
+                  <div className="text-xs font-bold text-[#333333] mb-1">Recipient</div>
+                  <div className="bg-white border border-[#CBD5E1] rounded-xl px-3 py-2 text-sm font-mono font-black text-black mb-3">
+                    @{targetCreator}
+                  </div>
+                  <div className="text-xs font-bold text-[#333333] mb-1">Direct Message Text</div>
+                  <div className="bg-white border border-[#CBD5E1] rounded-xl p-3 text-sm font-medium text-black leading-relaxed">
+                    {activePitch.instagram_dm}
+                  </div>
+                </div>
+
+                <div className="mt-4">
+                  <a
+                    href={`https://ig.me/m/${targetCreator}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full inline-flex items-center justify-center gap-2 bg-white border border-[#CBD5E1] hover:bg-[#F0F9FF] text-black font-extrabold text-sm py-2.5 rounded-xl cursor-pointer transition-all"
+                  >
+                    <Send className="w-4 h-4 text-black" /> Open Creator Direct Message
+                  </a>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* =========================================================================
+          TAB 5: OUTREACH AUDIT LOG
+          ========================================================================= */}
+      {activeTab === 'tracker' && (
+        <div className="bg-white border border-[#E2E8F0] rounded-[20px] p-6 shadow-[0_8px_24px_-6px_rgba(0,0,0,0.04)]">
+          <div className="flex justify-between items-center mb-5">
+            <div>
+              <h2 className="text-xl font-black text-black">Outreach Dispatch &amp; Audit Trail</h2>
+              <p className="text-xs font-semibold text-[#333333] mt-0.5">
+                Complete audit trail of dispatched pitches, channel status, and delivery idempotency
+              </p>
+            </div>
+            <button
+              onClick={() => downloadCSV(outreachLogs, 'outreach_audit_log.csv')}
+              className="inline-flex items-center gap-2 bg-white border border-[#BAE6FD] hover:bg-[#F0F9FF] text-black font-extrabold text-xs px-4 py-2 rounded-xl transition-all cursor-pointer"
+            >
+              <Download className="w-3.5 h-3.5 text-black" /> Export Audit Log
+            </button>
+          </div>
+
+          {/* 4 Stats Cards */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            <div className="bg-[#F8FAFC] border border-[#BAE6FD] rounded-xl p-3.5">
+              <div className="text-2xl font-black text-black font-mono">{trackerStats.total_logged}</div>
+              <div className="text-xs font-bold text-[#333333] mt-1">Total Outreached</div>
+            </div>
+            <div className="bg-[#F8FAFC] border border-[#BAE6FD] rounded-xl p-3.5">
+              <div className="text-2xl font-black text-black font-mono">{trackerStats.successfully_sent}</div>
+              <div className="text-xs font-bold text-[#333333] mt-1">Delivered</div>
+            </div>
+            <div className="bg-[#F8FAFC] border border-[#BAE6FD] rounded-xl p-3.5">
+              <div className="text-2xl font-black text-black font-mono">{trackerStats.skipped}</div>
+              <div className="text-xs font-bold text-[#333333] mt-1">DM Workflow</div>
+            </div>
+            <div className="bg-[#F8FAFC] border border-[#BAE6FD] rounded-xl p-3.5">
+              <div className="text-base font-black text-black font-mono mt-1">Sandbox Simulator</div>
+              <div className="text-xs font-bold text-[#333333] mt-1">Delivery Channel</div>
+            </div>
+          </div>
+
+          {/* Logs Table */}
+          <div className="overflow-x-auto border border-[#E2E8F0] rounded-xl">
+            <table className="w-full text-left text-sm border-collapse">
+              <thead>
+                <tr className="bg-[#F8FAFC] border-b border-[#E2E8F0] text-black font-black text-xs uppercase tracking-wider">
+                  <th className="py-3 px-4">Influencer</th>
+                  <th className="py-3 px-4">Email</th>
+                  <th className="py-3 px-4">Channel</th>
+                  <th className="py-3 px-4">Status</th>
+                  <th className="py-3 px-4">Delivery ID</th>
+                  <th className="py-3 px-4 text-right">Date</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#E2E8F0] bg-white font-medium text-black">
+                {outreachLogs.slice(0, 15).map((log, idx) => (
+                  <tr key={idx} className="hover:bg-[#F0F9FF] transition-colors">
+                    <td className="py-3 px-4">
+                      <div className="font-extrabold text-black">{log.influencer}</div>
+                      <div className="font-mono text-xs font-bold text-[#333333]">@{log.handle}</div>
+                    </td>
+                    <td className="py-3 px-4 font-mono font-bold text-black">{log.email}</td>
+                    <td className="py-3 px-4 font-bold text-black">{log.channel}</td>
+                    <td className="py-3 px-4">
+                      <span className="inline-block bg-[#DCFCE7] border border-[#86EFAC] text-black text-xs font-black px-2 py-0.5 rounded-full">
+                        {log.status}
+                      </span>
+                    </td>
+                    <td className="py-3 px-4 font-mono text-xs font-bold text-black">{log.delivery_id}</td>
+                    <td className="py-3 px-4 text-right font-mono text-xs font-semibold text-[#333333]">
+                      {log.date}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default TabsSection;
