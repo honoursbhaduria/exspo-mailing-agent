@@ -287,14 +287,14 @@ with tab_tracker:
 
     m1, m2, m3, m4 = st.columns(4)
     with m1:
-        st.markdown(f'<div class="stat-tile purple"><div class="stat-tile-val">{stats["total_logged"]}</div><div class="stat-tile-lbl">Total Outreached</div></div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="stat-tile"><div class="stat-tile-val">{stats["total_logged"]}</div><div class="stat-tile-lbl">Total Outreached</div></div>', unsafe_allow_html=True)
     with m2:
-        st.markdown(f'<div class="stat-tile blue"><div class="stat-tile-val">{stats["successfully_sent"]}</div><div class="stat-tile-lbl">Delivered</div></div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="stat-tile"><div class="stat-tile-val">{stats["successfully_sent"]}</div><div class="stat-tile-lbl">Delivered</div></div>', unsafe_allow_html=True)
     with m3:
-        st.markdown(f'<div class="stat-tile pink"><div class="stat-tile-val">{stats["skipped"]}</div><div class="stat-tile-lbl">DM Workflow</div></div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="stat-tile"><div class="stat-tile-val">{stats["skipped"]}</div><div class="stat-tile-lbl">DM Workflow</div></div>', unsafe_allow_html=True)
     with m4:
         mode_text = "Sandbox Simulator" if SIMULATION_MODE else "Live Resend"
-        st.markdown(f'<div class="stat-tile purple"><div class="stat-tile-val" style="font-size: 1.05rem;">{mode_text}</div><div class="stat-tile-lbl">Delivery Channel</div></div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="stat-tile"><div class="stat-tile-val" style="font-size: 1.05rem;">{mode_text}</div><div class="stat-tile-lbl">Delivery Channel</div></div>', unsafe_allow_html=True)
 
     st.markdown("<div style='height: 12px;'></div>", unsafe_allow_html=True)
     if not log_df.empty:
