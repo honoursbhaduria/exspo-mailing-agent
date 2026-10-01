@@ -50,6 +50,7 @@ export const TabsSection: React.FC = () => {
   useEffect(() => {
     fetchRawRecords();
     fetchTracker();
+    runFilter();
   }, []);
 
   const fetchRawRecords = async () => {

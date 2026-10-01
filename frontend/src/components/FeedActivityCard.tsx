@@ -1,14 +1,28 @@
 import React from 'react';
 import { Globe, CheckCircle2, XCircle } from 'lucide-react';
 
-export const FeedActivityCard: React.FC = () => {
-  const feedItems = [
+export interface FeedItem {
+  name: string;
+  loc: string;
+  status: string;
+  pass: boolean;
+  tag: string;
+}
+
+interface FeedActivityCardProps {
+  items?: FeedItem[];
+}
+
+export const FeedActivityCard: React.FC<FeedActivityCardProps> = ({ items }) => {
+  const defaultItems: FeedItem[] = [
     { name: 'Alina Paziuk', loc: 'London, UK', status: 'PASS', pass: true, tag: 'PASS' },
     { name: 'Cameron Stokes', loc: 'Athens, US', status: 'PASS', pass: true, tag: 'PASS' },
     { name: 'Katarina Durcakova', loc: 'Slovakia', status: 'FAIL', pass: false, tag: '< 5k' },
     { name: 'Allee-Sutton H.', loc: 'Nashville, US', status: 'PASS', pass: true, tag: 'PASS' },
     { name: 'Jordy Boulet-Viau', loc: 'Montreal, CA', status: 'FAIL', pass: false, tag: '> 100k' },
   ];
+
+  const displayItems = items && items.length > 0 ? items.slice(0, 5) : defaultItems;
 
   return (
     <div className="bg-white border border-[#E2E8F0] hover:border-[#BAE6FD] rounded-[20px] p-5 shadow-[0_4px_20px_rgba(0,0,0,0.04)] hover:shadow-[0_12px_28px_-6px_rgba(2,132,199,0.08)] transition-all h-full flex flex-col justify-between">
@@ -21,7 +35,7 @@ export const FeedActivityCard: React.FC = () => {
         </div>
 
         <div className="divide-y divide-[#E2E8F0]">
-          {feedItems.map((item, idx) => (
+          {displayItems.map((item, idx) => (
             <div key={idx} className="py-2.5 flex justify-between items-center first:pt-0 last:pb-0">
               <div>
                 <div className="text-sm font-bold text-black">{item.name}</div>

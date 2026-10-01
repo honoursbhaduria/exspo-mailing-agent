@@ -1,17 +1,33 @@
 import React from 'react';
 import { Activity } from 'lucide-react';
 
+export interface CreatorHighlight {
+  name: string;
+  follower_str: string;
+}
+
 interface AudienceReachCardProps {
   totalCount?: number;
   avgFollowers?: string;
   avgReach?: string;
+  topCreators?: CreatorHighlight[];
 }
 
 export const AudienceReachCard: React.FC<AudienceReachCardProps> = ({
   totalCount = 65,
   avgFollowers = '35K',
   avgReach = '11K',
+  topCreators,
 }) => {
+  const defaultCreators: CreatorHighlight[] = [
+    { name: 'Nazima Mogra', follower_str: '62.0K' },
+    { name: 'Isabella Quintero', follower_str: '36.8K' },
+    { name: 'Dhanu Gunathissa', follower_str: '92.0K' },
+    { name: 'Rashonda Wisner', follower_str: '24.5K' },
+  ];
+
+  const creatorsToDisplay = topCreators && topCreators.length > 0 ? topCreators.slice(0, 4) : defaultCreators;
+
   return (
     <div className="bg-white border border-[#E2E8F0] hover:border-[#BAE6FD] rounded-[20px] p-5 shadow-[0_4px_20px_rgba(0,0,0,0.04)] hover:shadow-[0_12px_28px_-6px_rgba(2,132,199,0.08)] transition-all h-full flex flex-col justify-between">
       <div>
@@ -52,22 +68,17 @@ export const AudienceReachCard: React.FC<AudienceReachCardProps> = ({
         </div>
 
         <div className="space-y-1.5">
-          <div className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl px-3 py-2 flex justify-between items-center">
-            <span className="text-sm font-bold text-black">Nazima Mogra</span>
-            <span className="font-mono text-xs font-extrabold text-black">62.0K</span>
-          </div>
-          <div className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl px-3 py-2 flex justify-between items-center">
-            <span className="text-sm font-bold text-black">Isabella Quintero</span>
-            <span className="font-mono text-xs font-extrabold text-black">36.8K</span>
-          </div>
-          <div className="bg-[#F8FAFC] border border-[#BAE6FD] rounded-xl px-3 py-2 flex justify-between items-center">
-            <span className="text-sm font-extrabold text-black">Dhanu Gunathissa</span>
-            <span className="font-mono text-xs font-black text-black">92.0K</span>
-          </div>
-          <div className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl px-3 py-2 flex justify-between items-center">
-            <span className="text-sm font-bold text-black">Rashonda Wisner</span>
-            <span className="font-mono text-xs font-extrabold text-black">24.5K</span>
-          </div>
+          {creatorsToDisplay.map((creator, idx) => (
+            <div
+              key={idx}
+              className={`bg-[#F8FAFC] border rounded-xl px-3 py-2 flex justify-between items-center transition-all ${
+                idx === 2 ? 'border-[#BAE6FD]' : 'border-[#E2E8F0]'
+              }`}
+            >
+              <span className="text-sm font-bold text-black">{creator.name}</span>
+              <span className="font-mono text-xs font-black text-black">{creator.follower_str}</span>
+            </div>
+          ))}
         </div>
       </div>
     </div>

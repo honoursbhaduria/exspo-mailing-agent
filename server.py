@@ -128,6 +128,7 @@ def filter_influencers(req: FilterRequest):
     failed = processed_df[processed_df["qualification_status"] == "FAILED"]
 
     return {
+        "total": len(processed_df),
         "total_evaluated": len(processed_df),
         "passed_count": len(passed),
         "failed_count": len(failed),
