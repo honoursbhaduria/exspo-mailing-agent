@@ -1,0 +1,20 @@
+import scrapy
+
+class InfluencerItem(scrapy.Item):
+    name = scrapy.Field()
+    handle = scrapy.Field()
+    platform = scrapy.Field()
+    profile_url = scrapy.Field()
+    follower_count = scrapy.Field()
+    follower_str = scrapy.Field()
+    engagement_rate = scrapy.Field()
+    niche = scrapy.Field()
+    content_themes = scrapy.Field()
+    contact_email = scrapy.Field()
+    location = scrapy.Field()
+    bio = scrapy.Field()
+    rating = scrapy.Field()
+    price = scrapy.Field()
+    instagram_url = scrapy.Field()
+    tiktok_url = scrapy.Field()
+    youtube_url = scrapy.Field()
