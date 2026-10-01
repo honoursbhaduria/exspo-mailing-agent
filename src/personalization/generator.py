@@ -130,11 +130,13 @@ MANDATORY CONSTRAINTS:
    - Reference their specific niche ({kwargs['niche']}) and content themes ({kwargs['themes']}).
    - Propose the collaboration ({kwargs['collaboration_type']}) and clear value proposition (paid fee + gifted items).
    - Professional, warm, and concise call to action.
+   - Do NOT use bracketed placeholders like '[Your Name]'. Always sign off as 'Partnerships Team | {kwargs['brand_name']}'.
 
 2. Instagram DM:
    - Length: EXACTLY between 15 and 30 words.
    - Short, conversational, natural (sounds like a real human, not corporate spam).
    - Compliment a specific theme from their recent work.
+   - Do NOT use bracketed placeholders.
 
 Return ONLY a valid JSON object with the following schema:
 {{

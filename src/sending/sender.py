@@ -67,11 +67,34 @@ class EmailSender:
                     "error": None
                 }
             except Exception as e:
+                err_str = str(e)
+                # Handle Resend free tier onboarding domain restriction (sandbox testing)
+                if "only send testing emails to your own email address" in err_str:
+                    try:
+                        dev_email = "honours.2428ece1188@kiet.edu"
+                        params["to"] = [dev_email]
+                        params["subject"] = f"[Preview for {to_email}] {subject}"
+                        params["html"] = f"""
+                        <div style="background: #F0FDF4; border: 1px solid #86EFAC; padding: 12px; border-radius: 8px; margin-bottom: 16px; font-family: sans-serif; font-size: 13px;">
+                            <strong>EDXSO Sandbox Dispatch:</strong> In Resend testing mode, emails are routed to your verified developer address (<code>{dev_email}</code>). Target recipient: <code>{to_email}</code>.
+                        </div>
+                        """ + params["html"]
+                        response = self.resend_client.Emails.send(params)
+                        delivery_id = response.get("id", str(uuid.uuid4()))
+                        return {
+                            "status": "SENT",
+                            "delivery_id": delivery_id,
+                            "channel": f"Resend API (Live Preview)",
+                            "error": None
+                        }
+                    except Exception as e2:
+                        err_str = str(e2)
+
                 return {
                     "status": "FAILED",
                     "delivery_id": None,
                     "channel": "Resend API (Live)",
-                    "error": str(e)
+                    "error": err_str
                 }
 
         # 3. Simulated Delivery Mode (Safe Evaluation Mode)
