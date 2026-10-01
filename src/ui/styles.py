@@ -354,57 +354,78 @@ def get_theme_css() -> str:
     }
 
     /* ========================================================================
-       6. BAR SECTION / TABS (EXACT MATCH TO USER'S .nav .container SPEC: #bef6)
+       6. WORKSPACE TABS - CLEAN MINIMALIST UNDERLINE (NO BOX DIV / NO CONTAINER)
+       Just a clean bottom line below the selected section
        ======================================================================== */
     .stTabs [data-baseweb="tab-list"] {
-        position: relative !important;
-        background: #DDF0FF !important; /* Soft ice cyan / sky light: #bef6 */
-        border: 2px solid #BAE6FD !important;
-        border-radius: 14px !important;
-        padding: 6px 8px !important;
+        background: transparent !important;
+        border: none !important;
+        border-radius: 0 !important;
+        padding: 0 !important;
+        gap: 28px !important;
+        border-bottom: 2px solid #E2E8F0 !important;
+        box-shadow: none !important;
+        margin-bottom: 20px !important;
         display: flex !important;
-        flex-direction: row !important;
-        justify-content: space-around !important;
-        align-items: center !important;
-        gap: 8px !important;
-        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.03) !important;
+        justify-content: flex-start !important;
+        width: 100% !important;
     }
 
     .stTabs [data-baseweb="tab"] {
         font-family: 'Bricolage Grotesque', sans-serif !important;
-        padding: 9px 20px !important;
-        border-radius: 10px !important;
         background: transparent !important;
         border: none !important;
+        border-radius: 0 !important;
+        padding: 10px 4px 12px 4px !important;
+        margin: 0 !important;
         cursor: pointer !important;
+        box-shadow: none !important;
+        border-bottom: 3px solid transparent !important;
+        margin-bottom: -2px !important;
         transition: all 0.2s ease !important;
     }
 
     .stTabs [data-baseweb="tab"] p,
     .stTabs [data-baseweb="tab"] span,
     .stTabs [data-baseweb="tab"] div {
-        color: #000000 !important;
-        font-size: 0.92rem !important;
-        font-weight: 800 !important;
+        color: #555555 !important;
+        font-size: 0.95rem !important;
+        font-weight: 700 !important;
+        transition: color 0.2s ease !important;
         user-select: none !important;
     }
 
     .stTabs [data-baseweb="tab"]:hover {
-        background: rgba(255, 255, 255, 0.75) !important;
-        border-radius: 10px !important;
+        background: transparent !important;
+        border-bottom: 3px solid #CBD5E1 !important;
     }
 
+    .stTabs [data-baseweb="tab"]:hover p,
+    .stTabs [data-baseweb="tab"]:hover span {
+        color: #000000 !important;
+    }
+
+    /* Active Tab: Pure Black Text with solid underline directly below */
     .stTabs [aria-selected="true"] {
-        background: #FFFFFF !important;
-        border-radius: 10px !important;
-        box-shadow: 0 4px 12px rgba(2, 132, 199, 0.1) !important;
-        border: 1.5px solid #BAE6FD !important;
+        background: transparent !important;
+        border: none !important;
+        border-radius: 0 !important;
+        border-bottom: 3px solid #000000 !important;
+        box-shadow: none !important;
+        margin-bottom: -2px !important;
     }
 
     .stTabs [aria-selected="true"] p,
-    .stTabs [aria-selected="true"] span {
+    .stTabs [aria-selected="true"] span,
+    .stTabs [aria-selected="true"] div {
         color: #000000 !important;
         font-weight: 900 !important;
+        font-size: 0.96rem !important;
+    }
+
+    .stTabs [data-baseweb="tab-highlight"],
+    .stTabs [data-baseweb="tab-border"] {
+        display: none !important;
     }
 
     /* ========================================================================
