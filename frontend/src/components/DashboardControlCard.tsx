@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Loader2 } from 'lucide-react';
+import { Loader2, ChevronDown } from 'lucide-react';
 import SlideHoverButton from './ui/SlideHoverButton';
 import { api } from '../services/api';
 
@@ -55,63 +55,83 @@ export const DashboardControlCard: React.FC<DashboardControlCardProps> = ({
           <span className="text-lg font-black text-black tracking-tight">Dashboard</span>
         </div>
 
-        {/* Form Inputs Grid */}
+        {/* Form Inputs Grid - Redesigned Sleek Dropdowns */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
           <div>
-            <label className="block text-xs font-extrabold text-black mb-1">Category / Niche</label>
-            <select
-              value={niche}
-              onChange={(e) => setNiche(e.target.value)}
-              className="w-full bg-white border border-[#CBD5E1] rounded-xl px-3 py-2 text-sm font-bold text-black focus:outline-none focus:border-[#0284C7] cursor-pointer"
-            >
-              <option value="Fashion & Beauty">Fashion & Beauty</option>
-              <option value="Fitness">Fitness</option>
-              <option value="Fintech">Fintech</option>
-              <option value="Lifestyle">Lifestyle</option>
-              <option value="Technology">Technology</option>
-              <option value="Gaming">Gaming</option>
-            </select>
+            <label className="block text-xs font-black text-black mb-1.5">Category / Niche</label>
+            <div className="relative">
+              <select
+                value={niche}
+                onChange={(e) => setNiche(e.target.value)}
+                className="w-full appearance-none bg-[#F8FAFC] hover:bg-white focus:bg-white border border-[#CBD5E1] hover:border-black focus:border-black rounded-xl px-3.5 py-2.5 pr-9 text-xs font-black text-black cursor-pointer shadow-xs transition-all focus:outline-none focus:ring-2 focus:ring-[#BAE6FD]/60"
+              >
+                <option value="Fashion & Beauty" className="bg-white text-black font-bold">Fashion & Beauty</option>
+                <option value="Fitness" className="bg-white text-black font-bold">Fitness</option>
+                <option value="Fintech" className="bg-white text-black font-bold">Fintech</option>
+                <option value="Lifestyle" className="bg-white text-black font-bold">Lifestyle</option>
+                <option value="Technology" className="bg-white text-black font-bold">Technology</option>
+                <option value="Gaming" className="bg-white text-black font-bold">Gaming</option>
+              </select>
+              <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 flex items-center">
+                <ChevronDown className="w-4 h-4 text-black stroke-[2.5]" />
+              </div>
+            </div>
           </div>
 
           <div>
-            <label className="block text-xs font-extrabold text-black mb-1">Target Platform</label>
-            <select
-              value={platform}
-              onChange={(e) => setPlatform(e.target.value)}
-              className="w-full bg-white border border-[#CBD5E1] rounded-xl px-3 py-2 text-sm font-bold text-black focus:outline-none focus:border-[#0284C7] cursor-pointer"
-            >
-              <option value="Instagram & TikTok">Instagram & TikTok</option>
-              <option value="Instagram Only">Instagram Only</option>
-              <option value="TikTok Only">TikTok Only</option>
-              <option value="YouTube">YouTube</option>
-            </select>
+            <label className="block text-xs font-black text-black mb-1.5">Target Platform</label>
+            <div className="relative">
+              <select
+                value={platform}
+                onChange={(e) => setPlatform(e.target.value)}
+                className="w-full appearance-none bg-[#F8FAFC] hover:bg-white focus:bg-white border border-[#CBD5E1] hover:border-black focus:border-black rounded-xl px-3.5 py-2.5 pr-9 text-xs font-black text-black cursor-pointer shadow-xs transition-all focus:outline-none focus:ring-2 focus:ring-[#BAE6FD]/60"
+              >
+                <option value="Instagram & TikTok" className="bg-white text-black font-bold">Instagram & TikTok</option>
+                <option value="Instagram Only" className="bg-white text-black font-bold">Instagram Only</option>
+                <option value="TikTok Only" className="bg-white text-black font-bold">TikTok Only</option>
+                <option value="YouTube" className="bg-white text-black font-bold">YouTube</option>
+              </select>
+              <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 flex items-center">
+                <ChevronDown className="w-4 h-4 text-black stroke-[2.5]" />
+              </div>
+            </div>
           </div>
 
           <div>
-            <label className="block text-xs font-extrabold text-black mb-1">Audience Geography</label>
-            <select
-              value={geo}
-              onChange={(e) => setGeo(e.target.value)}
-              className="w-full bg-white border border-[#CBD5E1] rounded-xl px-3 py-2 text-sm font-bold text-black focus:outline-none focus:border-[#0284C7] cursor-pointer"
-            >
-              <option value="United States (US)">United States (US)</option>
-              <option value="United Kingdom (GB)">United Kingdom (GB)</option>
-              <option value="Canada (CA)">Canada (CA)</option>
-              <option value="Global">Global</option>
-            </select>
+            <label className="block text-xs font-black text-black mb-1.5">Audience Geography</label>
+            <div className="relative">
+              <select
+                value={geo}
+                onChange={(e) => setGeo(e.target.value)}
+                className="w-full appearance-none bg-[#F8FAFC] hover:bg-white focus:bg-white border border-[#CBD5E1] hover:border-black focus:border-black rounded-xl px-3.5 py-2.5 pr-9 text-xs font-black text-black cursor-pointer shadow-xs transition-all focus:outline-none focus:ring-2 focus:ring-[#BAE6FD]/60"
+              >
+                <option value="United States (US)" className="bg-white text-black font-bold">United States (US)</option>
+                <option value="United Kingdom (GB)" className="bg-white text-black font-bold">United Kingdom (GB)</option>
+                <option value="Canada (CA)" className="bg-white text-black font-bold">Canada (CA)</option>
+                <option value="Global" className="bg-white text-black font-bold">Global</option>
+              </select>
+              <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 flex items-center">
+                <ChevronDown className="w-4 h-4 text-black stroke-[2.5]" />
+              </div>
+            </div>
           </div>
 
           <div>
-            <label className="block text-xs font-extrabold text-black mb-1">Influencer Scale</label>
-            <select
-              value={scale}
-              onChange={(e) => setScale(e.target.value)}
-              className="w-full bg-white border border-[#CBD5E1] rounded-xl px-3 py-2 text-sm font-bold text-black focus:outline-none focus:border-[#0284C7] cursor-pointer"
-            >
-              <option value="Micro-Influencers (5k - 100k)">Micro-Influencers (5k - 100k)</option>
-              <option value="Nano-Influencers (1k - 5k)">Nano-Influencers (1k - 5k)</option>
-              <option value="Macro-Influencers (> 100k)">Macro-Influencers (&gt; 100k)</option>
-            </select>
+            <label className="block text-xs font-black text-black mb-1.5">Influencer Scale</label>
+            <div className="relative">
+              <select
+                value={scale}
+                onChange={(e) => setScale(e.target.value)}
+                className="w-full appearance-none bg-[#F8FAFC] hover:bg-white focus:bg-white border border-[#CBD5E1] hover:border-black focus:border-black rounded-xl px-3.5 py-2.5 pr-9 text-xs font-black text-black cursor-pointer shadow-xs transition-all focus:outline-none focus:ring-2 focus:ring-[#BAE6FD]/60"
+              >
+                <option value="Micro-Influencers (5k - 100k)" className="bg-white text-black font-bold">Micro-Influencers (5k - 100k)</option>
+                <option value="Nano-Influencers (1k - 5k)" className="bg-white text-black font-bold">Nano-Influencers (1k - 5k)</option>
+                <option value="Macro-Influencers (> 100k)" className="bg-white text-black font-bold">Macro-Influencers (&gt; 100k)</option>
+              </select>
+              <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 flex items-center">
+                <ChevronDown className="w-4 h-4 text-black stroke-[2.5]" />
+              </div>
+            </div>
           </div>
         </div>
 

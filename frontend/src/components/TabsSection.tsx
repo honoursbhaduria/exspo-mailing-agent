@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Download, Sparkles, Send, ExternalLink, Loader2 } from 'lucide-react';
+import { Search, Download, Sparkles, Send, ExternalLink, Loader2, ChevronDown } from 'lucide-react';
 import AnimatedOutlineNavbar, { type TabItem } from './ui/AnimatedOutlineNavbar';
 import SlideHoverButton from './ui/SlideHoverButton';
 import Pagination from './ui/Pagination';
@@ -403,18 +403,23 @@ export const TabsSection: React.FC = () => {
           </div>
 
           <div className="mb-6 max-w-md">
-            <label className="block text-xs font-black text-black mb-1">Select Creator Profile</label>
-            <select
-              value={selectedHandle}
-              onChange={(e) => setSelectedHandle(e.target.value)}
-              className="w-full bg-white border border-[#CBD5E1] rounded-xl px-3 py-2 text-sm font-extrabold text-black focus:outline-none focus:border-[#0284C7] cursor-pointer"
-            >
-              {influencers.map((i) => (
-                <option key={i.handle} value={i.handle}>
-                  {i.name} (@{i.handle})
-                </option>
-              ))}
-            </select>
+            <label className="block text-xs font-black text-black mb-1.5">Select Creator Profile</label>
+            <div className="relative">
+              <select
+                value={selectedHandle}
+                onChange={(e) => setSelectedHandle(e.target.value)}
+                className="w-full appearance-none bg-[#F8FAFC] hover:bg-white focus:bg-white border border-[#CBD5E1] hover:border-black focus:border-black rounded-xl px-3.5 py-2.5 pr-10 text-xs font-black text-black cursor-pointer shadow-xs transition-all focus:outline-none focus:ring-2 focus:ring-[#BAE6FD]/60"
+              >
+                {influencers.map((i) => (
+                  <option key={i.handle} value={i.handle} className="bg-white text-black font-bold">
+                    {i.name} (@{i.handle})
+                  </option>
+                ))}
+              </select>
+              <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 flex items-center">
+                <ChevronDown className="w-4 h-4 text-black stroke-[2.5]" />
+              </div>
+            </div>
           </div>
 
           {currentCreator && (
@@ -502,42 +507,52 @@ export const TabsSection: React.FC = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
             <div>
-              <label className="block text-xs font-black text-black mb-1">Target Creator</label>
-              <select
-                value={targetCreator}
-                onChange={(e) => setTargetCreator(e.target.value)}
-                className="w-full bg-white border border-[#CBD5E1] rounded-xl px-3 py-2 text-sm font-extrabold text-black cursor-pointer"
-              >
-                {influencers.map((i) => (
-                  <option key={i.handle} value={i.handle}>
-                    {i.name} (@{i.handle})
-                  </option>
-                ))}
-              </select>
+              <label className="block text-xs font-black text-black mb-1.5">Target Creator</label>
+              <div className="relative">
+                <select
+                  value={targetCreator}
+                  onChange={(e) => setTargetCreator(e.target.value)}
+                  className="w-full appearance-none bg-[#F8FAFC] hover:bg-white focus:bg-white border border-[#CBD5E1] hover:border-black focus:border-black rounded-xl px-3.5 py-2.5 pr-10 text-xs font-black text-black cursor-pointer shadow-xs transition-all focus:outline-none focus:ring-2 focus:ring-[#BAE6FD]/60"
+                >
+                  {influencers.map((i) => (
+                    <option key={i.handle} value={i.handle} className="bg-white text-black font-bold">
+                      {i.name} (@{i.handle})
+                    </option>
+                  ))}
+                </select>
+                <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 flex items-center">
+                  <ChevronDown className="w-4 h-4 text-black stroke-[2.5]" />
+                </div>
+              </div>
             </div>
 
             <div>
-              <label className="block text-xs font-black text-black mb-1">Brand Identifier</label>
+              <label className="block text-xs font-black text-black mb-1.5">Brand Identifier</label>
               <input
                 type="text"
                 value={brandName}
                 onChange={(e) => setBrandName(e.target.value)}
-                className="w-full bg-white border border-[#CBD5E1] rounded-xl px-3 py-2 text-sm font-extrabold text-black"
+                className="w-full bg-[#F8FAFC] hover:bg-white focus:bg-white border border-[#CBD5E1] hover:border-black focus:border-black rounded-xl px-3.5 py-2.5 text-xs font-black text-black shadow-xs transition-all focus:outline-none focus:ring-2 focus:ring-[#BAE6FD]/60"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-black text-black mb-1">Collaboration Scope</label>
-              <select
-                value={collabType}
-                onChange={(e) => setCollabType(e.target.value)}
-                className="w-full bg-white border border-[#CBD5E1] rounded-xl px-3 py-2 text-sm font-extrabold text-black cursor-pointer"
-              >
-                <option value="UGC & Paid Showcase">UGC &amp; Paid Showcase</option>
-                <option value="Brand Ambassador Program">Brand Ambassador Program</option>
-                <option value="Affiliate Partnership">Affiliate Partnership</option>
-                <option value="Sponsored Review">Sponsored Review</option>
-              </select>
+              <label className="block text-xs font-black text-black mb-1.5">Collaboration Scope</label>
+              <div className="relative">
+                <select
+                  value={collabType}
+                  onChange={(e) => setCollabType(e.target.value)}
+                  className="w-full appearance-none bg-[#F8FAFC] hover:bg-white focus:bg-white border border-[#CBD5E1] hover:border-black focus:border-black rounded-xl px-3.5 py-2.5 pr-10 text-xs font-black text-black cursor-pointer shadow-xs transition-all focus:outline-none focus:ring-2 focus:ring-[#BAE6FD]/60"
+                >
+                  <option value="UGC & Paid Showcase" className="bg-white text-black font-bold">UGC &amp; Paid Showcase</option>
+                  <option value="Brand Ambassador Program" className="bg-white text-black font-bold">Brand Ambassador Program</option>
+                  <option value="Affiliate Partnership" className="bg-white text-black font-bold">Affiliate Partnership</option>
+                  <option value="Sponsored Review" className="bg-white text-black font-bold">Sponsored Review</option>
+                </select>
+                <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 flex items-center">
+                  <ChevronDown className="w-4 h-4 text-black stroke-[2.5]" />
+                </div>
+              </div>
             </div>
           </div>
 
