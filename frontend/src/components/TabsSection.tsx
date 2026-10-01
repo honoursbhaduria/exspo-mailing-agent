@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Search, Download, Sparkles, Send, ExternalLink, Loader2 } from 'lucide-react';
 import AnimatedOutlineNavbar, { type TabItem } from './ui/AnimatedOutlineNavbar';
 import SlideHoverButton from './ui/SlideHoverButton';
+import Pagination from './ui/Pagination';
 import { api, type Influencer, type PersonalizedPitch, type OutreachRecord, type TrackerStats } from '../services/api';
 
 const TABS: TabItem[] = [
@@ -15,10 +16,12 @@ const TABS: TabItem[] = [
 export const TabsSection: React.FC = () => {
   const [activeTab, setActiveTab] = useState('records');
 
-  // Datasets
+  // Datasets & Tab 1 Pagination
   const [influencers, setInfluencers] = useState<Influencer[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [recordsPage, setRecordsPage] = useState(1);
+  const [recordsPerPage, setRecordsPerPage] = useState(10);
 
   // Classification Tab State
   const [minFollowers, setMinFollowers] = useState(5000);
@@ -37,9 +40,11 @@ export const TabsSection: React.FC = () => {
   const [generating, setGenerating] = useState(false);
   const [activePitch, setActivePitch] = useState<PersonalizedPitch | null>(null);
 
-  // Outreach Tracker State
+  // Outreach Tracker State & Pagination
   const [trackerStats, setTrackerStats] = useState<TrackerStats>({ total_logged: 173, successfully_sent: 128, skipped: 45 });
   const [outreachLogs, setOutreachLogs] = useState<OutreachRecord[]>([]);
+  const [auditPage, setAuditPage] = useState(1);
+  const [auditPerPage, setAuditPerPage] = useState(10);
 
   // Load Initial Datasets
   useEffect(() => {
@@ -130,12 +135,26 @@ export const TabsSection: React.FC = () => {
     document.body.removeChild(link);
   };
 
-  // Filtered raw records
+  // Filtered raw records & Tab 1 Pagination
   const displayRecords = influencers.filter(
     (i) =>
       i.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       i.handle?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       i.location?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+  const totalRecordsPages = Math.max(1, Math.ceil(displayRecords.length / recordsPerPage));
+  const safeRecordsPage = Math.min(recordsPage, totalRecordsPages);
+  const paginatedRecords = displayRecords.slice(
+    (safeRecordsPage - 1) * recordsPerPage,
+    safeRecordsPage * recordsPerPage
+  );
+
+  // Tab 5 Outreach Tracker Pagination
+  const totalAuditPages = Math.max(1, Math.ceil(outreachLogs.length / auditPerPage));
+  const safeAuditPage = Math.min(auditPage, totalAuditPages);
+  const paginatedAuditLogs = outreachLogs.slice(
+    (safeAuditPage - 1) * auditPerPage,
+    safeAuditPage * auditPerPage
   );
 
   // Current selected creator for enrichment
@@ -147,7 +166,7 @@ export const TabsSection: React.FC = () => {
       <AnimatedOutlineNavbar items={TABS} activeId={activeTab} onSelect={setActiveTab} />
 
       {/* =========================================================================
-          TAB 1: DISCOVERED RECORDS
+          TAB 1: DISCOVERED RECORDS (PAGINATED WITH CSV EXPORT)
           ========================================================================= */}
       {activeTab === 'records' && (
         <div className="bg-white border border-[#E2E8F0] rounded-[20px] p-6 shadow-[0_8px_24px_-6px_rgba(0,0,0,0.04)]">
@@ -155,7 +174,7 @@ export const TabsSection: React.FC = () => {
             <div>
               <h2 className="text-xl font-black text-black">Discovered Micro-Influencer Records</h2>
               <p className="text-xs font-semibold text-[#333333] mt-0.5">
-                Authentic creator dataset scraped via Scrapy engine
+                Authentic creator dataset scraped via Scrapy engine (Paginated with CSV export)
               </p>
             </div>
             <div className="flex gap-3 w-full md:w-auto">
@@ -165,7 +184,10 @@ export const TabsSection: React.FC = () => {
                   type="text"
                   placeholder="Filter records by name, handle, location..."
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
+                    setRecordsPage(1);
+                  }}
                   className="w-full bg-[#F8FAFC] border border-[#CBD5E1] rounded-xl pl-9 pr-3 py-2 text-sm font-bold text-black focus:outline-none focus:border-[#0284C7]"
                 />
               </div>
@@ -183,50 +205,72 @@ export const TabsSection: React.FC = () => {
               <Loader2 className="w-6 h-6 animate-spin text-black" />
             </div>
           ) : (
-            <div className="overflow-x-auto border border-[#E2E8F0] rounded-xl">
-              <table className="w-full text-left text-sm border-collapse">
-                <thead>
-                  <tr className="bg-[#F8FAFC] border-b border-[#E2E8F0] text-black font-black text-xs uppercase tracking-wider">
-                    <th className="py-3 px-4">Creator</th>
-                    <th className="py-3 px-4">Platform</th>
-                    <th className="py-3 px-4">Followers</th>
-                    <th className="py-3 px-4">Engagement</th>
-                    <th className="py-3 px-4">Niche</th>
-                    <th className="py-3 px-4">Location</th>
-                    <th className="py-3 px-4 text-right">Profile</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-[#E2E8F0] bg-white font-medium text-black">
-                  {displayRecords.map((item, idx) => (
-                    <tr key={idx} className="hover:bg-[#F0F9FF] transition-colors">
-                      <td className="py-3 px-4">
-                        <div className="font-extrabold text-black">{item.name}</div>
-                        <div className="font-mono text-xs font-bold text-[#333333]">@{item.handle}</div>
-                      </td>
-                      <td className="py-3 px-4 font-bold text-black">{item.platform}</td>
-                      <td className="py-3 px-4 font-mono font-black text-black">
-                        {Number(item.follower_count).toLocaleString()}
-                      </td>
-                      <td className="py-3 px-4 font-mono font-black text-black">
-                        {Number(item.engagement_rate).toFixed(1)}%
-                      </td>
-                      <td className="py-3 px-4 font-bold text-black">{item.niche}</td>
-                      <td className="py-3 px-4 font-semibold text-[#333333]">{item.location}</td>
-                      <td className="py-3 px-4 text-right">
-                        <a
-                          href={item.profile_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1 font-bold text-xs text-black hover:underline"
-                        >
-                          View <ExternalLink className="w-3 h-3 text-black" />
-                        </a>
-                      </td>
+            <>
+              <div className="overflow-x-auto border border-[#E2E8F0] rounded-xl">
+                <table className="w-full text-left text-sm border-collapse">
+                  <thead>
+                    <tr className="bg-[#F8FAFC] border-b border-[#E2E8F0] text-black font-black text-xs uppercase tracking-wider">
+                      <th className="py-3 px-4">Creator</th>
+                      <th className="py-3 px-4">Platform</th>
+                      <th className="py-3 px-4">Followers</th>
+                      <th className="py-3 px-4">Engagement</th>
+                      <th className="py-3 px-4">Niche</th>
+                      <th className="py-3 px-4">Location</th>
+                      <th className="py-3 px-4 text-right">Profile</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody className="divide-y divide-[#E2E8F0] bg-white font-medium text-black">
+                    {paginatedRecords.length > 0 ? (
+                      paginatedRecords.map((item, idx) => (
+                        <tr key={idx} className="hover:bg-[#F0F9FF] transition-colors">
+                          <td className="py-3 px-4">
+                            <div className="font-extrabold text-black">{item.name}</div>
+                            <div className="font-mono text-xs font-bold text-[#333333]">@{item.handle}</div>
+                          </td>
+                          <td className="py-3 px-4 font-bold text-black">{item.platform}</td>
+                          <td className="py-3 px-4 font-mono font-black text-black">
+                            {Number(item.follower_count).toLocaleString()}
+                          </td>
+                          <td className="py-3 px-4 font-mono font-black text-black">
+                            {Number(item.engagement_rate).toFixed(1)}%
+                          </td>
+                          <td className="py-3 px-4 font-bold text-black">{item.niche}</td>
+                          <td className="py-3 px-4 font-semibold text-[#333333]">{item.location}</td>
+                          <td className="py-3 px-4 text-right">
+                            <a
+                              href={item.profile_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1 font-bold text-xs text-black hover:underline"
+                            >
+                              View <ExternalLink className="w-3 h-3 text-black" />
+                            </a>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan={7} className="py-8 text-center text-sm font-bold text-black">
+                          No creator records found matching &ldquo;{searchQuery}&rdquo;.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Tab 1 Pagination Controls */}
+              <Pagination
+                currentPage={safeRecordsPage}
+                totalPages={totalRecordsPages}
+                pageSize={recordsPerPage}
+                totalItems={displayRecords.length}
+                pageSizeOptions={[10, 20, 50, 100]}
+                onPageChange={setRecordsPage}
+                onPageSizeChange={setRecordsPerPage}
+                itemLabel="creators"
+              />
+            </>
           )}
         </div>
       )}
@@ -620,28 +664,48 @@ export const TabsSection: React.FC = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#E2E8F0] bg-white font-medium text-black">
-                {outreachLogs.slice(0, 15).map((log, idx) => (
-                  <tr key={idx} className="hover:bg-[#F0F9FF] transition-colors">
-                    <td className="py-3 px-4">
-                      <div className="font-extrabold text-black">{log.influencer}</div>
-                      <div className="font-mono text-xs font-bold text-[#333333]">@{log.handle}</div>
-                    </td>
-                    <td className="py-3 px-4 font-mono font-bold text-black">{log.email}</td>
-                    <td className="py-3 px-4 font-bold text-black">{log.channel}</td>
-                    <td className="py-3 px-4">
-                      <span className="inline-block bg-[#DCFCE7] border border-[#86EFAC] text-black text-xs font-black px-2 py-0.5 rounded-full">
-                        {log.status}
-                      </span>
-                    </td>
-                    <td className="py-3 px-4 font-mono text-xs font-bold text-black">{log.delivery_id}</td>
-                    <td className="py-3 px-4 text-right font-mono text-xs font-semibold text-[#333333]">
-                      {log.date}
+                {paginatedAuditLogs.length > 0 ? (
+                  paginatedAuditLogs.map((log, idx) => (
+                    <tr key={idx} className="hover:bg-[#F0F9FF] transition-colors">
+                      <td className="py-3 px-4">
+                        <div className="font-extrabold text-black">{log.influencer}</div>
+                        <div className="font-mono text-xs font-bold text-[#333333]">@{log.handle}</div>
+                      </td>
+                      <td className="py-3 px-4 font-mono font-bold text-black">{log.email}</td>
+                      <td className="py-3 px-4 font-bold text-black">{log.channel}</td>
+                      <td className="py-3 px-4">
+                        <span className="inline-block bg-[#DCFCE7] border border-[#86EFAC] text-black text-xs font-black px-2 py-0.5 rounded-full">
+                          {log.status}
+                        </span>
+                      </td>
+                      <td className="py-3 px-4 font-mono text-xs font-bold text-black">{log.delivery_id}</td>
+                      <td className="py-3 px-4 text-right font-mono text-xs font-semibold text-[#333333]">
+                        {log.date}
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={6} className="py-8 text-center text-sm font-bold text-black">
+                      No audit records available.
                     </td>
                   </tr>
-                ))}
+                )}
               </tbody>
             </table>
           </div>
+
+          {/* Tab 5 Pagination Controls */}
+          <Pagination
+            currentPage={safeAuditPage}
+            totalPages={totalAuditPages}
+            pageSize={auditPerPage}
+            totalItems={outreachLogs.length}
+            pageSizeOptions={[10, 20, 50]}
+            onPageChange={setAuditPage}
+            onPageSizeChange={setAuditPerPage}
+            itemLabel="audit records"
+          />
         </div>
       )}
     </div>

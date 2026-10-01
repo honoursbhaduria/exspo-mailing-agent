@@ -1,5 +1,6 @@
 import streamlit as st
 import os
+import math
 import pandas as pd
 from pathlib import Path
 
@@ -132,8 +133,27 @@ with tab_data:
                 raw_df["location"].str.contains(q, case=False, na=False)
             ]
 
+        # Pagination controls
+        total_items = len(display_df)
+        c_size, c_page, c_info = st.columns([1, 1, 2])
+        with c_size:
+            page_size = st.selectbox("Per page", [10, 20, 50], index=0, key="t1_page_size")
+        total_pages = max(1, math.ceil(total_items / page_size))
+        with c_page:
+            current_page = st.number_input("Page", min_value=1, max_value=total_pages, value=1, step=1, key="t1_page_num")
+        with c_info:
+            start_idx = (current_page - 1) * page_size
+            end_idx = min(start_idx + page_size, total_items)
+            st.markdown(
+                f"<div style='margin-top: 28px; font-weight: 800; font-size: 13px; color: #000000;'>"
+                f"Showing {start_idx + 1 if total_items > 0 else 0} to {end_idx} of {total_items} creators (Page {current_page} of {total_pages})"
+                f"</div>",
+                unsafe_allow_html=True
+            )
+
+        paginated_df = display_df.iloc[start_idx:end_idx]
         st.dataframe(
-            display_df[["name", "handle", "platform", "follower_count", "engagement_rate", "niche", "location", "profile_url"]],
+            paginated_df[["name", "handle", "platform", "follower_count", "engagement_rate", "niche", "location", "profile_url"]],
             use_container_width=True,
             height=340
         )
