@@ -42,7 +42,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Inject Clean Glassmorphic Theme (Pure Light, No Darkness, Bricolage Grotesque & Iosevka Charon)
+# Inject Clean Glassmorphic Theme (Pure Light, Zero Darkness)
 st.markdown(get_theme_css(), unsafe_allow_html=True)
 
 # Load Datasets
@@ -55,7 +55,7 @@ proc_df = pd.read_csv(PROCESSED_DATA_PATH) if PROCESSED_DATA_PATH.exists() else 
 st.markdown(render_hero_header(), unsafe_allow_html=True)
 
 # -------------------------------------------------------------
-# 2. TRIPLE GLASSMORPHIC CARD SHOWCASE (LIGHT & FROSTED)
+# 2. TRIPLE CARD SHOWCASE (CRISP WHITE, NO DARKNESS, NO EMPTY RECTANGLES)
 # -------------------------------------------------------------
 col_left, col_center, col_right = st.columns([1, 1.85, 1.25])
 
@@ -64,38 +64,37 @@ with col_left:
     total_val = len(raw_df) if not raw_df.empty else 65
     st.markdown(render_left_showcase_card(total_count=total_val, avg_followers="35K", avg_reach="11K"), unsafe_allow_html=True)
 
-# Center Card: Active Control Deck
+# Center Card: Active Control Deck (Using native container with border to eliminate disconnected empty boxes)
 with col_center:
-    st.markdown('<div class="glass-panel">', unsafe_allow_html=True)
-    st.markdown(render_center_topbar(), unsafe_allow_html=True)
+    with st.container(border=True):
+        st.markdown(render_center_topbar(), unsafe_allow_html=True)
 
-    # Interactive Selectors (Pure Light Dropdowns, No Darkness)
-    c_in1, c_in2 = st.columns(2)
-    with c_in1:
-        sel_niche = st.selectbox("Category / Niche", AVAILABLE_NICHES, index=0, key="center_niche")
-        sel_geo = st.selectbox("Audience Geography", ["United States (US)", "United Kingdom (GB)", "Canada (CA)", "Global"], index=0)
-    with c_in2:
-        sel_plat = st.selectbox("Target Platform", ["Instagram & TikTok", "Instagram Only", "TikTok Only", "YouTube"], index=0)
-        sel_tier = st.selectbox("Influencer Scale", ["Micro-Influencers (5k - 100k)", "Nano-Influencers (1k - 5k)", "Macro-Influencers (> 100k)"], index=0)
+        # Interactive Selectors (Pure White Dropdowns, Crisp Text, Zero Darkness)
+        c_in1, c_in2 = st.columns(2)
+        with c_in1:
+            sel_niche = st.selectbox("Category / Niche", AVAILABLE_NICHES, index=0, key="center_niche")
+            sel_geo = st.selectbox("Audience Geography", ["United States (US)", "United Kingdom (GB)", "Canada (CA)", "Global"], index=0)
+        with c_in2:
+            sel_plat = st.selectbox("Target Platform", ["Instagram & TikTok", "Instagram Only", "TikTok Only", "YouTube"], index=0)
+            sel_tier = st.selectbox("Influencer Scale", ["Micro-Influencers (5k - 100k)", "Nano-Influencers (1k - 5k)", "Macro-Influencers (> 100k)"], index=0)
 
-    c_btn1, c_btn2 = st.columns([1.5, 1])
-    with c_btn1:
-        if st.button("EXECUTE SCRAPER PIPELINE", use_container_width=True):
-            with st.spinner("Scrapy asynchronous crawler executing..."):
-                try:
-                    df_res = run_discovery_cli(niche=sel_niche, limit=65)
-                    st.success(f"Discovered {len(df_res)} authentic creator profiles.")
-                    st.rerun()
-                except Exception:
-                    st.info("Pipeline completed. Displaying active dataset.")
-    with c_btn2:
-        if st.button("RESET PARAMETERS", use_container_width=True):
-            st.rerun()
+        c_btn1, c_btn2 = st.columns([1.5, 1])
+        with c_btn1:
+            if st.button("EXECUTE SCRAPER PIPELINE", type="primary", use_container_width=True):
+                with st.spinner("Scrapy asynchronous crawler executing..."):
+                    try:
+                        df_res = run_discovery_cli(niche=sel_niche, limit=65)
+                        st.success(f"Discovered {len(df_res)} authentic creator profiles.")
+                        st.rerun()
+                    except Exception:
+                        st.info("Pipeline completed. Displaying active dataset.")
+        with c_btn2:
+            if st.button("RESET PARAMETERS", use_container_width=True):
+                st.rerun()
 
-    # Three Pastel Stat Tiles at bottom of center card (lavender, slate, sage)
-    passed_val = len(proc_df[proc_df["qualification_status"]=="PASSED"]) if not proc_df.empty else 29
-    st.markdown(render_center_stat_tiles(total_count=total_val, passed_count=passed_val, sent_count=173), unsafe_allow_html=True)
-    st.markdown('</div>', unsafe_allow_html=True)
+        # Three Pastel Stat Tiles at bottom of center card (lavender, slate, sage)
+        passed_val = len(proc_df[proc_df["qualification_status"]=="PASSED"]) if not proc_df.empty else 29
+        st.markdown(render_center_stat_tiles(total_count=total_val, passed_count=passed_val, sent_count=173), unsafe_allow_html=True)
 
 # Right Card: Feed & Live Records
 with col_right:
@@ -104,7 +103,7 @@ with col_right:
 st.markdown("<div style='height: 28px;'></div>", unsafe_allow_html=True)
 
 # -------------------------------------------------------------
-# 3. MODULAR WORKSPACE TABS
+# 3. MODULAR WORKSPACE TABS (CRISP WHITE WITH VIBRANT BLUE ACTIVE PILL)
 # -------------------------------------------------------------
 tab_data, tab_filter, tab_enrich, tab_ai, tab_tracker = st.tabs([
     "Discovered Records",
@@ -186,20 +185,20 @@ with tab_enrich:
         ec1, ec2 = st.columns([1, 2])
         with ec1:
             st.markdown(f"""
-            <div class="glass-panel">
-                <div style="font-size: 1.15rem; font-weight: 700; color: #2D3142;">{c_row['name']}</div>
-                <div class="mono-num" style="font-size: 0.82rem; color: #5B638A; margin-top: 2px;">@{c_row['handle']}</div>
+            <div class="glass-card">
+                <div style="font-size: 1.15rem; font-weight: 700; color: #1E293B;">{c_row['name']}</div>
+                <div class="mono-num" style="font-size: 0.82rem; color: #2563EB; margin-top: 2px;">@{c_row['handle']}</div>
                 <div style="margin-top: 14px;">
-                    <div style="font-size: 0.76rem; color: #646A80;">Followers</div>
+                    <div style="font-size: 0.76rem; color: #64748B;">Followers</div>
                     <div class="stat-number mono-num" style="font-size: 1.25rem;">{int(c_row['follower_count']):,}</div>
                 </div>
                 <div style="margin-top: 10px;">
-                    <div style="font-size: 0.76rem; color: #646A80;">Engagement Rate</div>
+                    <div style="font-size: 0.76rem; color: #64748B;">Engagement Rate</div>
                     <div class="stat-number mono-num" style="font-size: 1.25rem;">{c_row['engagement_rate']:.2f}%</div>
                 </div>
                 <div style="margin-top: 10px;">
-                    <div style="font-size: 0.76rem; color: #646A80;">Contact Email</div>
-                    <div class="mono-num" style="font-size: 0.85rem; color: #2D3142; margin-top: 2px;">
+                    <div style="font-size: 0.76rem; color: #64748B;">Contact Email</div>
+                    <div class="mono-num" style="font-size: 0.85rem; color: #1E293B; margin-top: 2px;">
                         {c_row.get('contact_email', 'Not Found')}
                     </div>
                 </div>
@@ -207,17 +206,17 @@ with tab_enrich:
             """, unsafe_allow_html=True)
         with ec2:
             st.markdown(f"""
-            <div class="glass-panel">
-                <div style="font-size: 0.95rem; font-weight: 700; color: #2D3142; margin-bottom: 8px;">Content Themes & Bio Context</div>
-                <p style="font-size: 0.88rem; color: #5A5F75; line-height: 1.5; margin: 0 0 12px 0;">{c_row.get('bio', 'Verified creator in Fashion & Beauty niche.')}</p>
-                <div style="font-size: 0.8rem; font-weight: 600; color: #2D3142;">Identified Themes:</div>
-                <div class="mono-num" style="font-size: 0.82rem; color: #5B638A; margin-top: 3px;">{c_row.get('content_themes', 'Styling, UGC')}</div>
-                <div style="border-top: 1px solid rgba(222, 227, 238, 0.7); margin: 14px 0 10px;"></div>
-                <div style="font-size: 0.8rem; font-weight: 600; color: #2D3142; margin-bottom: 6px;">Audience Demographics:</div>
-                <div style="display: flex; gap: 20px; font-size: 0.82rem; color: #5A5F75;">
-                    <div>Age: <span class="mono-num" style="color: #2D3142;">{c_row.get('audience_age', '18-34')}</span></div>
-                    <div>Gender: <span class="mono-num" style="color: #2D3142;">{c_row.get('audience_gender', 'Female (78%)')}</span></div>
-                    <div>Geography: <span class="mono-num" style="color: #2D3142;">{c_row.get('audience_geography', 'US/Global')}</span></div>
+            <div class="glass-card">
+                <div style="font-size: 0.95rem; font-weight: 700; color: #1E293B; margin-bottom: 8px;">Content Themes & Bio Context</div>
+                <p style="font-size: 0.88rem; color: #475569; line-height: 1.5; margin: 0 0 12px 0;">{c_row.get('bio', 'Verified creator in Fashion & Beauty niche.')}</p>
+                <div style="font-size: 0.8rem; font-weight: 600; color: #1E293B;">Identified Themes:</div>
+                <div class="mono-num" style="font-size: 0.82rem; color: #2563EB; margin-top: 3px;">{c_row.get('content_themes', 'Styling, UGC')}</div>
+                <div style="border-top: 1px solid #E2E8F0; margin: 14px 0 10px;"></div>
+                <div style="font-size: 0.8rem; font-weight: 600; color: #1E293B; margin-bottom: 6px;">Audience Demographics:</div>
+                <div style="display: flex; gap: 20px; font-size: 0.82rem; color: #475569;">
+                    <div>Age: <span class="mono-num" style="color: #1E293B;">{c_row.get('audience_age', '18-34')}</span></div>
+                    <div>Gender: <span class="mono-num" style="color: #1E293B;">{c_row.get('audience_gender', 'Female (78%)')}</span></div>
+                    <div>Geography: <span class="mono-num" style="color: #1E293B;">{c_row.get('audience_geography', 'US/Global')}</span></div>
                 </div>
             </div>
             """, unsafe_allow_html=True)
@@ -255,31 +254,29 @@ with tab_ai:
                 pitch = st.session_state["active_pitch"]
                 c_em, c_dm = st.columns(2)
                 with c_em:
-                    st.markdown("""
-                    <div class="glass-panel">
+                    with st.container(border=True):
+                        st.markdown("""
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                            <span style="font-weight: 700; color: #2D3142;">Email Collaboration Pitch</span>
+                            <span style="font-weight: 700; color: #1E293B; font-size: 0.95rem;">Email Collaboration Pitch</span>
                             <span class="badge-pill-neutral mono-num">60-90 words</span>
                         </div>
-                    """, unsafe_allow_html=True)
-                    st.text_input("Subject", value=pitch['subject'], disabled=True)
-                    st.text_area("Body Text", value=pitch['email_pitch'], height=130, disabled=True)
-                    st.caption(f"Calculated word count: {pitch['email_word_count']} words")
-                    st.markdown("</div>", unsafe_allow_html=True)
+                        """, unsafe_allow_html=True)
+                        st.text_input("Subject", value=pitch['subject'], disabled=True)
+                        st.text_area("Body Text", value=pitch['email_pitch'], height=130, disabled=True)
+                        st.caption(f"Calculated word count: {pitch['email_word_count']} words")
 
                 with c_dm:
-                    st.markdown("""
-                    <div class="glass-panel">
+                    with st.container(border=True):
+                        st.markdown("""
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                            <span style="font-weight: 700; color: #2D3142;">Instagram DM</span>
+                            <span style="font-weight: 700; color: #1E293B; font-size: 0.95rem;">Instagram DM</span>
                             <span class="badge-pill-neutral mono-num">15-30 words</span>
                         </div>
-                    """, unsafe_allow_html=True)
-                    st.text_input("Recipient", value=f"@{chosen_handle}", disabled=True)
-                    st.text_area("Direct Message", value=pitch['instagram_dm'], height=130, disabled=True)
-                    st.caption(f"Calculated word count: {pitch['dm_word_count']} words")
-                    st.link_button("Open Creator Direct Message", f"https://ig.me/m/{chosen_handle}", use_container_width=True)
-                    st.markdown("</div>", unsafe_allow_html=True)
+                        """, unsafe_allow_html=True)
+                        st.text_input("Recipient", value=f"@{chosen_handle}", disabled=True)
+                        st.text_area("Direct Message", value=pitch['instagram_dm'], height=130, disabled=True)
+                        st.caption(f"Calculated word count: {pitch['dm_word_count']} words")
+                        st.link_button("Open Creator Direct Message", f"https://ig.me/m/{chosen_handle}", use_container_width=True)
 
 # === TAB 5: OUTREACH AUDIT LOG ===
 with tab_tracker:
@@ -290,14 +287,14 @@ with tab_tracker:
 
     m1, m2, m3, m4 = st.columns(4)
     with m1:
-        st.markdown(f'<div class="stat-tile-muted"><div class="stat-number mono-num">{stats["total_logged"]}</div><div class="stat-label">Total Outreached</div></div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="stat-tile purple"><div class="stat-tile-val">{stats["total_logged"]}</div><div class="stat-tile-lbl">Total Outreached</div></div>', unsafe_allow_html=True)
     with m2:
-        st.markdown(f'<div class="stat-tile-muted sage"><div class="stat-number mono-num">{stats["successfully_sent"]}</div><div class="stat-label">Delivered</div></div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="stat-tile blue"><div class="stat-tile-val">{stats["successfully_sent"]}</div><div class="stat-tile-lbl">Delivered</div></div>', unsafe_allow_html=True)
     with m3:
-        st.markdown(f'<div class="stat-tile-muted lavender"><div class="stat-number mono-num">{stats["skipped"]}</div><div class="stat-label">DM Workflow</div></div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="stat-tile pink"><div class="stat-tile-val">{stats["skipped"]}</div><div class="stat-tile-lbl">DM Workflow</div></div>', unsafe_allow_html=True)
     with m4:
         mode_text = "Sandbox Simulator" if SIMULATION_MODE else "Live Resend"
-        st.markdown(f'<div class="stat-tile-muted slate"><div class="stat-number mono-num" style="font-size: 1.05rem;">{mode_text}</div><div class="stat-label">Delivery Channel</div></div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="stat-tile purple"><div class="stat-tile-val" style="font-size: 1.05rem;">{mode_text}</div><div class="stat-tile-lbl">Delivery Channel</div></div>', unsafe_allow_html=True)
 
     st.markdown("<div style='height: 12px;'></div>", unsafe_allow_html=True)
     if not log_df.empty:
@@ -316,11 +313,11 @@ with tab_tracker:
 # -------------------------------------------------------------
 st.markdown("<div style='height: 30px;'></div>", unsafe_allow_html=True)
 st.markdown("""
-<div class="glass-panel" style="padding: 24px; margin-bottom: 24px;">
+<div class="glass-card" style="padding: 24px; margin-bottom: 24px;">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
         <div>
-            <div style="font-size: 1.15rem; font-weight: 700; color: #2D3142;">Global Creator Outreach Radar</div>
-            <div style="font-size: 0.84rem; color: #646A80; margin-top: 2px;">
+            <div style="font-size: 1.15rem; font-weight: 700; color: #1E293B;">Global Creator Outreach Radar</div>
+            <div style="font-size: 0.84rem; color: #64748B; margin-top: 2px;">
                 Interactive 3D WebGL Globe rendering active influencer hubs across North America, Europe, Asia, and Oceania.
             </div>
         </div>
