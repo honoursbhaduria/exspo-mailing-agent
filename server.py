@@ -208,6 +208,64 @@ def get_outreach_tracker():
         "logs": log_df.to_dict(orient="records")
     }
 
+CACHED_COUNTRIES = []
+
+@app.get("/api/geo/countries")
+def get_countries():
+    """
+    Returns full list of all existing countries in the world using open-source API
+    (https://countriesnow.space/api/v0.1/countries/iso) with fallback.
+    """
+    global CACHED_COUNTRIES
+    if CACHED_COUNTRIES:
+        return {"total": len(CACHED_COUNTRIES), "countries": CACHED_COUNTRIES}
+
+    import requests
+    default_countries = [
+        "Global (All Regions)",
+        "United States (US)",
+        "United Kingdom (GB)",
+        "Canada (CA)",
+        "Australia (AU)",
+        "Germany (DE)",
+        "France (FR)",
+        "India (IN)",
+        "Italy (IT)",
+        "Spain (ES)",
+        "Japan (JP)",
+        "Brazil (BR)",
+        "Mexico (MX)",
+        "Netherlands (NL)",
+        "United Arab Emirates (AE)",
+        "Singapore (SG)"
+    ]
+
+    try:
+        res = requests.get("https://countriesnow.space/api/v0.1/countries/iso", timeout=4)
+        if res.ok:
+            data = res.json().get("data", [])
+            fetched = []
+            for item in data:
+                c_name = item.get("name")
+                c_iso = item.get("Iso2")
+                if c_name:
+                    label = f"{c_name} ({c_iso})" if c_iso else c_name
+                    fetched.append(label)
+            if fetched:
+                fetched.sort()
+                top_priority = ["United States (US)", "United Kingdom (GB)", "Canada (CA)", "Australia (AU)", "Germany (DE)", "France (FR)", "India (IN)"]
+                for p in reversed(top_priority):
+                    if p in fetched:
+                        fetched.remove(p)
+                    fetched.insert(0, p)
+                CACHED_COUNTRIES = ["Global (All Regions)"] + fetched
+                return {"total": len(CACHED_COUNTRIES), "countries": CACHED_COUNTRIES}
+    except Exception as e:
+        print(f"Notice: countriesnow API fallback engaged: {e}")
+
+    CACHED_COUNTRIES = default_countries
+    return {"total": len(CACHED_COUNTRIES), "countries": CACHED_COUNTRIES}
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("server:app", host="0.0.0.0", port=8000, reload=False)

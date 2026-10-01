@@ -9,8 +9,10 @@ import { api } from './services/api';
 
 export const App: React.FC = () => {
   const [totalCount, setTotalCount] = useState(65);
-  const [passedCount, setPassedCount] = useState(29);
-  const [sentCount, setSentCount] = useState(173);
+  const [passedCount, setPassedCount] = useState(21);
+  const [sentCount, setSentCount] = useState(15);
+  const [mailCount, setMailCount] = useState(9);
+  const [dmCount, setDmCount] = useState(6);
   const [avgFollowers, setAvgFollowers] = useState('35K');
   const [avgReach, setAvgReach] = useState('11K');
   const [topCreators, setTopCreators] = useState<CreatorHighlight[]>([]);
@@ -23,6 +25,8 @@ export const App: React.FC = () => {
 
       const trackerRes = await api.getTrackerStats();
       setSentCount(trackerRes.stats.total_logged);
+      if (trackerRes.stats.mail_sent !== undefined) setMailCount(trackerRes.stats.mail_sent);
+      if (trackerRes.stats.dm_sent !== undefined) setDmCount(trackerRes.stats.dm_sent);
 
       const filterRes = await api.filterInfluencers({
         min_followers: 5000,
@@ -111,6 +115,8 @@ export const App: React.FC = () => {
             totalCount={totalCount}
             passedCount={passedCount}
             sentCount={sentCount}
+            mailCount={mailCount}
+            dmCount={dmCount}
             onRefresh={refreshCounts}
           />
         </div>

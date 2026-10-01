@@ -98,9 +98,16 @@ class OutreachTracker:
         sent = len(self.log_df[self.log_df["sent"] == True])
         skipped = len(self.log_df[self.log_df["status"].str.contains("SKIPPED", na=False)])
         failed = len(self.log_df[self.log_df["status"].str.contains("FAILED", na=False)])
+
+        channels = self.log_df["channel"].fillna("").astype(str).str.lower()
+        mail_sent = len(self.log_df[(self.log_df["sent"] == True) & (channels.str.contains("resend") | channels.str.contains("email"))])
+        dm_sent = len(self.log_df[(self.log_df["sent"] == True) & (channels.str.contains("instagram") | channels.str.contains("dm"))])
+
         return {
             "total_logged": total,
             "successfully_sent": sent,
+            "mail_sent": mail_sent,
+            "dm_sent": dm_sent,
             "skipped": skipped,
             "failed": failed
         }

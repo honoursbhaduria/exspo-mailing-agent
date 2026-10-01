@@ -45,12 +45,20 @@ export interface OutreachRecord {
 export interface TrackerStats {
   total_logged: number;
   successfully_sent: number;
+  mail_sent?: number;
+  dm_sent?: number;
   skipped: number;
 }
 
 const API_BASE = '/api';
 
 export const api = {
+  async getCountries(): Promise<{ total: number; countries: string[] }> {
+    const res = await fetch(`${API_BASE}/geo/countries`);
+    if (!res.ok) throw new Error('Failed to fetch countries list');
+    return res.json();
+  },
+
   async getRawInfluencers(limit = 100): Promise<{ total: number; influencers: Influencer[] }> {
     const res = await fetch(`${API_BASE}/influencers/raw?limit=${limit}`);
     if (!res.ok) throw new Error('Failed to fetch discovered influencers');

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Download, Sparkles, Send, ExternalLink, Loader2, ChevronDown, CheckCircle2 } from 'lucide-react';
+import { Search, Download, Sparkles, Send, ExternalLink, Loader2, ChevronDown, CheckCircle2, Mail, MessageSquare } from 'lucide-react';
 import AnimatedOutlineNavbar, { type TabItem } from './ui/AnimatedOutlineNavbar';
 import SlideHoverButton from './ui/SlideHoverButton';
 import Pagination from './ui/Pagination';
@@ -737,34 +737,51 @@ export const TabsSection: React.FC = () => {
             </button>
           </div>
 
-          {/* 4 Stats Cards */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-            <div className="bg-[#F8FAFC] border border-[#BAE6FD] rounded-xl p-3.5">
-              <div className="text-2xl font-black text-black font-mono">{trackerStats.total_logged}</div>
-              <div className="text-xs font-bold text-[#333333] mt-1">Total Outreached</div>
-            </div>
-            <div className="bg-[#F8FAFC] border border-[#BAE6FD] rounded-xl p-3.5">
-              <div className="text-2xl font-black text-black font-mono">{trackerStats.successfully_sent}</div>
-              <div className="text-xs font-bold text-[#333333] mt-1">Delivered</div>
-            </div>
-            <div className="bg-[#F8FAFC] border border-[#BAE6FD] rounded-xl p-3.5">
-              <div className="text-2xl font-black text-black font-mono">{trackerStats.skipped}</div>
-              <div className="text-xs font-bold text-[#333333] mt-1">DM Workflow</div>
-            </div>
-            <div className="bg-[#F8FAFC] border border-[#BAE6FD] rounded-xl p-3.5">
-              <div className="text-base font-black text-black font-mono mt-1">Sandbox Simulator</div>
-              <div className="text-xs font-bold text-[#333333] mt-1">Delivery Channel</div>
-            </div>
-          </div>
+          {/* 4 Stats Cards Breaking Down Delivery Process (Mail vs DM) */}
+          {(() => {
+            const mailDelivered = outreachLogs.filter(
+              (l) => l.channel.toLowerCase().includes('resend') || l.channel.toLowerCase().includes('email')
+            ).length;
+            const dmDelivered = outreachLogs.filter(
+              (l) => l.channel.toLowerCase().includes('instagram') || l.channel.toLowerCase().includes('dm')
+            ).length;
 
-          {/* Logs Table */}
+            return (
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                <div className="bg-[#F8FAFC] border border-[#BAE6FD] rounded-xl p-3.5">
+                  <div className="text-2xl font-black text-black font-mono">{outreachLogs.length || trackerStats.total_logged}</div>
+                  <div className="text-xs font-bold text-[#333333] mt-1">Total Outreached</div>
+                </div>
+                <div className="bg-[#F8FAFC] border border-[#86EFAC] rounded-xl p-3.5">
+                  <div className="flex items-center gap-1.5">
+                    <Mail className="w-4 h-4 text-black" />
+                    <div className="text-2xl font-black text-black font-mono">{mailDelivered}</div>
+                  </div>
+                  <div className="text-xs font-bold text-[#333333] mt-1">Delivered via Mail (Resend)</div>
+                </div>
+                <div className="bg-[#F8FAFC] border border-[#D8B4FE] rounded-xl p-3.5">
+                  <div className="flex items-center gap-1.5">
+                    <MessageSquare className="w-4 h-4 text-black" />
+                    <div className="text-2xl font-black text-black font-mono">{dmDelivered}</div>
+                  </div>
+                  <div className="text-xs font-bold text-[#333333] mt-1">Delivered via Instagram DM</div>
+                </div>
+                <div className="bg-[#F8FAFC] border border-[#BAE6FD] rounded-xl p-3.5">
+                  <div className="text-xs font-black text-black mt-1 uppercase tracking-wider">Multi-Channel Active</div>
+                  <div className="text-[11px] font-bold text-[#333333] mt-1">Resend API + Meta Direct</div>
+                </div>
+              </div>
+            );
+          })()}
+
+          {/* Logs Table with Clear Mail vs DM badges */}
           <div className="overflow-x-auto border border-[#E2E8F0] rounded-xl bg-white shadow-sm">
             <table className="w-full text-left text-sm border-collapse bg-white">
               <thead>
                 <tr className="bg-[#F8FAFC] border-b border-[#E2E8F0] text-black font-black text-xs uppercase tracking-wider">
                   <th className="py-3 px-4">Influencer</th>
                   <th className="py-3 px-4">Email</th>
-                  <th className="py-3 px-4">Channel</th>
+                  <th className="py-3 px-4">Delivery Channel</th>
                   <th className="py-3 px-4">Status</th>
                   <th className="py-3 px-4">Delivery ID</th>
                   <th className="py-3 px-4 text-right">Date</th>
@@ -772,25 +789,58 @@ export const TabsSection: React.FC = () => {
               </thead>
               <tbody className="divide-y divide-[#E2E8F0] bg-white font-medium text-black">
                 {paginatedAuditLogs.length > 0 ? (
-                  paginatedAuditLogs.map((log, idx) => (
-                    <tr key={idx} className="hover:bg-[#F0F9FF] transition-colors">
-                      <td className="py-3 px-4">
-                        <div className="font-extrabold text-black">{log.influencer}</div>
-                        <div className="font-mono text-xs font-bold text-[#333333]">@{log.handle}</div>
-                      </td>
-                      <td className="py-3 px-4 font-mono font-bold text-black">{log.email}</td>
-                      <td className="py-3 px-4 font-bold text-black">{log.channel}</td>
-                      <td className="py-3 px-4">
-                        <span className="inline-block bg-[#DCFCE7] border border-[#86EFAC] text-black text-xs font-black px-2 py-0.5 rounded-full">
-                          {log.status}
-                        </span>
-                      </td>
-                      <td className="py-3 px-4 font-mono text-xs font-bold text-black">{log.delivery_id}</td>
-                      <td className="py-3 px-4 text-right font-mono text-xs font-semibold text-[#333333]">
-                        {log.date}
-                      </td>
-                    </tr>
-                  ))
+                  paginatedAuditLogs.map((log, idx) => {
+                    const isMail =
+                      log.channel.toLowerCase().includes('resend') || log.channel.toLowerCase().includes('email');
+                    return (
+                      <tr key={idx} className="hover:bg-[#F0F9FF] transition-colors">
+                        <td className="py-3 px-4">
+                          <div className="font-extrabold text-black">{log.influencer}</div>
+                          <div className="font-mono text-xs font-bold text-[#333333]">@{log.handle}</div>
+                        </td>
+                        <td className="py-3 px-4 font-mono text-xs font-bold">
+                          {log.email && log.email !== 'Not Found' ? (
+                            <span className="inline-block bg-[#DCFCE7] text-black border border-[#86EFAC] px-2 py-0.5 rounded-md">
+                              {log.email}
+                            </span>
+                          ) : (
+                            <span className="inline-block bg-[#FEE2E2] text-black border border-[#FCA5A5] px-2 py-0.5 rounded-md">
+                              Not Found
+                            </span>
+                          )}
+                        </td>
+                        <td className="py-3 px-4">
+                          {isMail ? (
+                            <span className="inline-flex items-center gap-1.5 bg-[#DCFCE7] text-black border border-[#86EFAC] text-xs font-black px-2.5 py-1 rounded-full whitespace-nowrap">
+                              <Mail className="w-3.5 h-3.5 text-black" /> Mail (Resend API)
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1.5 bg-[#F3E8FF] text-black border border-[#D8B4FE] text-xs font-black px-2.5 py-1 rounded-full whitespace-nowrap">
+                              <MessageSquare className="w-3.5 h-3.5 text-black" /> DM (Instagram Direct)
+                            </span>
+                          )}
+                        </td>
+                        <td className="py-3 px-4">
+                          <span
+                            className={`inline-flex items-center gap-1 border text-xs font-black px-2.5 py-0.5 rounded-full ${
+                              log.status === 'SENT'
+                                ? 'bg-[#DCFCE7] text-black border-[#86EFAC]'
+                                : log.status.includes('MANUALLY')
+                                ? 'bg-[#FEF3C7] text-black border-[#FDE68A]'
+                                : 'bg-[#E0E7FF] text-black border-[#A5B4FC]'
+                            }`}
+                          >
+                            <CheckCircle2 className="w-3 h-3 text-black" />
+                            {log.status}
+                          </span>
+                        </td>
+                        <td className="py-3 px-4 font-mono text-xs font-bold text-black">{log.delivery_id}</td>
+                        <td className="py-3 px-4 text-right font-mono text-xs font-semibold text-[#333333]">
+                          {log.date}
+                        </td>
+                      </tr>
+                    );
+                  })
                 ) : (
                   <tr>
                     <td colSpan={6} className="py-8 text-center text-sm font-bold text-black">
