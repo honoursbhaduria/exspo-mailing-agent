@@ -1,8 +1,10 @@
 import os
 import json
 import re
+from pathlib import Path
 from typing import Dict, Any, Optional
 from config.settings import GEMINI_API_KEY
+from src.personalization.validator import PersonalizationValidator
 
 class OutreachMessageGenerator:
     """
@@ -14,6 +16,7 @@ class OutreachMessageGenerator:
     def __init__(self, api_key: Optional[str] = None):
         self.api_key = api_key or GEMINI_API_KEY
         self.client = None
+        self.prompt_template_path = Path("prompts/personalization.txt")
         if self.api_key:
             try:
                 from google import genai
@@ -23,7 +26,7 @@ class OutreachMessageGenerator:
 
     def generate_messages(self, influencer: Dict[str, Any], brand_name: str = "LumiGlow", collaboration_type: str = "UGC & Sponsored Showcase") -> Dict[str, Any]:
         """
-        Generates personalized Email and Instagram DM messages.
+        Generates personalized Email and Instagram DM messages and validates them.
         """
         name = influencer.get("name", "Creator")
         niche = influencer.get("niche", "Fashion & Beauty")
@@ -36,7 +39,7 @@ class OutreachMessageGenerator:
         # Try LLM generation if Gemini client is initialized
         if self.client:
             try:
-                return self._generate_with_gemini(
+                res = self._generate_with_gemini(
                     name=name,
                     niche=niche,
                     themes=themes,
@@ -47,11 +50,21 @@ class OutreachMessageGenerator:
                     brand_name=brand_name,
                     collaboration_type=collaboration_type
                 )
+                validation = PersonalizationValidator.validate(
+                    email_pitch=res.get("email_pitch", ""),
+                    instagram_dm=res.get("instagram_dm", ""),
+                    creator_name=name,
+                    brand_name=brand_name
+                )
+                res["validation"] = validation
+                if validation["is_valid"]:
+                    return res
+                print(f"Gemini output violated validation rules ({validation['errors']}). Falling back to calibrated engine.")
             except Exception as e:
                 print(f"LLM generation failed: {e}. Falling back to dynamic prompt generator.")
 
         # High-precision dynamic generator (fallback / offline mode)
-        return self._generate_dynamic_fallback(
+        res = self._generate_dynamic_fallback(
             name=name,
             niche=niche,
             themes=themes,
@@ -62,10 +75,44 @@ class OutreachMessageGenerator:
             brand_name=brand_name,
             collaboration_type=collaboration_type
         )
+        res["validation"] = PersonalizationValidator.validate(
+            email_pitch=res.get("email_pitch", ""),
+            instagram_dm=res.get("instagram_dm", ""),
+            creator_name=name,
+            brand_name=brand_name
+        )
+        return res
 
     def _generate_with_gemini(self, **kwargs) -> Dict[str, Any]:
-        prompt = f"""
-You are an expert Influencer Marketing Director for the brand '{kwargs['brand_name']}'.
+        if self.prompt_template_path.exists():
+            try:
+                template_text = self.prompt_template_path.read_text(encoding="utf-8")
+                prompt = template_text.format(**kwargs)
+            except Exception:
+                prompt = self._default_prompt(**kwargs)
+        else:
+            prompt = self._default_prompt(**kwargs)
+
+        response = self.client.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=prompt,
+        )
+        text = response.text.strip()
+        # Clean potential markdown fences
+        if text.startswith("```json"):
+            text = text[7:]
+        if text.startswith("```"):
+            text = text[3:]
+        if text.endswith("```"):
+            text = text[:-3]
+            
+        data = json.loads(text.strip())
+        data["email_word_count"] = len(data.get("email_pitch", "").split())
+        data["dm_word_count"] = len(data.get("instagram_dm", "").split())
+        return data
+
+    def _default_prompt(self, **kwargs) -> str:
+        return f"""You are an expert Influencer Marketing Director for the brand '{kwargs['brand_name']}'.
 Craft two personalized outreach messages for the following micro-influencer:
 
 Creator Name: {kwargs['name']}
@@ -99,23 +146,6 @@ Return ONLY a valid JSON object with the following schema:
     "collaboration_angle": "{kwargs['collaboration_type']}"
 }}
 """
-        response = self.client.models.generate_content(
-            model="gemini-2.5-flash",
-            contents=prompt,
-        )
-        text = response.text.strip()
-        # Clean potential markdown fences
-        if text.startswith("```json"):
-            text = text[7:]
-        if text.startswith("```"):
-            text = text[3:]
-        if text.endswith("```"):
-            text = text[:-3]
-            
-        data = json.loads(text.strip())
-        data["email_word_count"] = len(data.get("email_pitch", "").split())
-        data["dm_word_count"] = len(data.get("instagram_dm", "").split())
-        return data
 
     def _generate_dynamic_fallback(self, **kwargs) -> Dict[str, Any]:
         first_name = kwargs["name"].split()[0]

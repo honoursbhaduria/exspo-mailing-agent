@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Download, Sparkles, Send, ExternalLink, Loader2, ChevronDown } from 'lucide-react';
+import { Search, Download, Sparkles, Send, ExternalLink, Loader2, ChevronDown, CheckCircle2 } from 'lucide-react';
 import AnimatedOutlineNavbar, { type TabItem } from './ui/AnimatedOutlineNavbar';
 import SlideHoverButton from './ui/SlideHoverButton';
 import Pagination from './ui/Pagination';
@@ -576,20 +576,59 @@ export const TabsSection: React.FC = () => {
           {activePitch && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-[#E2E8F0]">
               {/* Email Pitch */}
-              <div className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-2xl p-5">
-                <div className="flex justify-between items-center mb-3">
-                  <span className="font-black text-sm text-black">Email Collaboration Pitch</span>
-                  <span className="bg-white border border-[#CBD5E1] text-[11px] font-mono font-extrabold text-black px-2 py-0.5 rounded-full">
-                    {activePitch.email_word_count} words (Target: 60-90)
-                  </span>
+              <div className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-2xl p-5 flex flex-col justify-between">
+                <div>
+                  <div className="flex justify-between items-center mb-3">
+                    <span className="font-black text-sm text-black">Email Collaboration Pitch</span>
+                    <span
+                      className={`text-[11px] font-mono font-extrabold px-2.5 py-0.5 rounded-full border inline-flex items-center gap-1 ${
+                        activePitch.email_word_count >= 60 && activePitch.email_word_count <= 90
+                          ? 'bg-[#DCFCE7] text-black border-[#86EFAC]'
+                          : 'bg-[#FEE2E2] text-black border-[#FCA5A5]'
+                      }`}
+                    >
+                      <CheckCircle2 className="w-3 h-3 text-black" />
+                      {activePitch.email_word_count} words (Target: 60-90)
+                    </span>
+                  </div>
+                  <div className="text-xs font-bold text-[#333333] mb-1">Subject Line</div>
+                  <div className="bg-white border border-[#CBD5E1] rounded-xl px-3 py-2 text-sm font-bold text-black mb-3">
+                    {activePitch.subject}
+                  </div>
+                  <div className="text-xs font-bold text-[#333333] mb-1">Email Body</div>
+                  <div className="bg-white border border-[#CBD5E1] rounded-xl p-3 text-sm font-medium text-black leading-relaxed whitespace-pre-line">
+                    {activePitch.email_pitch}
+                  </div>
                 </div>
-                <div className="text-xs font-bold text-[#333333] mb-1">Subject Line</div>
-                <div className="bg-white border border-[#CBD5E1] rounded-xl px-3 py-2 text-sm font-bold text-black mb-3">
-                  {activePitch.subject}
-                </div>
-                <div className="text-xs font-bold text-[#333333] mb-1">Email Body</div>
-                <div className="bg-white border border-[#CBD5E1] rounded-xl p-3 text-sm font-medium text-black leading-relaxed whitespace-pre-line">
-                  {activePitch.email_pitch}
+
+                <div className="mt-4 pt-3 border-t border-[#E2E8F0]">
+                  <button
+                    onClick={async () => {
+                      const creator = influencers.find((i) => i.handle === targetCreator);
+                      if (!creator || !creator.contact_email || creator.contact_email === 'Not Found') {
+                        alert('No public contact email available for this creator. Please use the Instagram DM channel.');
+                        return;
+                      }
+                      try {
+                        const res = await api.sendOutreach({
+                          to_email: creator.contact_email,
+                          subject: activePitch.subject,
+                          message_body: activePitch.email_pitch,
+                          recipient_name: creator.name,
+                          handle: creator.handle,
+                          platform: creator.platform,
+                          instagram_dm: activePitch.instagram_dm,
+                        });
+                        alert(`Outreach Result: ${res.status}\n${res.message || 'Delivery ID: ' + res.delivery_id}`);
+                        fetchTracker();
+                      } catch (err: any) {
+                        alert(`Error dispatching email: ${err.message}`);
+                      }
+                    }}
+                    className="w-full inline-flex items-center justify-center gap-2 bg-[#DCFCE7] hover:bg-[#BBF7D0] border border-[#86EFAC] text-black font-extrabold text-xs py-2.5 rounded-xl cursor-pointer transition-all shadow-xs"
+                  >
+                    <Send className="w-3.5 h-3.5 text-black" /> Send Collaboration Pitch (Email)
+                  </button>
                 </div>
               </div>
 
@@ -598,7 +637,14 @@ export const TabsSection: React.FC = () => {
                 <div>
                   <div className="flex justify-between items-center mb-3">
                     <span className="font-black text-sm text-black">Instagram DM</span>
-                    <span className="bg-white border border-[#CBD5E1] text-[11px] font-mono font-extrabold text-black px-2 py-0.5 rounded-full">
+                    <span
+                      className={`text-[11px] font-mono font-extrabold px-2.5 py-0.5 rounded-full border inline-flex items-center gap-1 ${
+                        activePitch.dm_word_count >= 15 && activePitch.dm_word_count <= 30
+                          ? 'bg-[#DCFCE7] text-black border-[#86EFAC]'
+                          : 'bg-[#FEE2E2] text-black border-[#FCA5A5]'
+                      }`}
+                    >
+                      <CheckCircle2 className="w-3 h-3 text-black" />
                       {activePitch.dm_word_count} words (Target: 15-30)
                     </span>
                   </div>
@@ -612,15 +658,40 @@ export const TabsSection: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="mt-4">
+                <div className="mt-4 pt-3 border-t border-[#E2E8F0] flex flex-col gap-2">
                   <a
                     href={`https://ig.me/m/${targetCreator}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-full inline-flex items-center justify-center gap-2 bg-white border border-[#CBD5E1] hover:bg-[#F0F9FF] text-black font-extrabold text-sm py-2.5 rounded-xl cursor-pointer transition-all"
+                    className="w-full inline-flex items-center justify-center gap-2 bg-white border border-[#CBD5E1] hover:bg-[#F0F9FF] text-black font-extrabold text-xs py-2.5 rounded-xl cursor-pointer transition-all shadow-xs"
                   >
-                    <Send className="w-4 h-4 text-black" /> Open Creator Direct Message
+                    <ExternalLink className="w-3.5 h-3.5 text-black" /> Open Creator Direct Message (ig.me)
                   </a>
+                  <button
+                    onClick={async () => {
+                      const creator = influencers.find((i) => i.handle === targetCreator);
+                      if (!creator) return;
+                      try {
+                        const res = await api.sendOutreach({
+                          to_email: 'Not Found',
+                          subject: activePitch.subject,
+                          message_body: activePitch.email_pitch,
+                          recipient_name: creator.name,
+                          handle: creator.handle,
+                          platform: creator.platform,
+                          instagram_dm: activePitch.instagram_dm,
+                          notes: 'manual',
+                        });
+                        alert(`Instagram DM Workflow: ${res.status}\n${res.message || 'Logged in Outreach Audit Trail as SENT_MANUALLY'}`);
+                        fetchTracker();
+                      } catch (err: any) {
+                        alert(`Error recording manual DM: ${err.message}`);
+                      }
+                    }}
+                    className="w-full inline-flex items-center justify-center gap-2 bg-[#F1F5F9] hover:bg-[#E2E8F0] border border-[#CBD5E1] text-black font-extrabold text-xs py-2.5 rounded-xl cursor-pointer transition-all shadow-xs"
+                  >
+                    <CheckCircle2 className="w-3.5 h-3.5 text-black" /> Mark Sent Manually (Instagram DM)
+                  </button>
                 </div>
               </div>
             </div>

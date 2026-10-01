@@ -172,7 +172,7 @@ def send_outreach(req: SendEmailRequest):
     else:
         ig_sender = InstagramDMSender()
         dispatch_res = ig_sender.send_simulated_dm(req.handle, req.instagram_dm)
-        status = dispatch_res["status"]
+        status = "SENT_MANUALLY" if "manual" in req.notes.lower() else dispatch_res["status"]
         delivery_id = dispatch_res.get("delivery_id")
         channel = "Instagram Direct"
         sent = True

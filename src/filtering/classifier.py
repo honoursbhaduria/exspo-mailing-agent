@@ -25,6 +25,29 @@ class InfluencerClassifier:
         self.min_engagement = min_engagement
         self.target_niche = target_niche
 
+    @classmethod
+    def from_yaml(cls, config_path: str = "config/filtering.yaml") -> "InfluencerClassifier":
+        """
+        Instantiates classifier using declarative parameters from config/filtering.yaml.
+        """
+        try:
+            import yaml
+            from pathlib import Path
+            p = Path(config_path)
+            if p.exists():
+                with open(p, "r", encoding="utf-8") as f:
+                    cfg = yaml.safe_load(f) or {}
+                followers_cfg = cfg.get("followers", {})
+                return cls(
+                    min_followers=followers_cfg.get("min", MIN_FOLLOWERS),
+                    max_followers=followers_cfg.get("max", MAX_FOLLOWERS),
+                    min_engagement=float(cfg.get("engagement_rate", {}).get("min", MIN_ENGAGEMENT_RATE)),
+                    target_niche=cfg.get("niche", "Fashion & Beauty")
+                )
+        except Exception:
+            pass
+        return cls()
+
     def evaluate_influencer(self, row: pd.Series) -> Tuple[str, str]:
         """
         Evaluates a single influencer row.

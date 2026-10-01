@@ -182,5 +182,43 @@ class TestEDXSOOutreachPipeline(unittest.TestCase):
         if test_log_path.exists():
             test_log_path.unlink()
 
+    # -------------------------------------------------------------
+    # 6. Output Validator & Declarative Config Tests
+    # -------------------------------------------------------------
+    def test_personalization_validator_engine(self):
+        """Validates that PersonalizationValidator programmatically enforces word counts & checks."""
+        from src.personalization.validator import PersonalizationValidator
+
+        # Valid outputs
+        valid_res = PersonalizationValidator.validate(
+            email_pitch=" ".join(["word"] * 75) + " Sarah LumiGlow",
+            instagram_dm=" ".join(["word"] * 20) + " Sarah",
+            creator_name="Sarah Jenkins",
+            brand_name="LumiGlow"
+        )
+        self.assertTrue(valid_res["is_valid"])
+        self.assertTrue(valid_res["checks"]["email_length"])
+        self.assertTrue(valid_res["checks"]["dm_length"])
+        self.assertTrue(valid_res["checks"]["name_included"])
+
+        # Violating outputs (< 60 words email)
+        invalid_res = PersonalizationValidator.validate(
+            email_pitch="Too short email pitch text here.",
+            instagram_dm="Short DM",
+            creator_name="Sarah Jenkins",
+            brand_name="LumiGlow"
+        )
+        self.assertFalse(invalid_res["is_valid"])
+        self.assertFalse(invalid_res["checks"]["email_length"])
+        self.assertFalse(invalid_res["checks"]["dm_length"])
+
+    def test_classifier_yaml_config(self):
+        """Validates declarative loading of filtering thresholds from config/filtering.yaml."""
+        classifier = InfluencerClassifier.from_yaml("config/filtering.yaml")
+        self.assertEqual(classifier.min_followers, 5000)
+        self.assertEqual(classifier.max_followers, 100000)
+        self.assertEqual(classifier.min_engagement, 2.0)
+        self.assertEqual(classifier.target_niche, "Fashion")
+
 if __name__ == "__main__":
     unittest.main()

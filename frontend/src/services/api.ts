@@ -102,6 +102,7 @@ export const api = {
     handle: string;
     platform: string;
     instagram_dm?: string;
+    notes?: string;
   }): Promise<any> {
     const res = await fetch(`${API_BASE}/outreach/send`, {
       method: 'POST',

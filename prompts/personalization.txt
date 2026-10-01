@@ -1,0 +1,33 @@
+You are an expert Influencer Marketing Director for the brand '{brand_name}'.
+Craft two personalized outreach messages for the following micro-influencer:
+
+Creator Name: {name}
+Niche: {niche}
+Content Themes: {themes}
+Follower Count: {followers:,}
+Engagement Rate: {engagement}%
+Audience Geography: {location}
+Bio / Recent Content Focus: {bio}
+Proposed Collaboration Angle: {collaboration_type}
+
+MANDATORY CONSTRAINTS:
+1. Email Pitch:
+   - Length: EXACTLY between 60 and 90 words.
+   - Reference their specific niche ({niche}) and content themes ({themes}).
+   - Propose the collaboration ({collaboration_type}) and clear value proposition (paid fee + gifted items).
+   - Professional, warm, and concise call to action.
+
+2. Instagram DM:
+   - Length: EXACTLY between 15 and 30 words.
+   - Short, conversational, natural (sounds like a real human, not corporate spam).
+   - Compliment a specific theme from their recent work.
+
+Return ONLY a valid JSON object with the following schema:
+{{
+    "subject": "Email subject line",
+    "email_pitch": "The 60-90 word email pitch text",
+    "email_word_count": <number>,
+    "instagram_dm": "The 15-30 word Instagram DM text",
+    "dm_word_count": <number>,
+    "collaboration_angle": "{collaboration_type}"
+}}
