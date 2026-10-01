@@ -169,7 +169,7 @@ export const TabsSection: React.FC = () => {
           TAB 1: DISCOVERED RECORDS (PAGINATED WITH CSV EXPORT)
           ========================================================================= */}
       {activeTab === 'records' && (
-        <div className="bg-white/90 backdrop-blur-md border border-[#E2E8F0] rounded-[20px] p-6 shadow-[0_8px_30px_rgba(0,0,0,0.04)]">
+        <div className="bg-white border border-[#E2E8F0] rounded-[20px] p-6 shadow-[0_4px_24px_rgba(0,0,0,0.05)]">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-5">
             <div>
               <h2 className="text-xl font-black text-black">Discovered Micro-Influencer Records</h2>
@@ -206,8 +206,8 @@ export const TabsSection: React.FC = () => {
             </div>
           ) : (
             <>
-              <div className="overflow-x-auto border border-[#E2E8F0] rounded-xl">
-                <table className="w-full text-left text-sm border-collapse">
+              <div className="overflow-x-auto border border-[#E2E8F0] rounded-xl bg-white shadow-sm">
+                <table className="w-full text-left text-sm border-collapse bg-white">
                   <thead>
                     <tr className="bg-[#F8FAFC] border-b border-[#E2E8F0] text-black font-black text-xs uppercase tracking-wider">
                       <th className="py-3 px-4">Creator</th>
@@ -279,7 +279,7 @@ export const TabsSection: React.FC = () => {
           TAB 2: CLASSIFICATION ENGINE
           ========================================================================= */}
       {activeTab === 'classification' && (
-        <div className="bg-white/90 backdrop-blur-md border border-[#E2E8F0] rounded-[20px] p-6 shadow-[0_8px_30px_rgba(0,0,0,0.04)]">
+        <div className="bg-white border border-[#E2E8F0] rounded-[20px] p-6 shadow-[0_4px_24px_rgba(0,0,0,0.05)]">
           <div className="flex justify-between items-center mb-5">
             <div>
               <h2 className="text-xl font-black text-black">Quantitative Filtering & Brand-Fit Classification</h2>
@@ -394,7 +394,7 @@ export const TabsSection: React.FC = () => {
           TAB 3: PROFILE CONTEXT & THEMES
           ========================================================================= */}
       {activeTab === 'enrichment' && (
-        <div className="bg-white/90 backdrop-blur-md border border-[#E2E8F0] rounded-[20px] p-6 shadow-[0_8px_30px_rgba(0,0,0,0.04)]">
+        <div className="bg-white border border-[#E2E8F0] rounded-[20px] p-6 shadow-[0_4px_24px_rgba(0,0,0,0.05)]">
           <div className="mb-5">
             <h2 className="text-xl font-black text-black">Profile Enrichment Context</h2>
             <p className="text-xs font-semibold text-[#333333] mt-0.5">
@@ -492,7 +492,7 @@ export const TabsSection: React.FC = () => {
           TAB 4: AI PERSONALIZATION
           ========================================================================= */}
       {activeTab === 'personalization' && (
-        <div className="bg-white/90 backdrop-blur-md border border-[#E2E8F0] rounded-[20px] p-6 shadow-[0_8px_30px_rgba(0,0,0,0.04)]">
+        <div className="bg-white border border-[#E2E8F0] rounded-[20px] p-6 shadow-[0_4px_24px_rgba(0,0,0,0.05)]">
           <div className="mb-5">
             <h2 className="text-xl font-black text-black">Dual Message Personalization Studio</h2>
             <p className="text-xs font-semibold text-[#333333] mt-0.5">
@@ -616,7 +616,7 @@ export const TabsSection: React.FC = () => {
           TAB 5: OUTREACH AUDIT LOG
           ========================================================================= */}
       {activeTab === 'tracker' && (
-        <div className="bg-white/90 backdrop-blur-md border border-[#E2E8F0] rounded-[20px] p-6 shadow-[0_8px_30px_rgba(0,0,0,0.04)]">
+        <div className="bg-white border border-[#E2E8F0] rounded-[20px] p-6 shadow-[0_4px_24px_rgba(0,0,0,0.05)]">
           <div className="flex justify-between items-center mb-5">
             <div>
               <h2 className="text-xl font-black text-black">Outreach Dispatch &amp; Audit Trail</h2>
@@ -653,8 +653,8 @@ export const TabsSection: React.FC = () => {
           </div>
 
           {/* Logs Table */}
-          <div className="overflow-x-auto border border-[#E2E8F0] rounded-xl">
-            <table className="w-full text-left text-sm border-collapse">
+          <div className="overflow-x-auto border border-[#E2E8F0] rounded-xl bg-white shadow-sm">
+            <table className="w-full text-left text-sm border-collapse bg-white">
               <thead>
                 <tr className="bg-[#F8FAFC] border-b border-[#E2E8F0] text-black font-black text-xs uppercase tracking-wider">
                   <th className="py-3 px-4">Influencer</th>
