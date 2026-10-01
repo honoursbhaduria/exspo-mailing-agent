@@ -216,6 +216,7 @@ export const TabsSection: React.FC = () => {
                       <th className="py-3 px-4">Followers</th>
                       <th className="py-3 px-4">Engagement</th>
                       <th className="py-3 px-4">Niche</th>
+                      <th className="py-3 px-4">Contact Email</th>
                       <th className="py-3 px-4">Location</th>
                       <th className="py-3 px-4 text-right">Profile</th>
                     </tr>
@@ -236,6 +237,17 @@ export const TabsSection: React.FC = () => {
                             {Number(item.engagement_rate).toFixed(1)}%
                           </td>
                           <td className="py-3 px-4 font-bold text-black">{item.niche}</td>
+                          <td className="py-3 px-4">
+                            <span
+                              className={`inline-block font-mono text-xs font-bold px-2 py-0.5 rounded-md border ${
+                                item.contact_email && item.contact_email !== 'Not Found'
+                                  ? 'bg-[#DCFCE7] text-black border-[#86EFAC]'
+                                  : 'bg-[#F1F5F9] text-[#64748B] border-[#CBD5E1]'
+                              }`}
+                            >
+                              {item.contact_email || 'Not Found'}
+                            </span>
+                          </td>
                           <td className="py-3 px-4 font-semibold text-[#333333]">{item.location}</td>
                           <td className="py-3 px-4 text-right">
                             <a
@@ -251,7 +263,7 @@ export const TabsSection: React.FC = () => {
                       ))
                     ) : (
                       <tr>
-                        <td colSpan={7} className="py-8 text-center text-sm font-bold text-black">
+                        <td colSpan={8} className="py-8 text-center text-sm font-bold text-black">
                           No creator records found matching &ldquo;{searchQuery}&rdquo;.
                         </td>
                       </tr>
@@ -446,7 +458,13 @@ export const TabsSection: React.FC = () => {
 
                 <div className="mt-3">
                   <div className="text-xs font-bold text-[#333333]">Contact Email</div>
-                  <div className="font-mono text-sm font-black text-black mt-1 bg-white border border-[#CBD5E1] px-2.5 py-1.5 rounded-lg inline-block">
+                  <div
+                    className={`font-mono text-sm font-black mt-1 px-3 py-1.5 rounded-lg inline-block border ${
+                      currentCreator.contact_email && currentCreator.contact_email.trim() && currentCreator.contact_email !== 'Not Found'
+                        ? 'bg-[#DCFCE7] text-black border-[#86EFAC]'
+                        : 'bg-[#FEE2E2] text-black border-[#FCA5A5]'
+                    }`}
+                  >
                     {currentCreator.contact_email && currentCreator.contact_email.trim() && currentCreator.contact_email !== 'Not Found'
                       ? currentCreator.contact_email
                       : 'Not Found'}
