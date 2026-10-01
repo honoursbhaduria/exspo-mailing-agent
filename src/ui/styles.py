@@ -3,7 +3,7 @@ Design System, Fonts, Glassmorphism, and Component Styles.
 Adheres strictly to:
 - Google Fonts: Bricolage Grotesque, Iosevka Charon, Libre Caslon Display
 - True glassmorphism (frosted backdrop-filter, subtle borders)
-- NO black colors, NO popping/neon colors, NO harsh gradients
+- NO black colors, NO popping/neon colors, NO dark bleed-through in dropdowns/tables/buttons
 - NO harsh shadows (clean border-driven depth)
 - NO emojis
 """
@@ -15,10 +15,10 @@ def get_theme_css() -> str:
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,200..800&family=Dancing+Script:wght@400..700&family=Iosevka+Charon:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,500;1,700&family=Libre+Caslon+Display&family=Lobster+Two:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
 
 <style>
-    /* Reset & Typography */
+    /* Global Typography & Light Theme Enforcement */
     html, body, [class*="css"], [class*="st-"] {
         font-family: 'Bricolage Grotesque', -apple-system, sans-serif !important;
-        color: #2D3142;
+        color: #2D3142 !important;
     }
 
     /* Monospace / Numerical Font Classes */
@@ -42,36 +42,44 @@ def get_theme_css() -> str:
         font-weight: 400;
     }
 
-    /* Base Canvas - Soft Muted Neutral with Gentle Diffusion */
+    /* Base Canvas - Soft Muted Neutral with Gentle Diffusion (NO DARKNESS) */
     .stApp {
-        background-color: #F4F5F9;
+        background-color: #F5F6FA !important;
         background-image: 
-            radial-gradient(circle at 10% 12%, rgba(220, 224, 240, 0.6) 0%, transparent 30%),
-            radial-gradient(circle at 90% 15%, rgba(215, 230, 240, 0.6) 0%, transparent 30%),
-            radial-gradient(circle at 85% 85%, rgba(230, 225, 240, 0.5) 0%, transparent 35%),
-            radial-gradient(circle at 15% 85%, rgba(225, 235, 240, 0.5) 0%, transparent 35%);
-        background-attachment: fixed;
+            radial-gradient(circle at 10% 12%, rgba(220, 224, 240, 0.55) 0%, transparent 35%),
+            radial-gradient(circle at 90% 15%, rgba(215, 230, 240, 0.55) 0%, transparent 35%),
+            radial-gradient(circle at 85% 85%, rgba(230, 225, 240, 0.45) 0%, transparent 35%),
+            radial-gradient(circle at 15% 85%, rgba(225, 235, 240, 0.45) 0%, transparent 35%) !important;
+        background-attachment: fixed !important;
     }
 
-    /* Glassmorphism Surface Container */
+    /* Main Container Padding */
+    .block-container {
+        padding-top: 2rem !important;
+        padding-bottom: 3rem !important;
+        max-width: 1280px !important;
+    }
+
+    /* Glassmorphism Surface Container - Crisp White Frosted Glass */
     .glass-panel {
-        background: rgba(255, 255, 255, 0.78);
-        backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
-        border: 1px solid rgba(222, 227, 238, 0.85);
-        border-radius: 18px;
-        box-shadow: 0 1px 3px rgba(45, 49, 66, 0.03);
-        padding: 22px;
-        transition: border-color 0.2s ease;
+        background: rgba(255, 255, 255, 0.82) !important;
+        backdrop-filter: blur(20px) !important;
+        -webkit-backdrop-filter: blur(20px) !important;
+        border: 1px solid rgba(222, 227, 238, 0.95) !important;
+        border-radius: 18px !important;
+        box-shadow: 0 1px 3px rgba(45, 49, 66, 0.02) !important;
+        padding: 22px !important;
+        color: #2D3142 !important;
     }
 
     .glass-panel-subtle {
-        background: rgba(248, 249, 252, 0.7);
-        backdrop-filter: blur(14px);
-        -webkit-backdrop-filter: blur(14px);
-        border: 1px solid rgba(226, 230, 240, 0.8);
-        border-radius: 14px;
-        padding: 14px 16px;
+        background: rgba(248, 249, 252, 0.85) !important;
+        backdrop-filter: blur(14px) !important;
+        -webkit-backdrop-filter: blur(14px) !important;
+        border: 1px solid rgba(226, 230, 240, 0.9) !important;
+        border-radius: 12px !important;
+        padding: 12px 14px !important;
+        color: #2D3142 !important;
     }
 
     /* Header & Branding */
@@ -80,21 +88,20 @@ def get_theme_css() -> str:
         flex-direction: column;
         align-items: center;
         text-align: center;
-        padding-top: 1.2rem;
-        padding-bottom: 2rem;
+        padding-top: 0.5rem;
+        padding-bottom: 1.8rem;
     }
 
     .brand-capsule {
         display: inline-flex;
         align-items: center;
         gap: 8px;
-        background: rgba(255, 255, 255, 0.85);
+        background: rgba(255, 255, 255, 0.92);
         backdrop-filter: blur(12px);
-        border: 1px solid rgba(215, 220, 235, 0.8);
+        border: 1px solid rgba(215, 220, 235, 0.9);
         padding: 6px 16px;
         border-radius: 9999px;
         margin-bottom: 12px;
-        box-shadow: 0 1px 2px rgba(45, 49, 66, 0.03);
     }
 
     .capsule-dot {
@@ -198,8 +205,8 @@ def get_theme_css() -> str:
     .stat-tile-muted {
         border-radius: 12px;
         padding: 12px 14px;
-        background: rgba(255, 255, 255, 0.7);
-        border: 1px solid rgba(220, 225, 238, 0.8);
+        background: rgba(255, 255, 255, 0.85);
+        border: 1px solid rgba(220, 225, 238, 0.9);
     }
     .stat-tile-muted.lavender {
         background: #EFF1F8;
@@ -229,69 +236,153 @@ def get_theme_css() -> str:
         margin-top: 5px;
     }
 
-    /* Clean Streamlit Overrides */
-    div[data-testid="stToolbar"] { visibility: hidden; height: 0; }
-    header[data-testid="stHeader"] { background: transparent; }
+    /* ========================================================================
+       ELIMINATING ALL UI DARKNESS: DROPDOWNS, BUTTONS, TABLES, AND INPUTS
+       ======================================================================== */
 
-    /* Buttons: Flat, Clean, Muted Tone */
-    .stButton>button {
+    /* 1. BaseWeb Dropdowns & Popovers - Pure Crisp Light Frosted Menu */
+    div[data-baseweb="popover"],
+    div[data-baseweb="menu"],
+    ul[data-baseweb="menu"],
+    div[role="listbox"] {
+        background-color: #FFFFFF !important;
+        color: #2D3142 !important;
+        border: 1px solid #DEE3EE !important;
+        border-radius: 12px !important;
+        box-shadow: 0 4px 16px rgba(45, 49, 66, 0.06) !important;
+    }
+    li[data-baseweb="menu-item"],
+    div[role="option"] {
+        background-color: #FFFFFF !important;
+        color: #2D3142 !important;
         font-family: 'Bricolage Grotesque', sans-serif !important;
-        background: #4E5370 !important;
-        color: #FFFFFF !important;
-        border: 1px solid #444962 !important;
+        font-size: 0.9rem !important;
+    }
+    li[data-baseweb="menu-item"]:hover,
+    div[role="option"]:hover,
+    li[aria-selected="true"],
+    div[aria-selected="true"] {
+        background-color: #F1F4F9 !important;
+        color: #1E2235 !important;
+    }
+
+    /* Selectbox Input Box */
+    div[data-baseweb="select"] {
+        background-color: transparent !important;
+    }
+    div[data-baseweb="select"] > div {
+        background-color: #FFFFFF !important;
+        border: 1px solid #DCE1EC !important;
         border-radius: 10px !important;
-        padding: 8px 18px !important;
-        font-weight: 600 !important;
+        color: #2D3142 !important;
         box-shadow: none !important;
-        transition: background 0.15s ease !important;
     }
-    .stButton>button:hover {
-        background: #3F445D !important;
-        border-color: #383C52 !important;
+    div[data-baseweb="select"] span {
+        color: #2D3142 !important;
+        font-weight: 500 !important;
     }
-
-    /* Tabs Override */
-    .stTabs [data-baseweb="tab-list"] {
-        gap: 6px;
-        background: rgba(255, 255, 255, 0.75);
-        backdrop-filter: blur(14px);
-        padding: 5px;
-        border-radius: 14px;
-        border: 1px solid rgba(222, 227, 238, 0.85);
-        box-shadow: none;
-    }
-    .stTabs [data-baseweb="tab"] {
-        font-family: 'Bricolage Grotesque', sans-serif !important;
-        border-radius: 10px;
-        font-weight: 600;
-        font-size: 0.88rem;
-        padding: 7px 16px;
-        color: #646A80;
-        background: transparent;
-        border: none;
-    }
-    .stTabs [aria-selected="true"] {
-        background: #4E5370 !important;
-        color: #FFFFFF !important;
+    div[data-baseweb="select"] svg {
+        fill: #5A5F75 !important;
     }
 
-    /* Inputs & Selects */
-    .stSelectbox>div>div, .stTextInput>div>div {
-        background: rgba(255, 255, 255, 0.85) !important;
+    /* 2. Text Inputs & Number Inputs */
+    .stTextInput input, .stNumberInput input {
+        background-color: #FFFFFF !important;
+        color: #2D3142 !important;
         border: 1px solid #DCE1EC !important;
         border-radius: 10px !important;
         box-shadow: none !important;
-        font-family: 'Bricolage Grotesque', sans-serif !important;
     }
-    .stSelectbox>div>div:focus-within, .stTextInput>div>div:focus-within {
+    .stTextInput input:focus, .stNumberInput input:focus {
         border-color: #5B638A !important;
+        box-shadow: none !important;
     }
 
-    /* Dataframe view */
-    .stDataFrame {
-        border-radius: 12px;
-        overflow: hidden;
-        border: 1px solid rgba(222, 227, 238, 0.85);
+    /* Labels */
+    label[data-testid="stWidgetLabel"] p {
+        color: #484D63 !important;
+        font-weight: 600 !important;
+        font-size: 0.84rem !important;
     }
+
+    /* 3. Buttons - Refined Slate & Frosted White, NO PURE BLACK */
+    .stButton > button {
+        font-family: 'Bricolage Grotesque', sans-serif !important;
+        background: #5B638A !important;
+        color: #FFFFFF !important;
+        border: 1px solid #4F5679 !important;
+        border-radius: 10px !important;
+        padding: 9px 18px !important;
+        font-weight: 600 !important;
+        font-size: 0.88rem !important;
+        box-shadow: none !important;
+        transition: background 0.15s ease !important;
+    }
+    .stButton > button:hover {
+        background: #4E5370 !important;
+        border-color: #444962 !important;
+        color: #FFFFFF !important;
+    }
+
+    /* Secondary Download Buttons */
+    .stDownloadButton > button {
+        font-family: 'Bricolage Grotesque', sans-serif !important;
+        background: #FFFFFF !important;
+        color: #2D3142 !important;
+        border: 1px solid #DCE1EC !important;
+        border-radius: 10px !important;
+        font-weight: 600 !important;
+        box-shadow: none !important;
+    }
+    .stDownloadButton > button:hover {
+        background: #F1F4F9 !important;
+        border-color: #CBD5E1 !important;
+        color: #1E2235 !important;
+    }
+
+    /* 4. Dataframe & Tables - Light Theme, Clear Rows, No Dark Cells */
+    [data-testid="stDataFrame"] {
+        background: #FFFFFF !important;
+        border: 1px solid #DEE3EE !important;
+        border-radius: 14px !important;
+        overflow: hidden !important;
+    }
+    [data-testid="stDataFrame"] div {
+        background-color: transparent !important;
+    }
+
+    /* 5. Tabs Styling */
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 6px !important;
+        background: rgba(255, 255, 255, 0.85) !important;
+        backdrop-filter: blur(14px) !important;
+        padding: 5px !important;
+        border-radius: 14px !important;
+        border: 1px solid rgba(222, 227, 238, 0.95) !important;
+        box-shadow: none !important;
+    }
+    .stTabs [data-baseweb="tab"] {
+        font-family: 'Bricolage Grotesque', sans-serif !important;
+        border-radius: 10px !important;
+        font-weight: 600 !important;
+        font-size: 0.88rem !important;
+        padding: 7px 16px !important;
+        color: #5A5F75 !important;
+        background: transparent !important;
+        border: none !important;
+    }
+    .stTabs [aria-selected="true"] {
+        background: #5B638A !important;
+        color: #FFFFFF !important;
+    }
+
+    /* 6. Slider */
+    div[data-testid="stSlider"] div[role="slider"] {
+        background-color: #5B638A !important;
+    }
+
+    /* Streamlit Chrome cleanup */
+    div[data-testid="stToolbar"] { visibility: hidden; height: 0; }
+    header[data-testid="stHeader"] { background: transparent; }
 </style>
 """

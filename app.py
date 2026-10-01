@@ -30,6 +30,7 @@ from src.ui.components import (
     render_center_stat_tiles,
     render_right_feed_card
 )
+from src.ui.globe_footer import get_3d_globe_html
 
 # -------------------------------------------------------------
 # PAGE SETUP
@@ -41,7 +42,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Inject Clean Glassmorphic Theme & Google Fonts (Bricolage Grotesque, Iosevka Charon)
+# Inject Clean Glassmorphic Theme (Pure Light, No Darkness, Bricolage Grotesque & Iosevka Charon)
 st.markdown(get_theme_css(), unsafe_allow_html=True)
 
 # Load Datasets
@@ -49,12 +50,12 @@ raw_df = pd.read_csv(RAW_DATA_PATH) if RAW_DATA_PATH.exists() else pd.DataFrame(
 proc_df = pd.read_csv(PROCESSED_DATA_PATH) if PROCESSED_DATA_PATH.exists() else pd.DataFrame()
 
 # -------------------------------------------------------------
-# 1. HERO HEADER (EXACTLY MATCHING IMAGE.PNG)
+# 1. HERO HEADER (MATCHING IMAGE.PNG)
 # -------------------------------------------------------------
 st.markdown(render_hero_header(), unsafe_allow_html=True)
 
 # -------------------------------------------------------------
-# 2. TRIPLE GLASSMORPHIC CARD SHOWCASE
+# 2. TRIPLE GLASSMORPHIC CARD SHOWCASE (LIGHT & FROSTED)
 # -------------------------------------------------------------
 col_left, col_center, col_right = st.columns([1, 1.85, 1.25])
 
@@ -68,7 +69,7 @@ with col_center:
     st.markdown('<div class="glass-panel">', unsafe_allow_html=True)
     st.markdown(render_center_topbar(), unsafe_allow_html=True)
 
-    # Interactive Selectors (No emojis, clean labels)
+    # Interactive Selectors (Pure Light Dropdowns, No Darkness)
     c_in1, c_in2 = st.columns(2)
     with c_in1:
         sel_niche = st.selectbox("Category / Niche", AVAILABLE_NICHES, index=0, key="center_niche")
@@ -80,7 +81,7 @@ with col_center:
     c_btn1, c_btn2 = st.columns([1.5, 1])
     with c_btn1:
         if st.button("EXECUTE SCRAPER PIPELINE", use_container_width=True):
-            with st.spinner("Scrapy crawler running..."):
+            with st.spinner("Scrapy asynchronous crawler executing..."):
                 try:
                     df_res = run_discovery_cli(niche=sel_niche, limit=65)
                     st.success(f"Discovered {len(df_res)} authentic creator profiles.")
@@ -100,7 +101,7 @@ with col_center:
 with col_right:
     st.markdown(render_right_feed_card(), unsafe_allow_html=True)
 
-st.markdown("<div style='height: 24px;'></div>", unsafe_allow_html=True)
+st.markdown("<div style='height: 28px;'></div>", unsafe_allow_html=True)
 
 # -------------------------------------------------------------
 # 3. MODULAR WORKSPACE TABS
@@ -309,3 +310,38 @@ with tab_tracker:
         st.download_button("Export Audit Log (CSV)", data=csv_tracker, file_name="outreach_audit_log.csv", mime="text/csv")
     else:
         st.info("Outreach log is currently empty.")
+
+# -------------------------------------------------------------
+# 4. FOOTER: INTERACTIVE 3D GLOBE VISUALIZATION (GLOBAL NETWORK)
+# -------------------------------------------------------------
+st.markdown("<div style='height: 30px;'></div>", unsafe_allow_html=True)
+st.markdown("""
+<div class="glass-panel" style="padding: 24px; margin-bottom: 24px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <div>
+            <div style="font-size: 1.15rem; font-weight: 700; color: #2D3142;">Global Creator Outreach Radar</div>
+            <div style="font-size: 0.84rem; color: #646A80; margin-top: 2px;">
+                Interactive 3D WebGL Globe rendering active influencer hubs across North America, Europe, Asia, and Oceania.
+            </div>
+        </div>
+        <div class="badge-pill-neutral mono-num">3D WebGL Powered</div>
+    </div>
+</div>
+""", unsafe_allow_html=True)
+
+# Render Interactive 3D WebGL Globe
+st.components.v1.html(get_3d_globe_html(), height=490)
+
+# React Component Setup Verification details in footer
+with st.expander("React Component Architecture & Setup Guide (components/ui/3d-globe.tsx)"):
+    st.markdown("""
+    **Project Verification & Directory Setup**:
+    - `components/ui/3d-globe.tsx`: Core 3D Globe with Three.js, React Three Fiber, markers, atmosphere glow.
+    - `components/3d-globe-demo.tsx`: Example demo with 13 worldwide markers (New York, London, Tokyo, Paris, New Delhi, etc.).
+    - `lib/utils.ts`: Tailwind & clsx merge utility (`cn`).
+
+    **To run this React component in Next.js / Vite with shadcn & Tailwind v4**:
+    ```bash
+    npm install @react-three/fiber @react-three/drei three @types/three clsx tailwind-merge
+    ```
+    """)
