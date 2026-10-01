@@ -186,19 +186,19 @@ with tab_enrich:
         with ec1:
             st.markdown(f"""
             <div class="glass-card">
-                <div style="font-size: 1.15rem; font-weight: 700; color: #1E293B;">{c_row['name']}</div>
-                <div class="mono-num" style="font-size: 0.82rem; color: #2563EB; margin-top: 2px;">@{c_row['handle']}</div>
+                <div style="font-size: 1.15rem; font-weight: 800; color: #000000;">{c_row['name']}</div>
+                <div class="mono-num" style="font-size: 0.84rem; font-weight: 700; color: #000000; margin-top: 2px;">@{c_row['handle']}</div>
                 <div style="margin-top: 14px;">
-                    <div style="font-size: 0.76rem; color: #64748B;">Followers</div>
-                    <div class="stat-number mono-num" style="font-size: 1.25rem;">{int(c_row['follower_count']):,}</div>
+                    <div style="font-size: 0.78rem; font-weight: 700; color: #333333;">Followers</div>
+                    <div class="stat-number mono-num" style="font-size: 1.35rem; color: #000000;">{int(c_row['follower_count']):,}</div>
                 </div>
                 <div style="margin-top: 10px;">
-                    <div style="font-size: 0.76rem; color: #64748B;">Engagement Rate</div>
-                    <div class="stat-number mono-num" style="font-size: 1.25rem;">{c_row['engagement_rate']:.2f}%</div>
+                    <div style="font-size: 0.78rem; font-weight: 700; color: #333333;">Engagement Rate</div>
+                    <div class="stat-number mono-num" style="font-size: 1.35rem; color: #000000;">{c_row['engagement_rate']:.2f}%</div>
                 </div>
                 <div style="margin-top: 10px;">
-                    <div style="font-size: 0.76rem; color: #64748B;">Contact Email</div>
-                    <div class="mono-num" style="font-size: 0.85rem; color: #1E293B; margin-top: 2px;">
+                    <div style="font-size: 0.78rem; font-weight: 700; color: #333333;">Contact Email</div>
+                    <div class="mono-num" style="font-size: 0.88rem; font-weight: 700; color: #000000; margin-top: 2px;">
                         {c_row.get('contact_email', 'Not Found')}
                     </div>
                 </div>
@@ -207,16 +207,16 @@ with tab_enrich:
         with ec2:
             st.markdown(f"""
             <div class="glass-card">
-                <div style="font-size: 0.95rem; font-weight: 700; color: #1E293B; margin-bottom: 8px;">Content Themes & Bio Context</div>
-                <p style="font-size: 0.88rem; color: #475569; line-height: 1.5; margin: 0 0 12px 0;">{c_row.get('bio', 'Verified creator in Fashion & Beauty niche.')}</p>
-                <div style="font-size: 0.8rem; font-weight: 600; color: #1E293B;">Identified Themes:</div>
-                <div class="mono-num" style="font-size: 0.82rem; color: #2563EB; margin-top: 3px;">{c_row.get('content_themes', 'Styling, UGC')}</div>
-                <div style="border-top: 1px solid #E2E8F0; margin: 14px 0 10px;"></div>
-                <div style="font-size: 0.8rem; font-weight: 600; color: #1E293B; margin-bottom: 6px;">Audience Demographics:</div>
-                <div style="display: flex; gap: 20px; font-size: 0.82rem; color: #475569;">
-                    <div>Age: <span class="mono-num" style="color: #1E293B;">{c_row.get('audience_age', '18-34')}</span></div>
-                    <div>Gender: <span class="mono-num" style="color: #1E293B;">{c_row.get('audience_gender', 'Female (78%)')}</span></div>
-                    <div>Geography: <span class="mono-num" style="color: #1E293B;">{c_row.get('audience_geography', 'US/Global')}</span></div>
+                <div style="font-size: 1rem; font-weight: 800; color: #000000; margin-bottom: 8px;">Content Themes & Bio Context</div>
+                <p style="font-size: 0.9rem; color: #222222; font-weight: 500; line-height: 1.5; margin: 0 0 12px 0;">{c_row.get('bio', 'Verified creator in Fashion & Beauty niche.')}</p>
+                <div style="font-size: 0.82rem; font-weight: 800; color: #000000;">Identified Themes:</div>
+                <div class="mono-num" style="font-size: 0.85rem; font-weight: 700; color: #000000; margin-top: 3px;">{c_row.get('content_themes', 'Styling, UGC')}</div>
+                <div style="border-top: 1.5px solid #E2E8F0; margin: 14px 0 10px;"></div>
+                <div style="font-size: 0.82rem; font-weight: 800; color: #000000; margin-bottom: 6px;">Audience Demographics:</div>
+                <div style="display: flex; gap: 20px; font-size: 0.85rem; color: #222222; font-weight: 600;">
+                    <div>Age: <span class="mono-num" style="color: #000000; font-weight: 800;">{c_row.get('audience_age', '18-34')}</span></div>
+                    <div>Gender: <span class="mono-num" style="color: #000000; font-weight: 800;">{c_row.get('audience_gender', 'Female (78%)')}</span></div>
+                    <div>Geography: <span class="mono-num" style="color: #000000; font-weight: 800;">{c_row.get('audience_geography', 'US/Global')}</span></div>
                 </div>
             </div>
             """, unsafe_allow_html=True)
@@ -257,8 +257,8 @@ with tab_ai:
                     with st.container(border=True):
                         st.markdown("""
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                            <span style="font-weight: 700; color: #1E293B; font-size: 0.95rem;">Email Collaboration Pitch</span>
-                            <span class="badge-pill-neutral mono-num">60-90 words</span>
+                            <span style="font-weight: 800; color: #000000; font-size: 0.98rem;">Email Collaboration Pitch</span>
+                            <span class="badge-pill-neutral mono-num" style="color: #000000;">60-90 words</span>
                         </div>
                         """, unsafe_allow_html=True)
                         st.text_input("Subject", value=pitch['subject'], disabled=True)
@@ -269,8 +269,8 @@ with tab_ai:
                     with st.container(border=True):
                         st.markdown("""
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                            <span style="font-weight: 700; color: #1E293B; font-size: 0.95rem;">Instagram DM</span>
-                            <span class="badge-pill-neutral mono-num">15-30 words</span>
+                            <span style="font-weight: 800; color: #000000; font-size: 0.98rem;">Instagram DM</span>
+                            <span class="badge-pill-neutral mono-num" style="color: #000000;">15-30 words</span>
                         </div>
                         """, unsafe_allow_html=True)
                         st.text_input("Recipient", value=f"@{chosen_handle}", disabled=True)
@@ -316,12 +316,12 @@ st.markdown("""
 <div class="glass-card" style="padding: 24px; margin-bottom: 24px;">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
         <div>
-            <div style="font-size: 1.15rem; font-weight: 700; color: #1E293B;">Global Creator Outreach Radar</div>
-            <div style="font-size: 0.84rem; color: #64748B; margin-top: 2px;">
+            <div style="font-size: 1.15rem; font-weight: 800; color: #000000;">Global Creator Outreach Radar</div>
+            <div style="font-size: 0.86rem; color: #222222; font-weight: 500; margin-top: 2px;">
                 Interactive 3D WebGL Globe rendering active influencer hubs across North America, Europe, Asia, and Oceania.
             </div>
         </div>
-        <div class="badge-pill-neutral mono-num">3D WebGL Powered</div>
+        <div class="badge-pill-neutral mono-num" style="color: #000000;">3D WebGL Powered</div>
     </div>
 </div>
 """, unsafe_allow_html=True)

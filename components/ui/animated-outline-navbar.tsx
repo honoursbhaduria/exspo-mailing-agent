@@ -8,10 +8,23 @@ interface AnimatedOutlineNavbarProps {
 }
 
 export const AnimatedOutlineNavbar: React.FC<AnimatedOutlineNavbarProps> = ({
-  items = ['Home', 'Contact', 'About', 'FAQ'],
+  items = [
+    'Discovered Records',
+    'Classification Engine',
+    'Profile Context & Themes',
+    'AI Personalization',
+    'Outreach Audit Log',
+  ],
   activeIndex = 0,
   onSelect,
 }) => {
+  const [active, setActive] = useState(activeIndex);
+
+  const handleClick = (idx: number) => {
+    setActive(idx);
+    if (onSelect) onSelect(idx);
+  };
+
   return (
     <StyledWrapper>
       <div className="nav">
@@ -19,14 +32,14 @@ export const AnimatedOutlineNavbar: React.FC<AnimatedOutlineNavbarProps> = ({
           {items.map((item, idx) => (
             <div
               key={item}
-              className={`btn ${idx === activeIndex ? 'active' : ''}`}
-              onClick={() => onSelect && onSelect(idx)}
+              className={`btn ${idx === active ? 'active' : ''}`}
+              onClick={() => handleClick(idx)}
             >
               {item}
             </div>
           ))}
-          <svg className="outline" overflow="visible" width={400} height={60} viewBox="0 0 400 60" xmlns="http://www.w3.org/2000/svg">
-            <rect className="rect" pathLength={100} x={0} y={0} width={400} height={60} fill="transparent" strokeWidth={4} />
+          <svg className="outline" overflow="visible" width={820} height={56} viewBox="0 0 820 56" xmlns="http://www.w3.org/2000/svg">
+            <rect className="rect" pathLength={100} x={0} y={0} width={820} height={56} fill="transparent" strokeWidth={4} />
           </svg>
         </div>
       </div>
@@ -45,13 +58,13 @@ const StyledWrapper = styled.div`
     stroke-dashoffset: 5;
     stroke-dasharray: 0 0 10 40 10 40;
     transition: 0.5s;
-    stroke: #03045e;
+    stroke: #0284c7;
   }
 
   .nav {
     position: relative;
-    width: 460px;
-    height: 52px;
+    width: 820px;
+    height: 56px;
     margin: 0 auto;
   }
 
@@ -64,50 +77,61 @@ const StyledWrapper = styled.div`
   .container {
     position: absolute;
     inset: 0;
-    background: #ffffff;
-    border-radius: 12px;
-    border: 1px solid #ECEFF8;
-    box-shadow: 0 4px 16px rgba(3, 4, 94, 0.04);
+    background: #bef6; /* Ice-cyan light tint */
+    border-radius: 14px;
+    border: 1.5px solid #BAE6FD;
     display: flex;
     flex-direction: row;
     justify-content: space-around;
     align-items: center;
-    padding: 0.4em;
+    padding: 0.4em 0.8em;
   }
 
   .btn {
-    padding: 0.4em 1.2em;
-    color: #03045e;
+    padding: 0.5em 1.2em;
+    color: #000000;
+    font-weight: 700;
     font-size: 0.88rem;
-    font-weight: 600;
     cursor: pointer;
-    border-radius: 8px;
-    transition: 0.15s;
+    border-radius: 10px;
+    transition: 0.15s ease;
+    user-select: none;
   }
 
-  .btn:hover, .btn.active {
-    background: #F1F4FA;
-    color: #240046;
+  .btn:hover {
+    background: #ffffff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  }
+
+  .btn.active {
+    background: #ffffff;
+    box-shadow: 0 4px 12px rgba(2, 132, 199, 0.12);
+    border: 1.5px solid #BAE6FD;
   }
 
   .btn:nth-child(1):hover ~ svg .rect {
     stroke-dashoffset: 0;
-    stroke-dasharray: 0 2 8 73.3 8 10.7;
+    stroke-dasharray: 0 1.5 6 78 6 8.5;
   }
 
   .btn:nth-child(2):hover ~ svg .rect {
     stroke-dashoffset: 0;
-    stroke-dasharray: 0 12.6 9.5 49.3 9.5 31.6;
+    stroke-dasharray: 0 11 7 58 7 17;
   }
 
   .btn:nth-child(3):hover ~ svg .rect {
     stroke-dashoffset: 0;
-    stroke-dasharray: 0 24.5 8.5 27.5 8.5 55.5;
+    stroke-dasharray: 0 21 8 38 8 25;
   }
 
   .btn:nth-child(4):hover ~ svg .rect {
     stroke-dashoffset: 0;
-    stroke-dasharray: 0 34.7 6.9 10.2 6.9 76;
+    stroke-dasharray: 0 31 7 24 7 31;
+  }
+
+  .btn:nth-child(5):hover ~ svg .rect {
+    stroke-dashoffset: 0;
+    stroke-dasharray: 0 41 6 12 6 35;
   }
 
   .btn:hover ~ .outline .rect {

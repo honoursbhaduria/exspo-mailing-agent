@@ -16,18 +16,17 @@ export const SlideHoverButton: React.FC<SlideHoverButtonProps> = ({ children = '
 };
 
 const StyledWrapper = styled.div`
-  /* From uiverse.io by @Ali-Tahmazi99 */
   button {
     display: inline-block;
     min-width: 150px;
-    height: 50px;
+    height: 48px;
     padding: 0 24px;
-    border-radius: 10px;
-    border: 1px solid #03045e;
-    background: #ffffff;
+    border-radius: 12px;
+    border: 1.5px solid #7DD3FC;
+    background: #BAE6FD;
     position: relative;
     overflow: hidden;
-    transition: all 0.5s ease-in;
+    transition: all 0.3s ease-in;
     z-index: 1;
     cursor: pointer;
   }
@@ -40,19 +39,19 @@ const StyledWrapper = styled.div`
     width: 0;
     height: 100%;
     transform: skew(15deg);
-    transition: all 0.5s;
+    transition: all 0.4s ease;
     overflow: hidden;
     z-index: -1;
   }
 
   button::before {
     left: -10px;
-    background: #240046;
+    background: #93C5FD;
   }
 
   button::after {
     right: -10px;
-    background: #5a189a;
+    background: #60A5FA;
   }
 
   button:hover::before,
@@ -61,14 +60,14 @@ const StyledWrapper = styled.div`
   }
 
   button:hover span {
-    color: #e0aaff;
+    color: #000000;
     transition: 0.3s;
   }
 
   button span {
-    color: #03045e;
+    color: #000000;
     font-size: 16px;
-    font-weight: 600;
+    font-weight: 800;
     transition: all 0.3s ease-in;
   }
 `;

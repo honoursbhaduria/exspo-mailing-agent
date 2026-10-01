@@ -1,7 +1,10 @@
 """
-Design System, Google Fonts, Button Template, Navbar Icons & Single Color Architecture.
-Adheres strictly to the user's #03045e color theme, uiverse button hover effects,
-single-color stat tiles (no multiple/two-colored items), and icon-free Dashboard card header.
+Design System: Pure Black Text Architecture (#000000) & Light Fresh Pastel Palette.
+Strictly adheres to:
+1. ALL TEXT IS PURE BLACK (#000000) - ultra crisp, high contrast.
+2. ZERO DARK COLORS - light fresh sky-blue (#BAE6FD), ice-cyan (#E8F4FD), pure white (#FFFFFF).
+3. Bar Section / Tabs match the exact .nav .container spec (#bef6, rounded, white hover/active pill).
+4. Uniform light stat cards and buttons with bold black text.
 """
 
 def get_theme_css() -> str:
@@ -12,48 +15,50 @@ def get_theme_css() -> str:
 
 <style>
     /* ========================================================================
-       1. GLOBAL RESET & TYPOGRAPHY (SINGLE UNIFIED COLOR: #03045E)
+       1. GLOBAL RESET & TYPOGRAPHY - ALL TEXT IS 100% PURE BLACK (#000000)
        ======================================================================== */
     :root {
-        --primary-color: #03045e !important;
-        --background-color: #F1F4FA !important;
+        --primary-color: #0284C7 !important;
+        --background-color: #F4F7FC !important;
         --secondary-background-color: #FFFFFF !important;
-        --text-color: #03045e !important;
+        --text-color: #000000 !important;
     }
 
     html, body, [class*="css"], [class*="st-"] {
         font-family: 'Bricolage Grotesque', -apple-system, BlinkMacSystemFont, sans-serif !important;
-        color: #03045e !important;
+        color: #000000 !important;
     }
 
-    /* Monospace / Numerical Font Classes */
+    /* Monospace / Numerical Font Classes - PURE BLACK */
     .mono-num, .iosevka-charon-regular, code, pre {
         font-family: 'Iosevka Charon', monospace !important;
         font-style: normal;
+        color: #000000 !important;
     }
 
     .iosevka-charon-medium {
         font-family: 'Iosevka Charon', monospace !important;
         font-weight: 500;
+        color: #000000 !important;
     }
 
     .iosevka-charon-bold {
         font-family: 'Iosevka Charon', monospace !important;
         font-weight: 700;
+        color: #000000 !important;
     }
 
-    /* Base Canvas - Crisp Cool-Slate Light Background */
+    /* Base Canvas - Bright, Fresh, Clean Sky Ambient (NO DARK COLORS) */
     .stApp {
-        background-color: #F1F4FA !important;
+        background-color: #F4F7FC !important;
         background-image: 
-            radial-gradient(circle at 12% 10%, rgba(224, 231, 255, 0.5) 0%, transparent 35%),
-            radial-gradient(circle at 88% 12%, rgba(219, 234, 254, 0.5) 0%, transparent 35%),
-            radial-gradient(circle at 85% 85%, rgba(238, 242, 255, 0.45) 0%, transparent 35%),
-            radial-gradient(circle at 15% 88%, rgba(224, 231, 255, 0.45) 0%, transparent 35%) !important;
+            radial-gradient(circle at 12% 10%, rgba(186, 230, 253, 0.45) 0%, transparent 35%),
+            radial-gradient(circle at 88% 12%, rgba(224, 231, 255, 0.5) 0%, transparent 35%),
+            radial-gradient(circle at 85% 85%, rgba(224, 242, 254, 0.4) 0%, transparent 35%),
+            radial-gradient(circle at 15% 88%, rgba(186, 230, 253, 0.45) 0%, transparent 35%) !important;
         background-attachment: fixed !important;
     }
 
-    /* Container constraints */
     .block-container {
         padding-top: 1.6rem !important;
         padding-bottom: 3.5rem !important;
@@ -61,37 +66,38 @@ def get_theme_css() -> str:
     }
 
     /* ========================================================================
-       2. CRISP WHITE CARDS & PANELS
+       2. CRISP PURE WHITE CARDS & PANELS (LIGHT BORDERS, ZERO DARKNESS)
        ======================================================================== */
     .glass-card, .glass-panel {
         background: #FFFFFF !important;
-        border: 1px solid #ECEFF8 !important;
-        border-radius: 22px !important;
-        box-shadow: 0 10px 30px -10px rgba(3, 4, 94, 0.05), 0 2px 6px -1px rgba(0, 0, 0, 0.02) !important;
+        border: 1.5px solid #E2E8F0 !important;
+        border-radius: 20px !important;
+        box-shadow: 0 8px 24px -6px rgba(0, 0, 0, 0.04) !important;
         padding: 22px !important;
-        color: #03045e !important;
+        color: #000000 !important;
         transition: transform 0.2s ease, box-shadow 0.2s ease !important;
     }
     .glass-card:hover, .glass-panel:hover {
         transform: translateY(-2px);
-        box-shadow: 0 14px 34px -10px rgba(3, 4, 94, 0.09) !important;
+        box-shadow: 0 12px 28px -6px rgba(2, 132, 199, 0.08) !important;
+        border-color: #BAE6FD !important;
     }
 
     /* Streamlit Container Card Override (st.container(border=True)) */
     [data-testid="stVerticalBlockBorderWrapper"] {
         background: #FFFFFF !important;
-        border: 1px solid #ECEFF8 !important;
-        border-radius: 22px !important;
-        box-shadow: 0 10px 30px -10px rgba(3, 4, 94, 0.05) !important;
+        border: 1.5px solid #E2E8F0 !important;
+        border-radius: 20px !important;
+        box-shadow: 0 8px 24px -6px rgba(0, 0, 0, 0.04) !important;
         padding: 20px 22px !important;
     }
 
     .glass-card-subtle, .glass-panel-subtle {
         background: #F8FAFC !important;
-        border: 1px solid #EEF2F6 !important;
+        border: 1px solid #E2E8F0 !important;
         border-radius: 12px !important;
         padding: 9px 12px !important;
-        color: #03045e !important;
+        color: #000000 !important;
     }
 
     /* ========================================================================
@@ -110,14 +116,13 @@ def get_theme_css() -> str:
         align-items: center;
         gap: 10px;
         background: #FFFFFF !important;
-        border: 1px solid #E2E8F0 !important;
+        border: 1.5px solid #BAE6FD !important;
         padding: 6px 18px;
         border-radius: 9999px;
-        box-shadow: 0 2px 8px rgba(3, 4, 94, 0.05);
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
         margin-bottom: 12px;
     }
 
-    /* Navbar Action Button with Press & Bounce Animation */
     .icon-conatiner {
         width: 32px;
         height: 32px;
@@ -127,7 +132,7 @@ def get_theme_css() -> str:
         justify-content: center;
         background: #FFFFFF;
         border-radius: 8px;
-        border: 1px solid #E2E8F0;
+        border: 1px solid #BAE6FD;
         cursor: pointer;
         position: relative;
         transition: transform 0.15s ease;
@@ -159,15 +164,15 @@ def get_theme_css() -> str:
     .brand-name, .brand-title {
         font-family: 'Bricolage Grotesque', sans-serif;
         font-size: 0.95rem;
-        font-weight: 700;
-        color: #03045e !important;
+        font-weight: 800;
+        color: #000000 !important;
     }
 
     .hero-title, .main-heading {
         font-family: 'Bricolage Grotesque', sans-serif;
         font-size: 3.1rem;
-        font-weight: 800;
-        color: #03045e !important;
+        font-weight: 900;
+        color: #000000 !important;
         letter-spacing: -1.2px;
         margin: 0;
         line-height: 1.15;
@@ -176,28 +181,28 @@ def get_theme_css() -> str:
     .hero-sub, .main-subheading {
         font-family: 'Bricolage Grotesque', sans-serif;
         font-size: 1.05rem;
-        color: #5A6282 !important;
-        font-weight: 500;
+        color: #222222 !important;
+        font-weight: 600;
         margin-top: 8px;
         max-width: 680px;
         line-height: 1.5;
     }
 
     .stat-number {
-        font-size: 1.45rem;
-        font-weight: 700;
-        color: #03045e !important;
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: #000000 !important;
         line-height: 1.2;
     }
     .stat-label {
-        font-size: 0.75rem;
-        font-weight: 600;
-        color: #5A6282 !important;
+        font-size: 0.78rem;
+        font-weight: 700;
+        color: #333333 !important;
         margin-top: 2px;
     }
 
     /* ========================================================================
-       4. CENTER CARD STAT TILES - UNIFIED SINGLE COLOR (NO MULTIPLE/TWO COLORED)
+       4. CENTER CARD STAT TILES - UNIFIED LIGHT PASTEL (PURE BLACK TEXT)
        Fixing:
        65 Total Profiles
        29 Qualified (5k-100k)
@@ -210,10 +215,9 @@ def get_theme_css() -> str:
         margin-top: 16px;
     }
     
-    /* ALL THREE TILES FOLLOW EXACT SAME SINGLE COLOR PALETTE */
     .stat-tile, .stat-tile-muted, .stat-tile.purple, .stat-tile.blue, .stat-tile.pink {
         background: #F8FAFC !important;
-        border: 1px solid #E2E8F0 !important;
+        border: 1.5px solid #BAE6FD !important;
         border-radius: 14px !important;
         padding: 14px 16px !important;
         display: flex !important;
@@ -222,24 +226,24 @@ def get_theme_css() -> str:
         transition: all 0.2s ease !important;
     }
     .stat-tile:hover, .stat-tile-muted:hover {
-        border-color: #03045e !important;
+        border-color: #0284C7 !important;
         background: #FFFFFF !important;
-        box-shadow: 0 4px 12px rgba(3, 4, 94, 0.05) !important;
+        box-shadow: 0 4px 14px rgba(2, 132, 199, 0.08) !important;
     }
 
     .stat-tile-val, .stat-tile .stat-number, .stat-tile-muted .stat-number {
         font-family: 'Iosevka Charon', monospace !important;
-        font-size: 1.45rem !important;
-        font-weight: 700 !important;
+        font-size: 1.5rem !important;
+        font-weight: 800 !important;
         line-height: 1 !important;
-        color: #03045e !important;
+        color: #000000 !important;
     }
 
     .stat-tile-lbl, .stat-tile .stat-label, .stat-tile-muted .stat-label {
         font-family: 'Bricolage Grotesque', sans-serif !important;
-        font-size: 0.76rem !important;
-        font-weight: 600 !important;
-        color: #5A6282 !important;
+        font-size: 0.78rem !important;
+        font-weight: 700 !important;
+        color: #222222 !important;
         margin-top: 4px !important;
     }
 
@@ -248,11 +252,11 @@ def get_theme_css() -> str:
         display: inline-flex;
         align-items: center;
         gap: 5px;
-        background: #EEF2FF !important;
-        color: #03045e !important;
-        border: 1px solid #CBD5E1 !important;
-        font-size: 0.74rem;
-        font-weight: 700;
+        background: #DCFCE7 !important;
+        color: #000000 !important;
+        border: 1px solid #86EFAC !important;
+        font-size: 0.75rem;
+        font-weight: 800;
         padding: 3px 9px;
         border-radius: 9999px;
     }
@@ -260,11 +264,11 @@ def get_theme_css() -> str:
         display: inline-flex;
         align-items: center;
         gap: 5px;
-        background: #F8FAFC !important;
-        color: #5A6282 !important;
-        border: 1px solid #E2E8F0 !important;
-        font-size: 0.74rem;
-        font-weight: 700;
+        background: #FEE2E2 !important;
+        color: #000000 !important;
+        border: 1px solid #FCA5A5 !important;
+        font-size: 0.75rem;
+        font-weight: 800;
         padding: 3px 9px;
         border-radius: 9999px;
     }
@@ -272,161 +276,166 @@ def get_theme_css() -> str:
         display: inline-flex;
         align-items: center;
         gap: 5px;
-        background: #F8FAFC !important;
-        color: #03045e !important;
-        border: 1px solid #E2E8F0 !important;
-        font-size: 0.74rem;
-        font-weight: 600;
+        background: #F1F5F9 !important;
+        color: #000000 !important;
+        border: 1px solid #CBD5E1 !important;
+        font-size: 0.75rem;
+        font-weight: 700;
         padding: 3px 9px;
         border-radius: 9999px;
     }
 
     /* ========================================================================
-       5. UIVERSE BUTTON TEMPLATE IMPLEMENTATION (@Ali-Tahmazi99)
+       5. BUTTONS - CLEAN FRESH SKY BLUE (#BAE6FD) WITH SOLID BLACK TEXT
        ======================================================================== */
-    .stButton > button,
-    .stDownloadButton > button {
+    .stButton > button {
         display: inline-flex !important;
         align-items: center !important;
         justify-content: center !important;
         min-height: 48px !important;
-        border-radius: 10px !important;
-        border: 1.5px solid #03045e !important;
-        background: #FFFFFF !important;
-        position: relative !important;
-        overflow: hidden !important;
-        transition: all 0.5s ease-in !important;
-        z-index: 1 !important;
-        box-shadow: 0 2px 8px rgba(3, 4, 94, 0.05) !important;
+        border-radius: 12px !important;
+        border: 1.5px solid #7DD3FC !important;
+        background: #BAE6FD !important;
+        color: #000000 !important;
+        font-size: 0.92rem !important;
+        font-weight: 800 !important;
+        box-shadow: 0 4px 12px rgba(2, 132, 199, 0.12) !important;
+        transition: all 0.2s ease !important;
         cursor: pointer !important;
     }
 
-    .stButton > button::before,
-    .stButton > button::after,
-    .stDownloadButton > button::before,
-    .stDownloadButton > button::after {
-        content: '' !important;
-        position: absolute !important;
-        top: 0 !important;
-        width: 0 !important;
-        height: 100% !important;
-        transform: skew(15deg) !important;
-        transition: all 0.5s !important;
-        overflow: hidden !important;
-        z-index: -1 !important;
-    }
-
-    .stButton > button::before,
-    .stDownloadButton > button::before {
-        left: -10px !important;
-        background: #240046 !important;
-    }
-
-    .stButton > button::after,
-    .stDownloadButton > button::after {
-        right: -10px !important;
-        background: #5a189a !important;
-    }
-
-    .stButton > button:hover::before,
-    .stButton > button:hover::after,
-    .stDownloadButton > button:hover::before,
-    .stDownloadButton > button:hover::after {
-        width: 58% !important;
+    .stButton > button:hover {
+        background: #93C5FD !important;
+        border-color: #38BDF8 !important;
+        color: #000000 !important;
+        box-shadow: 0 6px 18px rgba(2, 132, 199, 0.2) !important;
+        transform: translateY(-1px);
     }
 
     .stButton > button span,
     .stButton > button p,
-    .stButton > button div,
-    .stDownloadButton > button span,
-    .stDownloadButton > button p {
-        color: #03045e !important;
-        font-size: 0.88rem !important;
-        font-weight: 700 !important;
-        transition: all 0.3s ease-in !important;
-        position: relative !important;
-        z-index: 2 !important;
+    .stButton > button div {
+        color: #000000 !important;
+        font-size: 0.92rem !important;
+        font-weight: 800 !important;
     }
 
-    .stButton > button:hover span,
-    .stButton > button:hover p,
-    .stButton > button:hover div,
-    .stDownloadButton > button:hover span,
-    .stDownloadButton > button:hover p {
-        color: #e0aaff !important;
-        transition: 0.3s !important;
-    }
-
-    /* Secondary Button Variant */
+    /* Secondary Button (RESET PARAMETERS) */
     .stButton > button[kind="secondary"] {
-        border-color: #03045e !important;
         background: #FFFFFF !important;
+        border: 1.5px solid #CBD5E1 !important;
+        color: #000000 !important;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03) !important;
+    }
+    .stButton > button[kind="secondary"]:hover {
+        background: #F8FAFC !important;
+        border-color: #94A3B8 !important;
+        color: #000000 !important;
     }
 
-    /* ========================================================================
-       6. BAR SECTION / TABS (ANIMATED OUTLINE & UNIFIED PALETTE)
-       ======================================================================== */
-    .stTabs [data-baseweb="tab-list"] {
-        gap: 8px !important;
+    /* Download Buttons */
+    .stDownloadButton > button {
         background: #FFFFFF !important;
-        padding: 6px !important;
-        border-radius: 14px !important;
-        border: 1.5px solid #03045e !important;
-        box-shadow: 0 4px 16px rgba(3, 4, 94, 0.04) !important;
-        position: relative !important;
-    }
-    .stTabs [data-baseweb="tab"] {
-        font-family: 'Bricolage Grotesque', sans-serif !important;
+        border: 1.5px solid #BAE6FD !important;
+        color: #000000 !important;
         border-radius: 10px !important;
-        font-weight: 600 !important;
-        font-size: 0.88rem !important;
-        padding: 8px 18px !important;
-        color: #03045e !important;
-        background: transparent !important;
-        border: none !important;
+        font-weight: 800 !important;
         transition: all 0.2s ease !important;
     }
-    .stTabs [data-baseweb="tab"]:hover {
-        background: #F1F4FA !important;
-        color: #240046 !important;
+    .stDownloadButton > button:hover {
+        background: #F0F9FF !important;
+        border-color: #7DD3FC !important;
+        color: #000000 !important;
     }
-    .stTabs [aria-selected="true"] {
-        background: #03045e !important;
-        color: #FFFFFF !important;
-        box-shadow: 0 4px 12px rgba(3, 4, 94, 0.2) !important;
-    }
-    .stTabs [aria-selected="true"] p {
-        color: #FFFFFF !important;
+    .stDownloadButton > button span,
+    .stDownloadButton > button p {
+        color: #000000 !important;
+        font-weight: 800 !important;
     }
 
     /* ========================================================================
-       7. SELECTBOX, INPUTS, TABLES & CHROME
+       6. BAR SECTION / TABS (EXACT MATCH TO USER'S .nav .container SPEC: #bef6)
+       ======================================================================== */
+    .stTabs [data-baseweb="tab-list"] {
+        position: relative !important;
+        background: #DDF0FF !important; /* Soft ice cyan / sky light: #bef6 */
+        border: 2px solid #BAE6FD !important;
+        border-radius: 14px !important;
+        padding: 6px 8px !important;
+        display: flex !important;
+        flex-direction: row !important;
+        justify-content: space-around !important;
+        align-items: center !important;
+        gap: 8px !important;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.03) !important;
+    }
+
+    .stTabs [data-baseweb="tab"] {
+        font-family: 'Bricolage Grotesque', sans-serif !important;
+        padding: 9px 20px !important;
+        border-radius: 10px !important;
+        background: transparent !important;
+        border: none !important;
+        cursor: pointer !important;
+        transition: all 0.2s ease !important;
+    }
+
+    .stTabs [data-baseweb="tab"] p,
+    .stTabs [data-baseweb="tab"] span,
+    .stTabs [data-baseweb="tab"] div {
+        color: #000000 !important;
+        font-size: 0.92rem !important;
+        font-weight: 800 !important;
+        user-select: none !important;
+    }
+
+    .stTabs [data-baseweb="tab"]:hover {
+        background: rgba(255, 255, 255, 0.75) !important;
+        border-radius: 10px !important;
+    }
+
+    .stTabs [aria-selected="true"] {
+        background: #FFFFFF !important;
+        border-radius: 10px !important;
+        box-shadow: 0 4px 12px rgba(2, 132, 199, 0.1) !important;
+        border: 1.5px solid #BAE6FD !important;
+    }
+
+    .stTabs [aria-selected="true"] p,
+    .stTabs [aria-selected="true"] span {
+        color: #000000 !important;
+        font-weight: 900 !important;
+    }
+
+    /* ========================================================================
+       7. SELECTBOX, INPUTS, TABLES & CHROME - ALL TEXT BLACK ONLY
        ======================================================================== */
     div[data-baseweb="popover"],
     div[data-baseweb="menu"],
     ul[data-baseweb="menu"],
     div[role="listbox"] {
         background-color: #FFFFFF !important;
-        color: #03045e !important;
-        border: 1px solid #CBD5E1 !important;
+        color: #000000 !important;
+        border: 1.5px solid #CBD5E1 !important;
         border-radius: 12px !important;
-        box-shadow: 0 12px 32px rgba(3, 4, 94, 0.08) !important;
+        box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08) !important;
     }
     li[data-baseweb="menu-item"],
     div[role="option"] {
         background-color: #FFFFFF !important;
-        color: #03045e !important;
+        color: #000000 !important;
         font-family: 'Bricolage Grotesque', sans-serif !important;
         font-size: 0.9rem !important;
+        font-weight: 700 !important;
         padding: 9px 14px !important;
     }
     li[data-baseweb="menu-item"]:hover,
     div[role="option"]:hover,
     li[aria-selected="true"],
     div[aria-selected="true"] {
-        background-color: #EEF2FF !important;
-        color: #03045e !important;
-        font-weight: 600 !important;
+        background-color: #F0F9FF !important;
+        color: #000000 !important;
+        font-weight: 800 !important;
     }
 
     div[data-baseweb="select"] {
@@ -434,56 +443,61 @@ def get_theme_css() -> str:
     }
     div[data-baseweb="select"] > div {
         background-color: #FFFFFF !important;
-        border: 1px solid #CBD5E1 !important;
+        border: 1.5px solid #CBD5E1 !important;
         border-radius: 10px !important;
-        color: #03045e !important;
+        color: #000000 !important;
         box-shadow: none !important;
         min-height: 42px !important;
     }
     div[data-baseweb="select"] span {
-        color: #03045e !important;
-        font-weight: 600 !important;
+        color: #000000 !important;
+        font-weight: 700 !important;
         font-size: 0.88rem !important;
     }
     div[data-baseweb="select"] svg {
-        fill: #03045e !important;
+        fill: #000000 !important;
     }
 
     .stTextInput input, .stNumberInput input, .stTextArea textarea {
         background-color: #FFFFFF !important;
-        color: #03045e !important;
-        border: 1px solid #CBD5E1 !important;
+        color: #000000 !important;
+        border: 1.5px solid #CBD5E1 !important;
         border-radius: 10px !important;
         box-shadow: none !important;
-        font-weight: 500 !important;
+        font-weight: 700 !important;
     }
     .stTextInput input:focus, .stNumberInput input:focus, .stTextArea textarea:focus {
-        border-color: #03045e !important;
-        box-shadow: 0 0 0 2px rgba(3, 4, 94, 0.15) !important;
+        border-color: #0284C7 !important;
+        box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.2) !important;
     }
 
     label[data-testid="stWidgetLabel"] p {
-        color: #03045e !important;
-        font-weight: 600 !important;
-        font-size: 0.84rem !important;
+        color: #000000 !important;
+        font-weight: 800 !important;
+        font-size: 0.86rem !important;
     }
 
+    /* Clean Dataframe / Table */
     [data-testid="stDataFrame"] {
         background: #FFFFFF !important;
-        border: 1px solid #E2E8F0 !important;
+        border: 1.5px solid #E2E8F0 !important;
         border-radius: 16px !important;
         overflow: hidden !important;
-        box-shadow: 0 2px 8px rgba(3, 4, 94, 0.02) !important;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02) !important;
     }
     [data-testid="stDataFrame"] div {
         background-color: #FFFFFF !important;
-        color: #03045e !important;
+        color: #000000 !important;
     }
 
     .stExpander {
         background: #FFFFFF !important;
-        border: 1px solid #E2E8F0 !important;
+        border: 1.5px solid #E2E8F0 !important;
         border-radius: 14px !important;
+    }
+    .stExpander summary span p {
+        color: #000000 !important;
+        font-weight: 800 !important;
     }
 
     div[data-testid="stToolbar"] { visibility: hidden; height: 0; }
