@@ -31,7 +31,6 @@ from src.ui.components import (
     render_center_stat_tiles,
     render_right_feed_card
 )
-from src.ui.globe_footer import get_3d_globe_html
 
 # -------------------------------------------------------------
 # PAGE SETUP
@@ -328,37 +327,3 @@ with tab_tracker:
     else:
         st.info("Outreach log is currently empty.")
 
-# -------------------------------------------------------------
-# 4. FOOTER: INTERACTIVE 3D GLOBE VISUALIZATION (GLOBAL NETWORK)
-# -------------------------------------------------------------
-st.markdown("<div style='height: 30px;'></div>", unsafe_allow_html=True)
-st.markdown("""
-<div class="glass-card" style="padding: 24px; margin-bottom: 24px;">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-        <div>
-            <div style="font-size: 1.15rem; font-weight: 800; color: #000000;">Global Creator Outreach Radar</div>
-            <div style="font-size: 0.86rem; color: #222222; font-weight: 500; margin-top: 2px;">
-                Interactive 3D WebGL Globe rendering active influencer hubs across North America, Europe, Asia, and Oceania.
-            </div>
-        </div>
-        <div class="badge-pill-neutral mono-num" style="color: #000000;">3D WebGL Powered</div>
-    </div>
-</div>
-""", unsafe_allow_html=True)
-
-# Render Interactive 3D WebGL Globe
-st.components.v1.html(get_3d_globe_html(), height=490)
-
-# React Component Setup Verification details in footer
-with st.expander("React Component Architecture & Setup Guide (components/ui/3d-globe.tsx)"):
-    st.markdown("""
-    **Project Verification & Directory Setup**:
-    - `components/ui/3d-globe.tsx`: Core 3D Globe with Three.js, React Three Fiber, markers, atmosphere glow.
-    - `components/3d-globe-demo.tsx`: Example demo with 13 worldwide markers (New York, London, Tokyo, Paris, New Delhi, etc.).
-    - `lib/utils.ts`: Tailwind & clsx merge utility (`cn`).
-
-    **To run this React component in Next.js / Vite with shadcn & Tailwind v4**:
-    ```bash
-    npm install @react-three/fiber @react-three/drei three @types/three clsx tailwind-merge
-    ```
-    """)

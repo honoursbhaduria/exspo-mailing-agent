@@ -4,7 +4,6 @@ import AudienceReachCard from './components/AudienceReachCard';
 import DashboardControlCard from './components/DashboardControlCard';
 import FeedActivityCard from './components/FeedActivityCard';
 import TabsSection from './components/TabsSection';
-import FooterGlobe from './components/FooterGlobe';
 import { api } from './services/api';
 
 export const App: React.FC = () => {
@@ -63,9 +62,6 @@ export const App: React.FC = () => {
       <div className="mb-8">
         <TabsSection />
       </div>
-
-      {/* 4. Footer: Interactive 3D WebGL Globe */}
-      <FooterGlobe />
     </div>
   );
 };
