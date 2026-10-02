@@ -770,22 +770,64 @@ export const TabsSection: React.FC<TabsSectionProps> = ({
                 </div>
 
                 <div className="mt-5 pt-4 border-t border-[#E2E8F0]">
-                  <div className="text-xs font-extrabold text-black uppercase tracking-wider mb-2">
-                    Audience Demographics
+                  <div className="text-xs font-extrabold text-black uppercase tracking-wider mb-2.5">
+                    Audience Demographics &amp; Geography
                   </div>
-                  <div className="grid grid-cols-3 gap-3">
-                    <div className="bg-white border border-[#E2E8F0] p-2.5 rounded-xl">
-                      <div className="text-[11px] font-bold text-[#333333]">Age Group</div>
-                      <div className="font-mono text-sm font-black text-black">{currentCreator.audience_age || '18-34 (82%)'}</div>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div className="bg-white border border-[#E2E8F0] p-3 rounded-xl flex flex-col justify-between">
+                      <div className="text-[11px] font-bold text-[#64748B] flex items-center gap-1">
+                        <Users className="w-3 h-3 text-[#64748B]" /> Age Group
+                      </div>
+                      <div className="font-mono text-sm font-black text-black mt-1">
+                        {currentCreator.audience_age || '18-34 (72%)'}
+                      </div>
+                      <div className="text-[10px] font-bold text-[#64748B] mt-1">
+                        Core Cohort
+                      </div>
                     </div>
-                    <div className="bg-white border border-[#E2E8F0] p-2.5 rounded-xl">
-                      <div className="text-[11px] font-bold text-[#333333]">Gender Distribution</div>
-                      <div className="font-mono text-sm font-black text-black">{currentCreator.audience_gender || 'Female (78%)'}</div>
+
+                    <div className="bg-white border border-[#E2E8F0] p-3 rounded-xl flex flex-col justify-between">
+                      <div className="text-[11px] font-bold text-[#64748B] flex items-center gap-1">
+                        <Users className="w-3 h-3 text-[#64748B]" /> Gender Distribution
+                      </div>
+                      <div className="font-mono text-sm font-black text-black mt-1">
+                        {currentCreator.audience_gender || 'Female (78%)'}
+                      </div>
+                      <div className="text-[10px] font-bold text-[#64748B] mt-1">
+                        Audience Split
+                      </div>
                     </div>
-                    <div className="bg-white border border-[#E2E8F0] p-2.5 rounded-xl">
-                      <div className="text-[11px] font-bold text-[#333333]">Top Geography</div>
-                      <div className="font-mono text-sm font-black text-black">{currentCreator.audience_geography || filters.geo}</div>
-                    </div>
+
+                    {(() => {
+                      const rawGeo = currentCreator.audience_geography || currentCreator.location || filters.geo;
+                      let countryTag = 'India (IN)';
+                      const g = rawGeo.toLowerCase();
+                      if (g.includes(', in') || g.includes('india') || g.includes('mumbai') || g.includes('delhi') || g.includes('bangalore') || g.includes('hyderabad')) {
+                        countryTag = 'India (IN)';
+                      } else if (g.includes(', us') || g.includes('united states') || g.includes('usa')) {
+                        countryTag = 'United States (US)';
+                      } else if (g.includes(', gb') || g.includes('uk') || g.includes('london')) {
+                        countryTag = 'United Kingdom (GB)';
+                      } else if (g.includes(', ca') || g.includes('canada') || g.includes('toronto')) {
+                        countryTag = 'Canada (CA)';
+                      } else if (g.includes(', au') || g.includes('australia')) {
+                        countryTag = 'Australia (AU)';
+                      }
+
+                      return (
+                        <div className="bg-white border border-[#E2E8F0] p-3 rounded-xl flex flex-col justify-between">
+                          <div className="text-[11px] font-bold text-[#64748B] flex items-center gap-1">
+                            <Globe className="w-3 h-3 text-[#64748B]" /> Top Geography
+                          </div>
+                          <div className="font-mono text-sm font-black text-black mt-1">
+                            {rawGeo}
+                          </div>
+                          <div className="text-[10px] font-black text-[#0284C7] bg-[#E0F2FE] border border-[#BAE6FD] px-2 py-0.5 rounded-md inline-block mt-1 w-fit">
+                            {countryTag}
+                          </div>
+                        </div>
+                      );
+                    })()}
                   </div>
                 </div>
               </div>
