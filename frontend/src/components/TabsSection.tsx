@@ -49,6 +49,8 @@ export const TabsSection: React.FC<TabsSectionProps> = ({
 
   // Tab 3 & 4 State
   const [selectedHandle, setSelectedHandle] = useState<string>('');
+  const [enrichmentSearchQuery, setEnrichmentSearchQuery] = useState<string>('');
+  const [enrichmentScope, setEnrichmentScope] = useState<'all' | 'passed'>('all');
   const [targetCreator, setTargetCreator] = useState<string>('');
   const [brandName, setBrandName] = useState('LumiGlow');
   const [collabType, setCollabType] = useState('UGC & Paid Showcase');
@@ -254,7 +256,49 @@ export const TabsSection: React.FC<TabsSectionProps> = ({
 
   // Current creator for Tab 3 & 4
   const eligibleCreators = passedInfluencers.length > 0 ? passedInfluencers : filteredResults.length > 0 ? filteredResults : allInfluencers;
-  const currentCreator = eligibleCreators.find((i) => i.handle === selectedHandle) || eligibleCreators[0];
+
+  // Tab 3 Enrichment creator pool & search filtering
+  const enrichmentPool =
+    enrichmentScope === 'passed' && passedInfluencers.length > 0
+      ? passedInfluencers
+      : allInfluencers.length > 0
+      ? allInfluencers
+      : eligibleCreators;
+
+  const filteredEnrichmentCreators = enrichmentPool.filter((item) => {
+    if (!enrichmentSearchQuery.trim()) return true;
+    const q = enrichmentSearchQuery.toLowerCase().trim();
+    return (
+      (item.name || '').toLowerCase().includes(q) ||
+      (item.handle || '').toLowerCase().includes(q) ||
+      (item.location || '').toLowerCase().includes(q) ||
+      (item.niche || '').toLowerCase().includes(q)
+    );
+  });
+
+  const currentCreator =
+    enrichmentPool.find((i) => i.handle === selectedHandle) ||
+    allInfluencers.find((i) => i.handle === selectedHandle) ||
+    eligibleCreators.find((i) => i.handle === selectedHandle) ||
+    filteredEnrichmentCreators[0] ||
+    eligibleCreators[0];
+
+  const handleEnrichmentSearchChange = (query: string) => {
+    setEnrichmentSearchQuery(query);
+    if (query.trim()) {
+      const q = query.toLowerCase().trim();
+      const matches = enrichmentPool.filter(
+        (c) =>
+          (c.name || '').toLowerCase().includes(q) ||
+          (c.handle || '').toLowerCase().includes(q) ||
+          (c.location || '').toLowerCase().includes(q) ||
+          (c.niche || '').toLowerCase().includes(q)
+      );
+      if (matches.length > 0 && !matches.some((m) => m.handle === selectedHandle)) {
+        setSelectedHandle(matches[0].handle);
+      }
+    }
+  };
 
   // Generate AI Outreach
   const handleGeneratePitch = async () => {
@@ -1011,24 +1055,161 @@ export const TabsSection: React.FC<TabsSectionProps> = ({
             </p>
           </div>
 
-          <div className="mb-6 max-w-md">
-            <label className="block text-xs font-black text-black mb-1.5">Select Creator Profile</label>
-            <div className="relative">
-              <select
-                value={selectedHandle}
-                onChange={(e) => setSelectedHandle(e.target.value)}
-                className="w-full appearance-none bg-[#F8FAFC] hover:bg-white focus:bg-white border border-[#CBD5E1] hover:border-black focus:border-black rounded-xl px-3.5 py-2.5 pr-10 text-xs font-black text-black cursor-pointer shadow-xs transition-all focus:outline-none focus:ring-2 focus:ring-[#BAE6FD]/60"
-              >
-                {eligibleCreators.map((i) => (
-                  <option key={i.handle} value={i.handle} className="bg-white text-black font-bold">
-                    {i.name} (@{i.handle}) - {i.location || 'Global'}
-                  </option>
-                ))}
-              </select>
-              <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 flex items-center">
-                <ChevronDown className="w-4 h-4 text-black stroke-[2.5]" />
+          {/* Creator Search & Selector Controls */}
+          <div className="bg-[#F8FAFC] border border-[#CBD5E1] rounded-2xl p-4 sm:p-5 mb-6 shadow-xs">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3 pb-3 border-b border-[#E2E8F0]">
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-black uppercase tracking-wider text-black">
+                  Select &amp; Search Creator Profile
+                </span>
+                <span className="text-[11px] font-mono font-bold bg-[#E2E8F0] text-black px-2 py-0.5 rounded-full">
+                  {filteredEnrichmentCreators.length} Available
+                </span>
+              </div>
+
+              {passedInfluencers.length > 0 && (
+                <div className="flex items-center gap-1.5 self-start sm:self-auto">
+                  <span className="text-[11px] font-bold text-[#64748B]">Scope:</span>
+                  <button
+                    type="button"
+                    onClick={() => setEnrichmentScope('all')}
+                    className={`px-2.5 py-1 rounded-lg text-xs font-black transition-all ${
+                      enrichmentScope === 'all'
+                        ? 'bg-black text-white shadow-xs'
+                        : 'bg-white border border-[#CBD5E1] text-black hover:bg-[#F1F5F9]'
+                    }`}
+                  >
+                    All Database ({allInfluencers.length})
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setEnrichmentScope('passed')}
+                    className={`px-2.5 py-1 rounded-lg text-xs font-black transition-all ${
+                      enrichmentScope === 'passed'
+                        ? 'bg-black text-white shadow-xs'
+                        : 'bg-white border border-[#CBD5E1] text-black hover:bg-[#F1F5F9]'
+                    }`}
+                  >
+                    Passed Filters ({passedInfluencers.length})
+                  </button>
+                </div>
+              )}
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-3">
+              {/* Search By Name Input */}
+              <div className="md:col-span-6 relative">
+                <label className="block text-xs font-black text-black mb-1.5">
+                  Search Creator by Name, Handle, or City
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <Search className="h-4 w-4 text-[#64748B]" />
+                  </div>
+                  <input
+                    type="text"
+                    value={enrichmentSearchQuery}
+                    onChange={(e) => handleEnrichmentSearchChange(e.target.value)}
+                    placeholder="Type name (e.g. Malvika, Devika, Mumbai)..."
+                    className="w-full bg-white border border-[#CBD5E1] hover:border-black focus:border-black rounded-xl pl-9 pr-8 py-2.5 text-xs font-bold text-black placeholder:text-[#94A3B8] shadow-xs transition-all focus:outline-none focus:ring-2 focus:ring-[#BAE6FD]/60"
+                  />
+                  {enrichmentSearchQuery && (
+                    <button
+                      type="button"
+                      onClick={() => handleEnrichmentSearchChange('')}
+                      className="absolute inset-y-0 right-0 pr-2.5 flex items-center text-[#64748B] hover:text-black cursor-pointer"
+                      title="Clear search"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Creator Profile Dropdown */}
+              <div className="md:col-span-6">
+                <label className="block text-xs font-black text-black mb-1.5">
+                  Select Creator Profile {enrichmentSearchQuery ? `(${filteredEnrichmentCreators.length} matches)` : ''}
+                </label>
+                <div className="relative">
+                  <select
+                    value={currentCreator?.handle || ''}
+                    onChange={(e) => setSelectedHandle(e.target.value)}
+                    className="w-full appearance-none bg-white border border-[#CBD5E1] hover:border-black focus:border-black rounded-xl px-3.5 py-2.5 pr-10 text-xs font-black text-black cursor-pointer shadow-xs transition-all focus:outline-none focus:ring-2 focus:ring-[#BAE6FD]/60"
+                  >
+                    {filteredEnrichmentCreators.length > 0 ? (
+                      filteredEnrichmentCreators.map((i) => (
+                        <option key={i.handle} value={i.handle} className="bg-white text-black font-bold">
+                          {i.name} (@{i.handle}) - {i.location || 'Global'}
+                        </option>
+                      ))
+                    ) : (
+                      <option value="" disabled className="bg-white text-black font-bold">
+                        No creators match &quot;{enrichmentSearchQuery}&quot;
+                      </option>
+                    )}
+                  </select>
+                  <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 flex items-center">
+                    <ChevronDown className="w-4 h-4 text-black stroke-[2.5]" />
+                  </div>
+                </div>
               </div>
             </div>
+
+            {/* Quick Suggestions / Selected Creator Chips */}
+            {filteredEnrichmentCreators.length > 0 && (
+              <div className="mt-3 pt-3 border-t border-[#E2E8F0]">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-[11px] font-bold text-[#64748B]">
+                    {enrichmentSearchQuery ? `Top matches for "${enrichmentSearchQuery}":` : 'Quick Select Creator:'}
+                  </span>
+                  {enrichmentSearchQuery && (
+                    <button
+                      type="button"
+                      onClick={() => handleEnrichmentSearchChange('')}
+                      className="text-[11px] font-black text-[#2563EB] hover:underline cursor-pointer"
+                    >
+                      Reset search filter
+                    </button>
+                  )}
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {filteredEnrichmentCreators.slice(0, 8).map((c) => {
+                    const isSelected = c.handle === currentCreator?.handle;
+                    return (
+                      <button
+                        key={c.handle}
+                        type="button"
+                        onClick={() => setSelectedHandle(c.handle)}
+                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                          isSelected
+                            ? 'bg-black text-white shadow-xs'
+                            : 'bg-white hover:bg-[#F1F5F9] text-black border border-[#CBD5E1]'
+                        }`}
+                      >
+                        <span>{c.name}</span>
+                        <span className={`font-mono text-[10px] ${isSelected ? 'text-[#94A3B8]' : 'text-[#64748B]'}`}>
+                          @{c.handle}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {filteredEnrichmentCreators.length === 0 && (
+              <div className="mt-3 p-3 bg-white border border-[#CBD5E1] rounded-xl flex items-center justify-between text-xs text-black font-semibold">
+                <span>No creators found matching &quot;{enrichmentSearchQuery}&quot;</span>
+                <button
+                  type="button"
+                  onClick={() => handleEnrichmentSearchChange('')}
+                  className="font-black text-[#2563EB] hover:underline cursor-pointer"
+                >
+                  Clear search query
+                </button>
+              </div>
+            )}
           </div>
 
           {currentCreator && (
@@ -1065,6 +1246,17 @@ export const TabsSection: React.FC<TabsSectionProps> = ({
                       ? currentCreator.contact_email
                       : 'Not Found'}
                   </div>
+                </div>
+
+                <div className="mt-4 pt-3 border-t border-[#E2E8F0]">
+                  <button
+                    type="button"
+                    onClick={() => handleOpenDirectOutreach(currentCreator)}
+                    className="w-full inline-flex items-center justify-center gap-2 px-3 py-2 bg-black hover:bg-[#1E293B] text-white text-xs font-black rounded-xl transition-all shadow-xs cursor-pointer"
+                  >
+                    <Send className="w-3.5 h-3.5 text-white" />
+                    <span>Send Outreach Message</span>
+                  </button>
                 </div>
               </div>
 
