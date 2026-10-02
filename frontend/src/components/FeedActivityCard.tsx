@@ -11,9 +11,10 @@ export interface FeedItem {
 
 interface FeedActivityCardProps {
   items?: FeedItem[];
+  geo?: string;
 }
 
-export const FeedActivityCard: React.FC<FeedActivityCardProps> = ({ items }) => {
+export const FeedActivityCard: React.FC<FeedActivityCardProps> = ({ items, geo }) => {
   const defaultItems: FeedItem[] = [
     { name: 'Alina Paziuk', loc: 'London, UK', status: 'PASS', pass: true, tag: 'PASS' },
     { name: 'Cameron Stokes', loc: 'Athens, US', status: 'PASS', pass: true, tag: 'PASS' },
@@ -24,13 +25,24 @@ export const FeedActivityCard: React.FC<FeedActivityCardProps> = ({ items }) => 
 
   const displayItems = items && items.length > 0 ? items.slice(0, 5) : defaultItems;
 
+  const rawLabel = geo
+    ? geo.includes('(')
+      ? geo.slice(0, geo.indexOf('(')).trim()
+      : geo.trim()
+    : 'Global';
+
+  const displayGeo =
+    !rawLabel || rawLabel.toLowerCase().includes('global') || rawLabel.toLowerCase().includes('all')
+      ? 'Global'
+      : rawLabel;
+
   return (
     <div className="bg-white border border-[#E2E8F0] hover:border-[#BAE6FD] rounded-[20px] p-5 shadow-[0_4px_20px_rgba(0,0,0,0.04)] hover:shadow-[0_12px_28px_-6px_rgba(2,132,199,0.08)] transition-all h-full flex flex-col justify-between">
       <div>
         <div className="flex justify-between items-center mb-4">
           <span className="font-extrabold text-base text-black">Feed & Activity</span>
           <span className="inline-flex items-center gap-1.5 bg-[#F1F5F9] text-black border border-[#CBD5E1] text-xs font-bold px-2.5 py-0.5 rounded-full">
-            <Globe className="w-3 h-3 text-black" /> Global
+            <Globe className="w-3 h-3 text-black" /> {displayGeo}
           </span>
         </div>
 

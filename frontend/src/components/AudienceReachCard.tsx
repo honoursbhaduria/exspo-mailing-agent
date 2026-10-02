@@ -53,13 +53,7 @@ export const AudienceReachCard: React.FC<AudienceReachCardProps> = ({
           </div>
         </div>
 
-        {/* Light Azure Wave Trajectory Curves */}
-        <div className="my-3">
-          <svg viewBox="0 0 240 50" className="w-full h-12 overflow-visible">
-            <path d="M 0,38 Q 60,8 120,26 T 240,12" fill="none" stroke="#0284C7" strokeWidth="2.5" strokeLinecap="round" />
-            <path d="M 0,46 Q 70,40 140,18 T 240,36" fill="none" stroke="#7DD3FC" strokeWidth="2" strokeLinecap="round" opacity="0.6" />
-          </svg>
-        </div>
+        <div className="border-t border-[#E2E8F0] my-3"></div>
       </div>
 
       <div>

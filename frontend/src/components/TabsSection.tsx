@@ -224,6 +224,23 @@ export const TabsSection: React.FC<TabsSectionProps> = ({
       return g.includes(', au') || g.includes('australia') || g.includes('sydney') || g.includes('melbourne');
     }
 
+    if (iso === 'in' || countryName.includes('india')) {
+      return (
+        g.includes(', in') ||
+        g.includes('india') ||
+        g.includes('mumbai') ||
+        g.includes('delhi') ||
+        g.includes('bangalore') ||
+        g.includes('bengaluru') ||
+        g.includes('jaipur') ||
+        g.includes('chandigarh') ||
+        g.includes('pune') ||
+        g.includes('hyderabad') ||
+        g.includes('chennai') ||
+        g.endsWith(' in')
+      );
+    }
+
     if (iso && (g.includes(`, ${iso}`) || g.includes(` ${iso}`))) return true;
     if (countryName && countryName.length > 3 && g.includes(countryName)) return true;
 

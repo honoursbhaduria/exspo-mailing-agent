@@ -63,17 +63,34 @@ export const App: React.FC = () => {
       });
       setPassedCount(filterRes.passed_count);
 
-      // Compute dynamic creator averages
-      if (rawRes.influencers && rawRes.influencers.length > 0) {
-        const totalFollowers = rawRes.influencers.reduce((acc, cur) => acc + (cur.follower_count || 0), 0);
-        const avgF = Math.round(totalFollowers / rawRes.influencers.length);
+      // Find matching creators for active geography
+      const isGlobal = !geo || geo.toLowerCase().includes('global') || geo.toLowerCase().includes('all');
+      const geoMatches = isGlobal
+        ? filterRes.results
+        : filterRes.results.filter(
+            (r) => !r.qualification_reason || !r.qualification_reason.includes('does not match target')
+          );
+
+      const activeCreators = geoMatches.length > 0 ? geoMatches : filterRes.results;
+
+      // Discovered count: region count if filtered, else total raw count
+      if (!isGlobal && geoMatches.length > 0) {
+        setTotalCount(geoMatches.length);
+      } else {
+        setTotalCount(rawRes.total || 93);
+      }
+
+      // Compute dynamic creator averages based on the active region
+      if (activeCreators.length > 0) {
+        const totalFollowers = activeCreators.reduce((acc, cur) => acc + (cur.follower_count || 0), 0);
+        const avgF = Math.round(totalFollowers / activeCreators.length);
         setAvgFollowers(`${Math.round(avgF / 1000)}K`);
 
-        const totalReach = rawRes.influencers.reduce(
+        const totalReach = activeCreators.reduce(
           (acc, cur) => acc + (cur.follower_count || 0) * ((cur.engagement_rate || 2.5) / 100),
           0
         );
-        const avgR = Math.round(totalReach / rawRes.influencers.length);
+        const avgR = Math.round(totalReach / activeCreators.length);
         setAvgReach(`${Math.max(1, Math.round(avgR / 1000))}K`);
       }
 
@@ -83,7 +100,7 @@ export const App: React.FC = () => {
           .filter((r) => r.qualification_status === 'PASSED')
           .sort((a, b) => b.follower_count - a.follower_count);
 
-        const highlights: CreatorHighlight[] = (passedOnly.length > 0 ? passedOnly : filterRes.results)
+        const highlights: CreatorHighlight[] = (passedOnly.length > 0 ? passedOnly : activeCreators)
           .slice(0, 4)
           .map((c) => ({
             name: c.name,
@@ -91,8 +108,20 @@ export const App: React.FC = () => {
           }));
         setTopCreators(highlights);
 
-        // Feed Activity items: First 5 evaluated records
-        const feed: FeedItem[] = filterRes.results.slice(0, 5).map((item) => {
+        // Feed Activity items: Mix of passed and edge failure cases for dynamic feedback
+        const relevantForFeed = geoMatches.length > 0 ? geoMatches : filterRes.results;
+        const passedFeed = relevantForFeed.filter((r) => r.qualification_status === 'PASSED');
+        const failedFeed = relevantForFeed.filter((r) => r.qualification_status === 'FAILED');
+
+        const feedCandidates: typeof relevantForFeed = [];
+        feedCandidates.push(...passedFeed.slice(0, 2));
+        feedCandidates.push(...failedFeed.slice(0, 3));
+        if (feedCandidates.length < 5) {
+          const remainingPassed = passedFeed.slice(2, 2 + (5 - feedCandidates.length));
+          feedCandidates.push(...remainingPassed);
+        }
+
+        const feed: FeedItem[] = (feedCandidates.length > 0 ? feedCandidates : relevantForFeed.slice(0, 5)).map((item) => {
           let tag = 'PASS';
           if (item.qualification_status !== 'PASSED') {
             const reason = item.qualification_reason || '';
@@ -151,7 +180,7 @@ export const App: React.FC = () => {
           />
         </div>
         <div className="lg:col-span-3">
-          <FeedActivityCard items={feedItems} />
+          <FeedActivityCard items={feedItems} geo={currentGeo} />
         </div>
       </div>
 
