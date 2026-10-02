@@ -137,7 +137,7 @@ export const TabsSection: React.FC<TabsSectionProps> = ({
         }
         setDirectStatusNotice({ type: 'info', message: 'Pitch hyper-personalized with Google Gemini!' });
       }
-    } catch (e: any) {
+    } catch {
       setDirectStatusNotice({ type: 'error', message: 'Failed to generate pitch. Using default template.' });
     } finally {
       setDirectGenerating(false);
@@ -355,10 +355,10 @@ export const TabsSection: React.FC<TabsSectionProps> = ({
           TAB 1: DISCOVERED RECORDS
           ========================================================================= */}
       {activeTab === 'records' && (
-        <div className="bg-white border border-[#E2E8F0] rounded-[20px] p-6 shadow-[0_4px_24px_rgba(0,0,0,0.05)]">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-5">
+        <div className="bg-white border border-[#E2E8F0] rounded-2xl sm:rounded-[20px] p-4 sm:p-6 shadow-[0_4px_24px_rgba(0,0,0,0.05)]">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 mb-4 sm:mb-5">
             <div>
-              <h2 className="text-xl font-black text-black">Discovered Micro-Influencer Records</h2>
+              <h2 className="text-lg sm:text-xl font-black text-black">Discovered Micro-Influencer Records</h2>
               <p className="text-xs font-semibold text-[#333333] mt-0.5">
                 Targeted creator dataset scraped and synchronized with indexed database
               </p>
@@ -379,6 +379,7 @@ export const TabsSection: React.FC<TabsSectionProps> = ({
                 />
               </div>
               <button
+                type="button"
                 onClick={() => downloadCSV(displayRecords, 'discovered_influencers.csv')}
                 className="inline-flex items-center justify-center gap-2 bg-white border border-[#CBD5E1] hover:border-black hover:bg-[#F8FAFC] text-black font-extrabold text-xs px-3.5 py-2 rounded-xl transition-all cursor-pointer shadow-xs shrink-0"
               >
@@ -394,8 +395,8 @@ export const TabsSection: React.FC<TabsSectionProps> = ({
           ) : (
             <>
               {/* Active Dashboard Filter Banner */}
-              <div className="flex flex-wrap items-center justify-between gap-3 mb-4 bg-[#F8FAFC] border border-[#CBD5E1] p-3 rounded-xl">
-                <div className="flex flex-wrap items-center gap-2">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 bg-[#F8FAFC] border border-[#CBD5E1] p-3 rounded-xl">
+                <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
                   <span className="text-xs font-black text-black">Active Filter:</span>
                   <span className="inline-flex items-center gap-1.5 bg-white border border-[#94A3B8] text-xs font-black px-2.5 py-1 rounded-md text-black shadow-xs">
                     <Globe className="w-3.5 h-3.5 text-black" />
@@ -417,19 +418,19 @@ export const TabsSection: React.FC<TabsSectionProps> = ({
                   </span>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-2">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2 w-full sm:w-auto">
                   <span className="text-xs font-black text-black">
                     Showing <span className="text-[#0284C7] font-mono text-sm">{displayRecords.length}</span> creators:
                   </span>
                   
-                  <div className="inline-flex items-center gap-1 bg-[#F1F5F9] p-1 rounded-xl border border-[#CBD5E1]">
+                  <div className="w-full sm:w-auto overflow-x-auto no-scrollbar flex items-center gap-1 bg-[#F1F5F9] p-1 rounded-xl border border-[#CBD5E1]">
                     <button
                       type="button"
                       onClick={() => {
                         setRecordsFilterMode('qualified');
                         setRecordsPage(1);
                       }}
-                      className={`px-2.5 py-1 text-[11px] font-black rounded-lg transition-all cursor-pointer ${
+                      className={`whitespace-nowrap shrink-0 px-2.5 py-1 text-[11px] font-black rounded-lg transition-all cursor-pointer ${
                         recordsFilterMode === 'qualified'
                           ? 'bg-white text-black shadow-xs border border-[#94A3B8]'
                           : 'text-[#475569] hover:text-black'
@@ -444,7 +445,7 @@ export const TabsSection: React.FC<TabsSectionProps> = ({
                           setRecordsFilterMode('region');
                           setRecordsPage(1);
                         }}
-                        className={`px-2.5 py-1 text-[11px] font-black rounded-lg transition-all cursor-pointer ${
+                        className={`whitespace-nowrap shrink-0 px-2.5 py-1 text-[11px] font-black rounded-lg transition-all cursor-pointer ${
                           recordsFilterMode === 'region'
                             ? 'bg-white text-black shadow-xs border border-[#94A3B8]'
                             : 'text-[#475569] hover:text-black'
@@ -459,7 +460,7 @@ export const TabsSection: React.FC<TabsSectionProps> = ({
                         setRecordsFilterMode('all');
                         setRecordsPage(1);
                       }}
-                      className={`px-2.5 py-1 text-[11px] font-black rounded-lg transition-all cursor-pointer ${
+                      className={`whitespace-nowrap shrink-0 px-2.5 py-1 text-[11px] font-black rounded-lg transition-all cursor-pointer ${
                         recordsFilterMode === 'all'
                           ? 'bg-white text-black shadow-xs border border-[#94A3B8]'
                           : 'text-[#475569] hover:text-black'
@@ -471,7 +472,126 @@ export const TabsSection: React.FC<TabsSectionProps> = ({
                 </div>
               </div>
 
-              <div className="overflow-x-auto border border-[#E2E8F0] rounded-xl bg-white shadow-sm">
+              {/* Mobile Card List View (< md) */}
+              <div className="md:hidden space-y-3">
+                {paginatedRecords.length > 0 ? (
+                  paginatedRecords.map((item, idx) => {
+                    const isContacted = contactedHandles.has((item.handle || '').replace('@', '').toLowerCase());
+                    const hasEmail = Boolean(item.contact_email && item.contact_email !== 'Not Found');
+                    return (
+                      <div
+                        key={idx}
+                        className="bg-white border border-[#CBD5E1] hover:border-[#BAE6FD] rounded-xl p-3.5 shadow-xs transition-all space-y-2.5"
+                      >
+                        {/* Header: Name, Handle, Platform Pill */}
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="min-w-0 flex-1">
+                            <div className="font-extrabold text-sm text-black truncate">{item.name}</div>
+                            <div className="font-mono text-xs font-bold text-[#475569] truncate">@{item.handle}</div>
+                          </div>
+                          <span className="inline-flex items-center gap-1 bg-[#F1F5F9] border border-[#CBD5E1] text-[11px] font-black px-2 py-0.5 rounded-lg text-black shrink-0">
+                            {item.platform}
+                          </span>
+                        </div>
+
+                        {/* Metric Badges */}
+                        <div className="grid grid-cols-3 gap-2 bg-[#F8FAFC] border border-[#E2E8F0] p-2 rounded-lg text-center">
+                          <div>
+                            <span className="text-[9px] font-bold text-[#64748B] block uppercase leading-tight">Followers</span>
+                            <span className="text-xs font-mono font-black text-black">
+                              {Number(item.follower_count).toLocaleString()}
+                            </span>
+                          </div>
+                          <div>
+                            <span className="text-[9px] font-bold text-[#64748B] block uppercase leading-tight">Engagement</span>
+                            <span className="text-xs font-mono font-black text-black">
+                              {Number(item.engagement_rate).toFixed(1)}%
+                            </span>
+                          </div>
+                          <div>
+                            <span className="text-[9px] font-bold text-[#64748B] block uppercase leading-tight">Category</span>
+                            <span className="text-xs font-bold text-black truncate block" title={item.niche}>
+                              {item.niche}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Meta: Location and Email */}
+                        <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
+                          <div className="flex items-center gap-1 font-semibold text-[#333333]">
+                            <MapPin className="w-3 h-3 text-[#64748B] shrink-0" />
+                            <span className="truncate">{item.location || 'Global'}</span>
+                          </div>
+
+                          <span
+                            className={`inline-block font-mono text-[10px] font-bold px-2 py-0.5 rounded-md border ${
+                              hasEmail
+                                ? 'bg-[#DCFCE7] text-black border-[#86EFAC]'
+                                : 'bg-[#F1F5F9] text-[#64748B] border-[#CBD5E1]'
+                            }`}
+                          >
+                            {hasEmail ? item.contact_email : 'No Public Email'}
+                          </span>
+                        </div>
+
+                        {/* Actions: View Profile & Send Outreach Message */}
+                        <div className="flex items-center gap-2 pt-2 border-t border-[#E2E8F0]">
+                          <a
+                            href={item.profile_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex-1 inline-flex items-center justify-center gap-1 bg-[#F8FAFC] hover:bg-[#F1F5F9] border border-[#CBD5E1] py-2 px-3 rounded-xl text-xs font-black text-black transition-all"
+                          >
+                            <span>Profile</span>
+                            <ExternalLink className="w-3 h-3 text-black" />
+                          </a>
+                          <button
+                            type="button"
+                            onClick={() => handleOpenDirectOutreach(item)}
+                            className={`flex-1 inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl text-xs font-black transition-all cursor-pointer border shadow-xs ${
+                              isContacted
+                                ? 'bg-[#DCFCE7] text-black border-[#86EFAC] hover:bg-[#BBF7D0]'
+                                : 'bg-black text-white border-black hover:bg-[#1E293B]'
+                            }`}
+                          >
+                            {isContacted ? (
+                              <>
+                                <CheckCircle2 className="w-3.5 h-3.5 text-black" />
+                                <span>Contacted</span>
+                              </>
+                            ) : (
+                              <>
+                                <Send className="w-3.5 h-3.5 text-white" />
+                                <span>Message</span>
+                              </>
+                            )}
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })
+                ) : (
+                  <div className="py-8 text-center text-xs font-bold text-black bg-[#F8FAFC] rounded-xl border border-dashed border-[#CBD5E1] p-4">
+                    <div>
+                      No creator records found matching {dashboardFilterEnabled ? `active filter "${filters.geo}"` : ''}{searchQuery ? ` and search "${searchQuery}"` : ''}.
+                    </div>
+                    {dashboardFilterEnabled && (
+                      <div className="mt-3">
+                        <button
+                          type="button"
+                          onClick={() => setDashboardFilterEnabled(false)}
+                          className="text-xs font-black text-black underline bg-[#F1F5F9] px-3 py-1.5 rounded-lg border border-[#CBD5E1]"
+                        >
+                          View full unfiltered dataset ({allInfluencers.length} creators)
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Desktop Table View (>= md) */}
+              <div className="hidden md:block overflow-x-auto border border-[#E2E8F0] rounded-xl bg-white shadow-sm">
                 <table className="w-full text-left text-sm border-collapse bg-white">
                   <thead>
                     <tr className="bg-[#F8FAFC] border-b border-[#E2E8F0] text-black font-black text-xs uppercase tracking-wider">
@@ -562,6 +682,7 @@ export const TabsSection: React.FC<TabsSectionProps> = ({
                           {dashboardFilterEnabled && (
                             <div className="mt-3">
                               <button
+                                type="button"
                                 onClick={() => setDashboardFilterEnabled(false)}
                                 className="text-xs font-black text-black underline bg-[#F1F5F9] px-3 py-1.5 rounded-lg border border-[#CBD5E1]"
                               >
@@ -765,25 +886,26 @@ export const TabsSection: React.FC<TabsSectionProps> = ({
           TAB 2: CLASSIFICATION ENGINE
           ========================================================================= */}
       {activeTab === 'classification' && (
-        <div className="bg-white border border-[#E2E8F0] rounded-[20px] p-6 shadow-[0_4px_24px_rgba(0,0,0,0.05)]">
-          <div className="flex justify-between items-center mb-5">
+        <div className="bg-white border border-[#E2E8F0] rounded-2xl sm:rounded-[20px] p-4 sm:p-6 shadow-[0_4px_24px_rgba(0,0,0,0.05)]">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 sm:mb-5">
             <div>
-              <h2 className="text-xl font-black text-black">Quantitative Filtering & Multi-Dimensional Classification</h2>
+              <h2 className="text-lg sm:text-xl font-black text-black">Quantitative Filtering & Multi-Dimensional Classification</h2>
               <p className="text-xs font-semibold text-[#333333] mt-0.5">
                 Evaluates micro-influencer bounds (5k-100k), engagement thresholds, Audience Geography, and platform alignment
               </p>
             </div>
             <button
+              type="button"
               onClick={() => onRunFilter()}
               disabled={filterLoading}
-              className="inline-flex items-center gap-2 bg-[#BAE6FD] hover:bg-[#93C5FD] border border-[#7DD3FC] text-black font-black text-xs px-4 py-2.5 rounded-xl cursor-pointer transition-all"
+              className="inline-flex items-center justify-center gap-2 bg-[#BAE6FD] hover:bg-[#93C5FD] border border-[#7DD3FC] text-black font-black text-xs px-4 py-2.5 rounded-xl cursor-pointer transition-all w-full sm:w-auto shadow-xs"
             >
               {filterLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin text-black" /> : 'APPLY FILTERS'}
             </button>
           </div>
 
           {/* Unified 2-Row Filter Grid (Controlled via Single Source of Truth) */}
-          <div className="mb-6 bg-[#F8FAFC] border border-[#E2E8F0] p-4 rounded-xl space-y-3">
+          <div className="mb-5 sm:mb-6 bg-[#F8FAFC] border border-[#E2E8F0] p-3 sm:p-4 rounded-xl space-y-3">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               <div>
                 <label className="block text-xs font-black text-black mb-1">Audience Geography</label>
@@ -886,24 +1008,24 @@ export const TabsSection: React.FC<TabsSectionProps> = ({
           </div>
 
           {/* Qualified vs Disqualified Strict Split Tables */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
             {/* 1. Qualified Profiles (Passed) */}
             <div data-testid="qualified-profiles-card" className="border border-[#86EFAC] rounded-2xl overflow-hidden shadow-xs flex flex-col bg-white">
-              <div className="bg-[#DCFCE7] px-4 py-3.5 border-b border-[#86EFAC] flex justify-between items-center">
+              <div className="bg-[#DCFCE7] px-3.5 sm:px-4 py-3 sm:py-3.5 border-b border-[#86EFAC] flex justify-between items-center">
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="w-4 h-4 text-[#166534]" />
-                  <span className="font-black text-sm text-black">Qualified Profiles (Passed)</span>
+                  <span className="font-black text-xs sm:text-sm text-black">Qualified Profiles (Passed)</span>
                 </div>
-                <span className="bg-white border border-[#86EFAC] text-xs font-black px-2.5 py-0.5 rounded-full text-[#14532D] shadow-xs">
+                <span className="bg-white border border-[#86EFAC] text-[11px] sm:text-xs font-black px-2 sm:px-2.5 py-0.5 rounded-full text-[#14532D] shadow-xs">
                   {passedInfluencers.length} Passed
                 </span>
               </div>
-              <div className="max-h-[520px] overflow-y-auto p-4 space-y-3 bg-[#F8FAFC]/50 flex-1">
+              <div className="max-h-[520px] overflow-y-auto p-3 sm:p-4 space-y-3 bg-[#F8FAFC]/50 flex-1">
                 {passedInfluencers.length > 0 ? (
                   passedInfluencers.map((item, idx) => (
-                    <div key={idx} className="p-4 bg-white hover:bg-[#F0FDF4]/50 border border-[#E2E8F0] hover:border-[#86EFAC] rounded-xl transition-all shadow-xs space-y-3">
+                    <div key={idx} className="p-3 sm:p-4 bg-white hover:bg-[#F0FDF4]/50 border border-[#E2E8F0] hover:border-[#86EFAC] rounded-xl transition-all shadow-xs space-y-2.5 sm:space-y-3">
                       {/* Top Row: Creator Details & Stat Chips */}
-                      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2.5">
                         <div className="min-w-0 flex-1">
                           <div className="flex flex-wrap items-center gap-1.5">
                             <span className="font-black text-sm text-black">{item.name}</span>
@@ -927,20 +1049,20 @@ export const TabsSection: React.FC<TabsSectionProps> = ({
                         </div>
 
                         {/* Metric Chips & Status Pill */}
-                        <div className="flex items-center gap-2 shrink-0">
-                          <div className="bg-[#F8FAFC] border border-[#CBD5E1] px-2.5 py-1 rounded-lg text-right shadow-xs">
+                        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 shrink-0">
+                          <div className="bg-[#F8FAFC] border border-[#CBD5E1] px-2 sm:px-2.5 py-1 rounded-lg text-center sm:text-right shadow-xs">
                             <span className="text-[9px] font-bold text-[#64748B] block leading-none uppercase">Followers</span>
                             <span className="text-xs font-black text-black font-mono leading-tight">
                               {Number(item.follower_count).toLocaleString()}
                             </span>
                           </div>
-                          <div className="bg-[#F8FAFC] border border-[#CBD5E1] px-2.5 py-1 rounded-lg text-right shadow-xs">
+                          <div className="bg-[#F8FAFC] border border-[#CBD5E1] px-2 sm:px-2.5 py-1 rounded-lg text-center sm:text-right shadow-xs">
                             <span className="text-[9px] font-bold text-[#64748B] block leading-none uppercase">Engagement</span>
                             <span className="text-xs font-black text-black font-mono leading-tight">
                               {Number(item.engagement_rate).toFixed(1)}%
                             </span>
                           </div>
-                          <div className="bg-[#DCFCE7] border border-[#86EFAC] text-[#14532D] text-xs font-black px-2.5 py-2 rounded-lg flex items-center gap-1 shadow-xs">
+                          <div className="bg-[#DCFCE7] border border-[#86EFAC] text-[#14532D] text-xs font-black px-2 sm:px-2.5 py-1.5 rounded-lg flex items-center gap-1 shadow-xs">
                             <CheckCircle2 className="w-3.5 h-3.5 text-[#166534]" />
                             <span>PASSED</span>
                           </div>
@@ -948,7 +1070,7 @@ export const TabsSection: React.FC<TabsSectionProps> = ({
                       </div>
 
                       {/* Bottom Row: Full-width Evaluation Reasoning Strip */}
-                      <div className="bg-[#F0FDF4] border border-[#86EFAC] rounded-lg px-3.5 py-2 flex items-start gap-2">
+                      <div className="bg-[#F0FDF4] border border-[#86EFAC] rounded-lg px-3 py-2 flex items-start gap-2">
                         <CheckCircle2 className="w-3.5 h-3.5 text-[#166534] shrink-0 mt-0.5" />
                         <span className="text-xs font-semibold text-[#14532D] leading-relaxed">
                           {item.qualification_reason || 'Qualified: Meets follower bounds, engagement threshold, and target demographic criteria.'}
@@ -957,7 +1079,7 @@ export const TabsSection: React.FC<TabsSectionProps> = ({
                     </div>
                   ))
                 ) : (
-                  <div className="p-10 text-center text-xs font-bold text-[#64748B] bg-white rounded-xl border border-dashed border-[#CBD5E1]">
+                  <div className="p-8 sm:p-10 text-center text-xs font-bold text-[#64748B] bg-white rounded-xl border border-dashed border-[#CBD5E1]">
                     No creator profiles passed all active criteria for {filters.geo}. Try broadening follower bounds or selecting another category.
                   </div>
                 )}
@@ -966,21 +1088,21 @@ export const TabsSection: React.FC<TabsSectionProps> = ({
 
             {/* 2. Disqualified Profiles (Failed) */}
             <div data-testid="disqualified-profiles-card" className="border border-[#FCA5A5] rounded-2xl overflow-hidden shadow-xs flex flex-col bg-white">
-              <div className="bg-[#FEE2E2] px-4 py-3.5 border-b border-[#FCA5A5] flex justify-between items-center">
+              <div className="bg-[#FEE2E2] px-3.5 sm:px-4 py-3 sm:py-3.5 border-b border-[#FCA5A5] flex justify-between items-center">
                 <div className="flex items-center gap-2">
                   <XCircle className="w-4 h-4 text-[#991B1B]" />
-                  <span className="font-black text-sm text-black">Disqualified Profiles (Failed)</span>
+                  <span className="font-black text-xs sm:text-sm text-black">Disqualified Profiles (Failed)</span>
                 </div>
-                <span className="bg-white border border-[#FCA5A5] text-xs font-black px-2.5 py-0.5 rounded-full text-[#991B1B] shadow-xs">
+                <span className="bg-white border border-[#FCA5A5] text-[11px] sm:text-xs font-black px-2 sm:px-2.5 py-0.5 rounded-full text-[#991B1B] shadow-xs">
                   {failedInfluencers.length} Failed
                 </span>
               </div>
-              <div className="max-h-[520px] overflow-y-auto p-4 space-y-3 bg-[#F8FAFC]/50 flex-1">
+              <div className="max-h-[520px] overflow-y-auto p-3 sm:p-4 space-y-3 bg-[#F8FAFC]/50 flex-1">
                 {failedInfluencers.length > 0 ? (
                   failedInfluencers.map((item, idx) => (
-                    <div key={idx} className="p-4 bg-white hover:bg-[#FEF2F2]/50 border border-[#E2E8F0] hover:border-[#FCA5A5] rounded-xl transition-all shadow-xs space-y-3">
+                    <div key={idx} className="p-3 sm:p-4 bg-white hover:bg-[#FEF2F2]/50 border border-[#E2E8F0] hover:border-[#FCA5A5] rounded-xl transition-all shadow-xs space-y-2.5 sm:space-y-3">
                       {/* Top Row: Creator Details & Stat Chips */}
-                      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2.5">
                         <div className="min-w-0 flex-1">
                           <div className="flex flex-wrap items-center gap-1.5">
                             <span className="font-black text-sm text-black">{item.name}</span>
@@ -999,20 +1121,20 @@ export const TabsSection: React.FC<TabsSectionProps> = ({
                         </div>
 
                         {/* Metric Chips & Status Pill */}
-                        <div className="flex items-center gap-2 shrink-0">
-                          <div className="bg-[#F8FAFC] border border-[#CBD5E1] px-2.5 py-1 rounded-lg text-right shadow-xs">
+                        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 shrink-0">
+                          <div className="bg-[#F8FAFC] border border-[#CBD5E1] px-2 sm:px-2.5 py-1 rounded-lg text-center sm:text-right shadow-xs">
                             <span className="text-[9px] font-bold text-[#64748B] block leading-none uppercase">Followers</span>
                             <span className="text-xs font-black text-black font-mono leading-tight">
                               {Number(item.follower_count).toLocaleString()}
                             </span>
                           </div>
-                          <div className="bg-[#F8FAFC] border border-[#CBD5E1] px-2.5 py-1 rounded-lg text-right shadow-xs">
+                          <div className="bg-[#F8FAFC] border border-[#CBD5E1] px-2 sm:px-2.5 py-1 rounded-lg text-center sm:text-right shadow-xs">
                             <span className="text-[9px] font-bold text-[#64748B] block leading-none uppercase">Engagement</span>
                             <span className="text-xs font-black text-black font-mono leading-tight">
                               {Number(item.engagement_rate).toFixed(1)}%
                             </span>
                           </div>
-                          <div className="bg-[#FEE2E2] border border-[#FCA5A5] text-[#991B1B] text-xs font-black px-2.5 py-2 rounded-lg flex items-center gap-1 shadow-xs">
+                          <div className="bg-[#FEE2E2] border border-[#FCA5A5] text-[#991B1B] text-xs font-black px-2 sm:px-2.5 py-1.5 rounded-lg flex items-center gap-1 shadow-xs">
                             <XCircle className="w-3.5 h-3.5 text-[#991B1B]" />
                             <span>FAILED</span>
                           </div>
@@ -1020,7 +1142,7 @@ export const TabsSection: React.FC<TabsSectionProps> = ({
                       </div>
 
                       {/* Bottom Row: Full-width Disqualification Reasons Breakdown */}
-                      <div className="bg-[#FEF2F2] border border-[#FCA5A5] rounded-lg px-3.5 py-2 flex items-start gap-2">
+                      <div className="bg-[#FEF2F2] border border-[#FCA5A5] rounded-lg px-3 py-2 flex items-start gap-2">
                         <XCircle className="w-3.5 h-3.5 text-[#991B1B] shrink-0 mt-0.5" />
                         <div className="text-xs font-semibold text-[#7F1D1D] leading-relaxed space-y-1">
                           {item.qualification_reason ? (
@@ -1038,7 +1160,7 @@ export const TabsSection: React.FC<TabsSectionProps> = ({
                     </div>
                   ))
                 ) : (
-                  <div className="p-10 text-center text-xs font-bold text-[#64748B] bg-white rounded-xl border border-dashed border-[#CBD5E1]">
+                  <div className="p-8 sm:p-10 text-center text-xs font-bold text-[#64748B] bg-white rounded-xl border border-dashed border-[#CBD5E1]">
                     All evaluated profiles passed criteria.
                   </div>
                 )}
@@ -1052,17 +1174,17 @@ export const TabsSection: React.FC<TabsSectionProps> = ({
           TAB 3: PROFILE CONTEXT & THEMES
           ========================================================================= */}
       {activeTab === 'enrichment' && (
-        <div className="bg-white border border-[#E2E8F0] rounded-[20px] p-6 shadow-[0_4px_24px_rgba(0,0,0,0.05)]">
-          <div className="mb-5">
-            <h2 className="text-xl font-black text-black">Profile Enrichment Context</h2>
+        <div className="bg-white border border-[#E2E8F0] rounded-2xl sm:rounded-[20px] p-4 sm:p-6 shadow-[0_4px_24px_rgba(0,0,0,0.05)]">
+          <div className="mb-4 sm:mb-5">
+            <h2 className="text-lg sm:text-xl font-black text-black">Profile Enrichment Context</h2>
             <p className="text-xs font-semibold text-[#333333] mt-0.5">
               Verified bio themes, audience demographics, and contact email extraction
             </p>
           </div>
 
           {/* Creator Search & Selector Controls */}
-          <div className="bg-[#F8FAFC] border border-[#CBD5E1] rounded-2xl p-4 sm:p-5 mb-6 shadow-xs">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3 pb-3 border-b border-[#E2E8F0]">
+          <div className="bg-[#F8FAFC] border border-[#CBD5E1] rounded-2xl p-3.5 sm:p-5 mb-5 sm:mb-6 shadow-xs">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3 mb-3 pb-3 border-b border-[#E2E8F0]">
               <div className="flex items-center gap-2">
                 <span className="text-xs font-black uppercase tracking-wider text-black">
                   Select &amp; Search Creator Profile
@@ -1073,7 +1195,7 @@ export const TabsSection: React.FC<TabsSectionProps> = ({
               </div>
 
               {passedInfluencers.length > 0 && (
-                <div className="flex items-center gap-1.5 self-start sm:self-auto">
+                <div className="flex flex-wrap items-center gap-1.5 w-full sm:w-auto">
                   <span className="text-[11px] font-bold text-[#64748B]">Scope:</span>
                   <button
                     type="button"
@@ -1351,15 +1473,15 @@ export const TabsSection: React.FC<TabsSectionProps> = ({
           TAB 4: AI PERSONALIZATION
           ========================================================================= */}
       {activeTab === 'personalization' && (
-        <div className="bg-white border border-[#E2E8F0] rounded-[20px] p-6 shadow-[0_4px_24px_rgba(0,0,0,0.05)]">
-          <div className="mb-5">
-            <h2 className="text-xl font-black text-black">Dual Message Personalization Studio</h2>
+        <div className="bg-white border border-[#E2E8F0] rounded-2xl sm:rounded-[20px] p-4 sm:p-6 shadow-[0_4px_24px_rgba(0,0,0,0.05)]">
+          <div className="mb-4 sm:mb-5">
+            <h2 className="text-lg sm:text-xl font-black text-black">Dual Message Personalization Studio</h2>
             <p className="text-xs font-semibold text-[#333333] mt-0.5">
               Generates high-converting, tailored email pitches (60-90 words) and Instagram DMs (15-30 words) via Gemini LLM
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4 mb-4 sm:mb-5">
             <div>
               <label className="block text-xs font-black text-black mb-1.5">Target Creator</label>
               <div className="relative">
@@ -1410,7 +1532,7 @@ export const TabsSection: React.FC<TabsSectionProps> = ({
             </div>
           </div>
 
-          <div className="mb-6">
+          <div className="mb-4 sm:mb-6">
             <SlideHoverButton onClick={handleGeneratePitch} disabled={generating} variant="primary">
               {generating ? (
                 <>
@@ -1427,14 +1549,14 @@ export const TabsSection: React.FC<TabsSectionProps> = ({
           </div>
 
           {activePitch && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-[#E2E8F0]">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 pt-4 border-t border-[#E2E8F0]">
               {/* Email Pitch */}
-              <div className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-2xl p-5 flex flex-col justify-between">
+              <div className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-2xl p-4 sm:p-5 flex flex-col justify-between">
                 <div>
-                  <div className="flex justify-between items-center mb-3">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 sm:gap-2 mb-3">
                     <span className="font-black text-sm text-black">Email Collaboration Pitch</span>
                     <span
-                      className={`text-[11px] font-mono font-extrabold px-2.5 py-0.5 rounded-full border inline-flex items-center gap-1 ${
+                      className={`text-[11px] font-mono font-extrabold px-2.5 py-0.5 rounded-full border inline-flex items-center gap-1 self-start sm:self-auto ${
                         activePitch.email_word_count >= 60 && activePitch.email_word_count <= 90
                           ? 'bg-[#DCFCE7] text-black border-[#86EFAC]'
                           : 'bg-[#FEE2E2] text-black border-[#FCA5A5]'
@@ -1445,17 +1567,18 @@ export const TabsSection: React.FC<TabsSectionProps> = ({
                     </span>
                   </div>
                   <div className="text-xs font-bold text-[#333333] mb-1">Subject Line</div>
-                  <div className="bg-white border border-[#CBD5E1] rounded-xl px-3 py-2 text-sm font-bold text-black mb-3">
+                  <div className="bg-white border border-[#CBD5E1] rounded-xl px-3 py-2 text-xs sm:text-sm font-bold text-black mb-3">
                     {activePitch.subject}
                   </div>
                   <div className="text-xs font-bold text-[#333333] mb-1">Email Body</div>
-                  <div className="bg-white border border-[#CBD5E1] rounded-xl p-3 text-sm font-medium text-black leading-relaxed whitespace-pre-line">
+                  <div className="bg-white border border-[#CBD5E1] rounded-xl p-3 text-xs sm:text-sm font-medium text-black leading-relaxed whitespace-pre-line">
                     {activePitch.email_pitch}
                   </div>
                 </div>
 
                 <div className="mt-4 pt-3 border-t border-[#E2E8F0]">
                   <button
+                    type="button"
                     onClick={async () => {
                       const creator =
                         allInfluencers.find((i) => i.handle === targetCreator) ||
@@ -1488,12 +1611,12 @@ export const TabsSection: React.FC<TabsSectionProps> = ({
               </div>
 
               {/* Instagram DM */}
-              <div className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-2xl p-5 flex flex-col justify-between">
+              <div className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-2xl p-4 sm:p-5 flex flex-col justify-between">
                 <div>
-                  <div className="flex justify-between items-center mb-3">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 sm:gap-2 mb-3">
                     <span className="font-black text-sm text-black">Instagram DM</span>
                     <span
-                      className={`text-[11px] font-mono font-extrabold px-2.5 py-0.5 rounded-full border inline-flex items-center gap-1 ${
+                      className={`text-[11px] font-mono font-extrabold px-2.5 py-0.5 rounded-full border inline-flex items-center gap-1 self-start sm:self-auto ${
                         activePitch.dm_word_count >= 15 && activePitch.dm_word_count <= 30
                           ? 'bg-[#DCFCE7] text-black border-[#86EFAC]'
                           : 'bg-[#FEE2E2] text-black border-[#FCA5A5]'
@@ -1504,11 +1627,11 @@ export const TabsSection: React.FC<TabsSectionProps> = ({
                     </span>
                   </div>
                   <div className="text-xs font-bold text-[#333333] mb-1">Recipient</div>
-                  <div className="bg-white border border-[#CBD5E1] rounded-xl px-3 py-2 text-sm font-mono font-black text-black mb-3">
+                  <div className="bg-white border border-[#CBD5E1] rounded-xl px-3 py-2 text-xs sm:text-sm font-mono font-black text-black mb-3">
                     @{targetCreator}
                   </div>
                   <div className="text-xs font-bold text-[#333333] mb-1">Direct Message Text</div>
-                  <div className="bg-white border border-[#CBD5E1] rounded-xl p-3 text-sm font-medium text-black leading-relaxed">
+                  <div className="bg-white border border-[#CBD5E1] rounded-xl p-3 text-xs sm:text-sm font-medium text-black leading-relaxed">
                     {activePitch.instagram_dm}
                   </div>
                 </div>
@@ -1523,6 +1646,7 @@ export const TabsSection: React.FC<TabsSectionProps> = ({
                     <ExternalLink className="w-3.5 h-3.5 text-black" /> Open Creator Direct Message (ig.me)
                   </a>
                   <button
+                    type="button"
                     onClick={async () => {
                       const creator =
                         allInfluencers.find((i) => i.handle === targetCreator) ||
@@ -1560,17 +1684,18 @@ export const TabsSection: React.FC<TabsSectionProps> = ({
           TAB 5: OUTREACH AUDIT LOG
           ========================================================================= */}
       {activeTab === 'tracker' && (
-        <div className="bg-white border border-[#E2E8F0] rounded-[20px] p-6 shadow-[0_4px_24px_rgba(0,0,0,0.05)]">
-          <div className="flex justify-between items-center mb-5">
+        <div className="bg-white border border-[#E2E8F0] rounded-2xl sm:rounded-[20px] p-4 sm:p-6 shadow-[0_4px_24px_rgba(0,0,0,0.05)]">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 sm:mb-5">
             <div>
-              <h2 className="text-xl font-black text-black">Outreach Dispatch &amp; Audit Trail</h2>
+              <h2 className="text-lg sm:text-xl font-black text-black">Outreach Dispatch &amp; Audit Trail</h2>
               <p className="text-xs font-semibold text-[#333333] mt-0.5">
                 Complete audit trail of dispatched pitches, channel status, and delivery idempotency
               </p>
             </div>
             <button
+              type="button"
               onClick={() => downloadCSV(outreachLogs, 'outreach_audit_log.csv')}
-              className="inline-flex items-center gap-2 bg-white border border-[#BAE6FD] hover:bg-[#F0F9FF] text-black font-extrabold text-xs px-4 py-2 rounded-xl transition-all cursor-pointer"
+              className="inline-flex items-center justify-center gap-2 bg-white border border-[#BAE6FD] hover:bg-[#F0F9FF] text-black font-extrabold text-xs px-4 py-2 rounded-xl transition-all cursor-pointer w-full sm:w-auto shadow-xs"
             >
               <Download className="w-3.5 h-3.5 text-black" /> Export Audit Log
             </button>
@@ -1586,35 +1711,106 @@ export const TabsSection: React.FC<TabsSectionProps> = ({
             ).length;
 
             return (
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                <div className="bg-[#F8FAFC] border border-[#BAE6FD] rounded-xl p-3.5">
-                  <div className="text-2xl font-black text-black font-mono">{outreachLogs.length || trackerStats.total_logged}</div>
-                  <div className="text-xs font-bold text-[#333333] mt-1">Total Outreached</div>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-4 mb-4 sm:mb-6">
+                <div className="bg-[#F8FAFC] border border-[#BAE6FD] rounded-xl p-3 sm:p-3.5">
+                  <div className="text-xl sm:text-2xl font-black text-black font-mono">{outreachLogs.length || trackerStats.total_logged}</div>
+                  <div className="text-[10px] sm:text-xs font-bold text-[#333333] mt-1">Total Outreached</div>
                 </div>
-                <div className="bg-[#F8FAFC] border border-[#86EFAC] rounded-xl p-3.5">
+                <div className="bg-[#F8FAFC] border border-[#86EFAC] rounded-xl p-3 sm:p-3.5">
                   <div className="flex items-center gap-1.5">
                     <Mail className="w-4 h-4 text-black" />
-                    <div className="text-2xl font-black text-black font-mono">{mailDelivered}</div>
+                    <div className="text-xl sm:text-2xl font-black text-black font-mono">{mailDelivered}</div>
                   </div>
-                  <div className="text-xs font-bold text-[#333333] mt-1">Delivered via Mail (Resend)</div>
+                  <div className="text-[10px] sm:text-xs font-bold text-[#333333] mt-1">Mail (Resend)</div>
                 </div>
-                <div className="bg-[#F8FAFC] border border-[#D8B4FE] rounded-xl p-3.5">
+                <div className="bg-[#F8FAFC] border border-[#D8B4FE] rounded-xl p-3 sm:p-3.5">
                   <div className="flex items-center gap-1.5">
                     <MessageSquare className="w-4 h-4 text-black" />
-                    <div className="text-2xl font-black text-black font-mono">{dmDelivered}</div>
+                    <div className="text-xl sm:text-2xl font-black text-black font-mono">{dmDelivered}</div>
                   </div>
-                  <div className="text-xs font-bold text-[#333333] mt-1">Delivered via Instagram DM</div>
+                  <div className="text-[10px] sm:text-xs font-bold text-[#333333] mt-1">Instagram DM</div>
                 </div>
-                <div className="bg-[#F8FAFC] border border-[#BAE6FD] rounded-xl p-3.5">
-                  <div className="text-xs font-black text-black mt-1 uppercase tracking-wider">Multi-Channel Active</div>
-                  <div className="text-[11px] font-bold text-[#333333] mt-1">Resend API + Meta Direct</div>
+                <div className="bg-[#F8FAFC] border border-[#BAE6FD] rounded-xl p-3 sm:p-3.5">
+                  <div className="text-[11px] sm:text-xs font-black text-black mt-1 uppercase tracking-wider">Multi-Channel Active</div>
+                  <div className="text-[10px] sm:text-[11px] font-bold text-[#333333] mt-1">Resend + Meta DM</div>
                 </div>
               </div>
             );
           })()}
 
-          {/* Logs Table with Clear Mail vs DM badges */}
-          <div className="overflow-x-auto border border-[#E2E8F0] rounded-xl bg-white shadow-sm">
+          {/* Mobile Card List View (< md) */}
+          <div className="md:hidden space-y-3">
+            {paginatedAuditLogs.length > 0 ? (
+              paginatedAuditLogs.map((log, idx) => {
+                const isMail =
+                  log.channel.toLowerCase().includes('resend') || log.channel.toLowerCase().includes('email');
+                return (
+                  <div
+                    key={idx}
+                    className="bg-white border border-[#CBD5E1] rounded-xl p-3.5 shadow-xs space-y-2.5"
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0 flex-1">
+                        <div className="font-extrabold text-sm text-black truncate">{log.influencer}</div>
+                        <div className="font-mono text-xs font-bold text-[#475569] truncate">@{log.handle}</div>
+                      </div>
+                      <span
+                        className={`inline-flex items-center gap-1 border text-[11px] font-black px-2.5 py-0.5 rounded-full shrink-0 ${
+                          log.status === 'SENT'
+                            ? 'bg-[#DCFCE7] text-black border-[#86EFAC]'
+                            : log.status.includes('MANUALLY')
+                            ? 'bg-[#FEF3C7] text-black border-[#FDE68A]'
+                            : 'bg-[#E0E7FF] text-black border-[#A5B4FC]'
+                        }`}
+                      >
+                        <CheckCircle2 className="w-3 h-3 text-black" />
+                        <span>{log.status}</span>
+                      </span>
+                    </div>
+
+                    <div className="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-[#E2E8F0] text-xs">
+                      <div>
+                        {isMail ? (
+                          <span className="inline-flex items-center gap-1 bg-[#DCFCE7] text-black border border-[#86EFAC] text-[11px] font-black px-2 py-0.5 rounded-full">
+                            <Mail className="w-3 h-3 text-black" /> Mail (Resend API)
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 bg-[#F3E8FF] text-black border border-[#D8B4FE] text-[11px] font-black px-2 py-0.5 rounded-full">
+                            <MessageSquare className="w-3 h-3 text-black" /> DM (Instagram Direct)
+                          </span>
+                        )}
+                      </div>
+                      <div className="font-mono text-[11px] font-semibold text-[#475569]">
+                        {log.date}
+                      </div>
+                    </div>
+
+                    <div className="flex flex-col gap-1 text-xs pt-1 border-t border-[#E2E8F0]">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] uppercase font-bold text-[#64748B]">Contact:</span>
+                        <span className="font-mono text-[11px] font-bold text-black truncate ml-2">
+                          {log.email && log.email !== 'Not Found' ? log.email : `@${log.handle}`}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] uppercase font-bold text-[#64748B]">Delivery ID:</span>
+                        <span className="font-mono text-[11px] font-bold text-[#475569] truncate ml-2">
+                          {log.delivery_id}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })
+            ) : (
+              <div className="py-8 text-center text-xs font-bold text-black bg-[#F8FAFC] rounded-xl border border-dashed border-[#CBD5E1]">
+                No audit records available.
+              </div>
+            )}
+          </div>
+
+          {/* Desktop Table View (>= md) */}
+          <div className="hidden md:block overflow-x-auto border border-[#E2E8F0] rounded-xl bg-white shadow-sm">
             <table className="w-full text-left text-sm border-collapse bg-white">
               <thead>
                 <tr className="bg-[#F8FAFC] border-b border-[#E2E8F0] text-black font-black text-xs uppercase tracking-wider">

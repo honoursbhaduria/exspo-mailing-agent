@@ -110,7 +110,7 @@ export const DashboardControlCard: React.FC<DashboardControlCardProps> = ({
         onFilterChange({ geo, platform, niche, scale });
       }
       if (onRefresh) onRefresh({ geo, platform, niche, scale });
-    } catch (err: any) {
+    } catch (_err: any) {
       setFeedback('Pipeline executed. Active dataset loaded.');
       if (onFilterChange) onFilterChange({ geo, platform, niche, scale });
       if (onRefresh) onRefresh({ geo, platform, niche, scale });
@@ -147,11 +147,11 @@ export const DashboardControlCard: React.FC<DashboardControlCardProps> = ({
   };
 
   return (
-    <div className="bg-white border border-[#E2E8F0] hover:border-[#BAE6FD] rounded-[20px] p-5 shadow-[0_4px_20px_rgba(0,0,0,0.04)] hover:shadow-[0_12px_28px_-6px_rgba(2,132,199,0.08)] transition-all h-full flex flex-col justify-between">
+    <div className="bg-white border border-[#E2E8F0] hover:border-[#BAE6FD] rounded-2xl sm:rounded-[20px] p-4 sm:p-5 shadow-[0_4px_20px_rgba(0,0,0,0.04)] hover:shadow-[0_12px_28px_-6px_rgba(2,132,199,0.08)] transition-all h-full flex flex-col justify-between">
       {/* Clean Dashboard Title with Scraper Engine Switcher */}
       <div>
-        <div className="flex justify-between items-center mb-4">
-          <span className="text-lg font-black text-black tracking-tight">Dashboard</span>
+        <div className="flex justify-between items-center mb-3 sm:mb-4 gap-2">
+          <span className="text-base sm:text-lg font-black text-black tracking-tight">Dashboard</span>
           
           {/* Scraper Engine Toggle: Scrapy vs Playwright */}
           <div className="flex items-center gap-1 bg-[#F1F5F9] p-1 rounded-xl border border-[#CBD5E1]">
@@ -183,9 +183,9 @@ export const DashboardControlCard: React.FC<DashboardControlCardProps> = ({
         </div>
 
         {/* Form Inputs Grid - Redesigned Sleek Dropdowns */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 sm:gap-3 mb-3 sm:mb-4">
           <div>
-            <label className="block text-xs font-black text-black mb-1.5">Category / Niche</label>
+            <label className="block text-xs font-black text-black mb-1">Category / Niche</label>
             <div className="relative">
               <select
                 value={niche}
@@ -206,7 +206,7 @@ export const DashboardControlCard: React.FC<DashboardControlCardProps> = ({
           </div>
 
           <div>
-            <label className="block text-xs font-black text-black mb-1.5">Target Platform</label>
+            <label className="block text-xs font-black text-black mb-1">Target Platform</label>
             <div className="relative">
               <select
                 value={platform}
@@ -226,7 +226,7 @@ export const DashboardControlCard: React.FC<DashboardControlCardProps> = ({
           </div>
 
           <div>
-            <label className="block text-xs font-black text-black mb-1.5">Audience Geography</label>
+            <label className="block text-xs font-black text-black mb-1">Audience Geography</label>
             <div className="relative">
               <select
                 value={geo}
@@ -246,7 +246,7 @@ export const DashboardControlCard: React.FC<DashboardControlCardProps> = ({
           </div>
 
           <div>
-            <label className="block text-xs font-black text-black mb-1.5">Influencer Scale</label>
+            <label className="block text-xs font-black text-black mb-1">Influencer Scale</label>
             <div className="relative">
               <select
                 value={scale}
@@ -265,8 +265,8 @@ export const DashboardControlCard: React.FC<DashboardControlCardProps> = ({
         </div>
 
         {/* Buttons Row */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5 mb-2">
-          <div className="md:col-span-2">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-2.5 mb-2">
+          <div className="sm:col-span-2">
             <SlideHoverButton onClick={handleExecute} disabled={loading} variant="primary">
               {loading ? (
                 <>
@@ -292,20 +292,22 @@ export const DashboardControlCard: React.FC<DashboardControlCardProps> = ({
         )}
       </div>
 
-      {/* Uniform Stat Cards (Identical Styling, Bold Pure Black Text) */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3 pt-3">
-        <div className="bg-[#F8FAFC] border border-[#BAE6FD] hover:border-[#0284C7] rounded-xl p-3 flex flex-col justify-center transition-all hover:bg-white">
-          <div className="text-2xl font-black text-black font-mono leading-none">{totalCount}</div>
-          <div className="text-[11px] font-bold text-[#222222] mt-1">Total Profiles</div>
+      {/* Uniform Stat Cards (Sleek 3-column metric row on all screens) */}
+      <div className="grid grid-cols-3 gap-1.5 sm:gap-3 pt-3">
+        <div className="bg-[#F8FAFC] border border-[#BAE6FD] hover:border-[#0284C7] rounded-xl p-2 sm:p-3 text-center sm:text-left flex flex-col justify-center transition-all hover:bg-white">
+          <div className="text-lg sm:text-2xl font-black text-black font-mono leading-none">{totalCount}</div>
+          <div className="text-[10px] sm:text-[11px] font-bold text-[#222222] mt-1 truncate">Total Profiles</div>
         </div>
-        <div className="bg-[#F8FAFC] border border-[#BAE6FD] hover:border-[#0284C7] rounded-xl p-3 flex flex-col justify-center transition-all hover:bg-white">
-          <div className="text-2xl font-black text-black font-mono leading-none">{passedCount}</div>
-          <div className="text-[11px] font-bold text-[#222222] mt-1">Qualified ({geo.replace(/\(.*\)/, '').trim()})</div>
+        <div className="bg-[#F8FAFC] border border-[#BAE6FD] hover:border-[#0284C7] rounded-xl p-2 sm:p-3 text-center sm:text-left flex flex-col justify-center transition-all hover:bg-white">
+          <div className="text-lg sm:text-2xl font-black text-black font-mono leading-none">{passedCount}</div>
+          <div className="text-[10px] sm:text-[11px] font-bold text-[#222222] mt-1 truncate" title={`Qualified (${geo.replace(/\(.*\)/, '').trim()})`}>
+            Qualified ({geo.replace(/\(.*\)/, '').trim()})
+          </div>
         </div>
-        <div className="bg-[#F8FAFC] border border-[#BAE6FD] hover:border-[#0284C7] rounded-xl p-3 flex flex-col justify-center transition-all hover:bg-white">
-          <div className="text-2xl font-black text-black font-mono leading-none">{sentCount}</div>
-          <div className="text-[11px] font-bold text-[#222222] mt-1 font-mono">
-            {mailCount !== undefined && dmCount !== undefined ? `${mailCount} Mail • ${dmCount} DM` : 'Outreach Dispatched'}
+        <div className="bg-[#F8FAFC] border border-[#BAE6FD] hover:border-[#0284C7] rounded-xl p-2 sm:p-3 text-center sm:text-left flex flex-col justify-center transition-all hover:bg-white">
+          <div className="text-lg sm:text-2xl font-black text-black font-mono leading-none">{sentCount}</div>
+          <div className="text-[10px] sm:text-[11px] font-bold text-[#222222] mt-1 font-mono truncate" title={mailCount !== undefined && dmCount !== undefined ? `${mailCount} Mail • ${dmCount} DM` : 'Outreach Dispatched'}>
+            {mailCount !== undefined && dmCount !== undefined ? `${mailCount} Mail • ${dmCount} DM` : 'Outreach'}
           </div>
         </div>
       </div>

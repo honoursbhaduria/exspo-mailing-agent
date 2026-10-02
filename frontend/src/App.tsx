@@ -210,20 +210,20 @@ export const App: React.FC = () => {
       setSentCount(res.stats.total_logged);
       if (res.stats.mail_sent !== undefined) setMailCount(res.stats.mail_sent);
       if (res.stats.dm_sent !== undefined) setDmCount(res.stats.dm_sent);
-    } catch (e) {}
+    } catch {}
   };
 
   return (
-    <div className="min-h-screen py-8 px-4 sm:px-6 lg:px-8 max-w-[1340px] w-full mx-auto relative box-border overflow-x-hidden">
+    <div className="min-h-screen py-4 sm:py-8 px-3 sm:px-6 lg:px-8 max-w-[1340px] w-full mx-auto relative box-border overflow-x-hidden">
       {/* Background Gradient & Grid Pattern */}
       <BackgroundPattern />
 
       {/* 1. Hero Header with Database Status Badge */}
       <HeroHeader dbStatus={dbStatus} />
 
-      {/* 2. Triple Card Showcase */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 mb-8 items-stretch">
-        <div className="lg:col-span-3">
+      {/* 2. Triple Card Showcase (DashboardControlCard first on mobile) */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-5 mb-6 sm:mb-8 items-stretch">
+        <div className="order-2 lg:order-1 lg:col-span-3">
           <AudienceReachCard
             totalCount={totalCount}
             avgFollowers={avgFollowers}
@@ -231,7 +231,7 @@ export const App: React.FC = () => {
             topCreators={topCreators}
           />
         </div>
-        <div className="lg:col-span-6">
+        <div className="order-1 lg:order-2 lg:col-span-6">
           <DashboardControlCard
             totalCount={totalCount}
             passedCount={passedCount}
@@ -243,7 +243,7 @@ export const App: React.FC = () => {
             countries={countries}
           />
         </div>
-        <div className="lg:col-span-3">
+        <div className="order-3 lg:order-3 lg:col-span-3">
           <FeedActivityCard items={feedItems} geo={filters.geo} />
         </div>
       </div>

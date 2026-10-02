@@ -52,13 +52,13 @@ export const Pagination: React.FC<PaginationProps> = ({
   };
 
   return (
-    <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 mt-2 border-t border-[#E2E8F0]">
-      {/* Left: Summary text */}
-      <div className="flex items-center gap-3">
-        <span className="text-xs font-black text-black">
-          Showing <span className="underline decoration-[#38BDF8] decoration-2">{startItem}</span> to{' '}
+    <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-3.5 mt-2 border-t border-[#E2E8F0]">
+      {/* Left: Summary text & Page size */}
+      <div className="flex items-center justify-between w-full sm:w-auto gap-2 sm:gap-3">
+        <span className="text-[11px] sm:text-xs font-black text-black">
+          Showing <span className="underline decoration-[#38BDF8] decoration-2">{startItem}</span>-
           <span className="underline decoration-[#38BDF8] decoration-2">{endItem}</span> of{' '}
-          <span className="font-mono bg-[#E0F2FE] px-1.5 py-0.5 rounded border border-[#BAE6FD] text-black">
+          <span className="font-mono bg-[#E0F2FE] px-1 py-0.5 rounded border border-[#BAE6FD] text-black">
             {totalItems}
           </span>{' '}
           {itemLabel}
@@ -66,8 +66,8 @@ export const Pagination: React.FC<PaginationProps> = ({
 
         {/* Page Size Selector */}
         {onPageSizeChange && (
-          <div className="flex items-center gap-1.5 ml-2">
-            <span className="text-xs font-black text-black">Rows:</span>
+          <div className="flex items-center gap-1.5">
+            <span className="text-[11px] sm:text-xs font-black text-black">Rows:</span>
             <div className="relative">
               <select
                 value={pageSize}
@@ -75,7 +75,7 @@ export const Pagination: React.FC<PaginationProps> = ({
                   onPageSizeChange(Number(e.target.value));
                   onPageChange(1);
                 }}
-                className="appearance-none bg-[#F8FAFC] hover:bg-white focus:bg-white border border-[#CBD5E1] hover:border-black focus:border-black rounded-lg px-2.5 py-1 pr-6 text-xs font-black text-black cursor-pointer shadow-xs transition-all focus:outline-none"
+                className="appearance-none bg-[#F8FAFC] hover:bg-white focus:bg-white border border-[#CBD5E1] hover:border-black focus:border-black rounded-lg px-2 py-1 pr-5 text-[11px] sm:text-xs font-black text-black cursor-pointer shadow-xs transition-all focus:outline-none"
               >
                 {pageSizeOptions.map((opt) => (
                   <option key={opt} value={opt} className="bg-white text-black font-bold">
@@ -83,8 +83,8 @@ export const Pagination: React.FC<PaginationProps> = ({
                   </option>
                 ))}
               </select>
-              <div className="pointer-events-none absolute right-1.5 top-1/2 -translate-y-1/2 flex items-center">
-                <ChevronDown className="w-3.5 h-3.5 text-black stroke-[2.5]" />
+              <div className="pointer-events-none absolute right-1 top-1/2 -translate-y-1/2 flex items-center">
+                <ChevronDown className="w-3 h-3 text-black stroke-[2.5]" />
               </div>
             </div>
           </div>
@@ -92,29 +92,36 @@ export const Pagination: React.FC<PaginationProps> = ({
       </div>
 
       {/* Right: Interactive Navigation Buttons */}
-      <div className="flex items-center gap-1.5">
+      <div className="flex items-center justify-center sm:justify-end w-full sm:w-auto gap-1 sm:gap-1.5">
         {/* First Page */}
         <button
+          type="button"
           onClick={() => onPageChange(1)}
           disabled={currentPage === 1}
           title="First Page"
           className="p-1.5 rounded-lg border border-[#CBD5E1] bg-white text-black hover:bg-[#F0F9FF] disabled:opacity-30 disabled:hover:bg-white disabled:cursor-not-allowed transition-all cursor-pointer"
         >
-          <ChevronsLeft className="w-4 h-4 text-black stroke-[2.5]" />
+          <ChevronsLeft className="w-3.5 h-3.5 text-black stroke-[2.5]" />
         </button>
 
         {/* Prev Page */}
         <button
+          type="button"
           onClick={() => onPageChange(currentPage - 1)}
           disabled={currentPage === 1}
           title="Previous Page"
           className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-[#CBD5E1] bg-white text-black font-black text-xs hover:bg-[#F0F9FF] disabled:opacity-30 disabled:hover:bg-white disabled:cursor-not-allowed transition-all cursor-pointer"
         >
           <ChevronLeft className="w-3.5 h-3.5 text-black stroke-[2.5]" />
-          <span>Prev</span>
+          <span className="hidden xs:inline sm:inline">Prev</span>
         </button>
 
-        {/* Page Number Buttons */}
+        {/* Mobile Page Indicator */}
+        <span className="sm:hidden text-xs font-black text-black font-mono px-2">
+          {currentPage} / {safeTotalPages}
+        </span>
+
+        {/* Desktop Page Number Buttons */}
         <div className="hidden sm:flex items-center gap-1">
           {getPageNumbers().map((p, idx) => {
             if (p === '...') {
@@ -128,6 +135,7 @@ export const Pagination: React.FC<PaginationProps> = ({
             return (
               <button
                 key={`page-${p}`}
+                type="button"
                 onClick={() => onPageChange(p as number)}
                 className={`min-w-8 h-8 px-2 text-xs font-black rounded-lg border transition-all cursor-pointer ${
                   isCurrent
@@ -143,23 +151,25 @@ export const Pagination: React.FC<PaginationProps> = ({
 
         {/* Next Page */}
         <button
+          type="button"
           onClick={() => onPageChange(currentPage + 1)}
           disabled={currentPage >= safeTotalPages}
           title="Next Page"
           className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-[#CBD5E1] bg-white text-black font-black text-xs hover:bg-[#F0F9FF] disabled:opacity-30 disabled:hover:bg-white disabled:cursor-not-allowed transition-all cursor-pointer"
         >
-          <span>Next</span>
+          <span className="hidden xs:inline sm:inline">Next</span>
           <ChevronRight className="w-3.5 h-3.5 text-black stroke-[2.5]" />
         </button>
 
         {/* Last Page */}
         <button
+          type="button"
           onClick={() => onPageChange(safeTotalPages)}
           disabled={currentPage >= safeTotalPages}
           title="Last Page"
           className="p-1.5 rounded-lg border border-[#CBD5E1] bg-white text-black hover:bg-[#F0F9FF] disabled:opacity-30 disabled:hover:bg-white disabled:cursor-not-allowed transition-all cursor-pointer"
         >
-          <ChevronsRight className="w-4 h-4 text-black stroke-[2.5]" />
+          <ChevronsRight className="w-3.5 h-3.5 text-black stroke-[2.5]" />
         </button>
       </div>
     </div>
