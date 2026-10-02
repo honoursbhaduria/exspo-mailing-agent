@@ -133,7 +133,6 @@ SIMULATION_MODE=True
 
 ### 3. Launch Dashboards & API
 
-#### Option A: Fullstack React Dashboard + FastAPI Backend (Recommended)
 ```bash
 # Terminal 1: Start FastAPI Backend
 ./venv/bin/python3 -m uvicorn server:app --host 0.0.0.0 --port 8000 --reload
@@ -143,13 +142,7 @@ cd frontend
 npm install
 npm run dev
 ```
-Open **`http://localhost:3000`** to access the dashboard.
-
-#### Option B: Streamlit Python Dashboard
-```bash
-./venv/bin/streamlit run app.py --server.port 8501
-```
-Open **`http://localhost:8501`** in your browser.
+Open **`http://localhost:3000`** in your browser to access the interactive React dashboard.
 
 ### 4. Run Automated Test Suite
 To run the automated verification suite:
