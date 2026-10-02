@@ -580,6 +580,7 @@ export const TabsSection: React.FC<TabsSectionProps> = ({
                   type="number"
                   value={minFollowers}
                   onChange={(e) => setMinFollowers(Number(e.target.value))}
+                  onKeyDown={(e) => { if (e.key === 'Enter') runFilter(); }}
                   className="w-full bg-white border border-[#CBD5E1] rounded-lg px-3 py-1.5 text-xs font-extrabold text-black font-mono"
                 />
               </div>
@@ -589,6 +590,7 @@ export const TabsSection: React.FC<TabsSectionProps> = ({
                   type="number"
                   value={maxFollowers}
                   onChange={(e) => setMaxFollowers(Number(e.target.value))}
+                  onKeyDown={(e) => { if (e.key === 'Enter') runFilter(); }}
                   className="w-full bg-white border border-[#CBD5E1] rounded-lg px-3 py-1.5 text-xs font-extrabold text-black font-mono"
                 />
               </div>
@@ -610,61 +612,91 @@ export const TabsSection: React.FC<TabsSectionProps> = ({
           </div>
 
           {/* Qualified vs Disqualified Split Tables */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="border border-[#86EFAC] rounded-xl overflow-hidden">
-              <div className="bg-[#DCFCE7] px-4 py-2.5 border-b border-[#86EFAC] flex justify-between items-center">
-                <span className="font-black text-sm text-black">Qualified Profiles (Passed)</span>
-                <span className="bg-white border border-[#86EFAC] text-xs font-extrabold px-2 py-0.5 rounded-full text-black">
-                  {filteredResults.filter((i) => i.qualification_status === 'PASSED').length || 29} Passed
-                </span>
-              </div>
-              <div className="max-h-80 overflow-y-auto divide-y divide-[#E2E8F0] bg-white">
-                {(filteredResults.length ? filteredResults : influencers)
-                  .filter((i) => i.qualification_status === 'PASSED' || (i.follower_count >= 5000 && i.follower_count <= 100000 && i.engagement_rate >= 2.0))
-                  .map((item, idx) => (
-                    <div key={idx} className="p-3 flex justify-between items-center hover:bg-[#F0FDF4]">
-                      <div>
-                        <div className="font-extrabold text-sm text-black">{item.name}</div>
-                        <div className="font-mono text-xs font-bold text-[#333333]">@{item.handle}</div>
-                      </div>
-                      <div className="text-right">
-                        <div className="font-mono text-xs font-black text-black">{Number(item.follower_count).toLocaleString()} | {item.engagement_rate}%</div>
-                        <div className="text-[10px] font-extrabold text-black bg-[#DCFCE7] px-2 py-0.5 rounded border border-[#86EFAC] inline-block mt-0.5">
-                          {item.qualification_reason || 'Passed criteria'}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-              </div>
-            </div>
+          {(() => {
+            const passedList = filteredResults.filter((i) => i.qualification_status === 'PASSED');
+            const failedList = filteredResults.filter((i) => i.qualification_status === 'FAILED');
 
-            <div className="border border-[#FCA5A5] rounded-xl overflow-hidden">
-              <div className="bg-[#FEE2E2] px-4 py-2.5 border-b border-[#FCA5A5] flex justify-between items-center">
-                <span className="font-black text-sm text-black">Disqualified Profiles (Failed)</span>
-                <span className="bg-white border border-[#FCA5A5] text-xs font-extrabold px-2 py-0.5 rounded-full text-black">
-                  {filteredResults.filter((i) => i.qualification_status === 'FAILED').length || 36} Failed
-                </span>
-              </div>
-              <div className="max-h-80 overflow-y-auto divide-y divide-[#E2E8F0] bg-white">
-                {(filteredResults.length ? filteredResults : influencers)
-                  .filter((i) => i.qualification_status === 'FAILED' || (i.follower_count < 5000 || i.follower_count > 100000 || i.engagement_rate < 2.0))
-                  .map((item, idx) => (
-                    <div key={idx} className="p-3 flex justify-between items-center hover:bg-[#FEF2F2]">
-                      <div>
-                        <div className="font-extrabold text-sm text-black">{item.name}</div>
-                        <div className="font-mono text-xs font-bold text-[#333333]">@{item.handle}</div>
-                      </div>
-                      <div className="text-right">
-                        <div className="font-mono text-xs font-black text-black">{Number(item.follower_count).toLocaleString()} | {item.engagement_rate}%</div>
-                        <div className="text-[10px] font-extrabold text-black bg-[#FEE2E2] px-2 py-0.5 rounded border border-[#FCA5A5] inline-block mt-0.5">
-                          {item.qualification_reason || (item.follower_count < 5000 ? 'Followers < 5,000' : 'Followers > 100,000')}
+            return (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* 1. Qualified Profiles (Passed) */}
+                <div data-testid="qualified-profiles-card" className="border border-[#86EFAC] rounded-xl overflow-hidden shadow-xs flex flex-col">
+                  <div className="bg-[#DCFCE7] px-4 py-3 border-b border-[#86EFAC] flex justify-between items-center">
+                    <span className="font-black text-sm text-black">Qualified Profiles (Passed)</span>
+                    <span className="bg-white border border-[#86EFAC] text-xs font-black px-2.5 py-0.5 rounded-full text-black shadow-xs">
+                      {passedList.length} Passed
+                    </span>
+                  </div>
+                  <div className="max-h-96 overflow-y-auto divide-y divide-[#E2E8F0] bg-white flex-1">
+                    {passedList.length > 0 ? (
+                      passedList.map((item, idx) => (
+                        <div key={idx} className="p-3.5 flex justify-between items-start hover:bg-[#F0FDF4] transition-colors">
+                          <div className="pr-3">
+                            <div className="font-extrabold text-sm text-black">{item.name}</div>
+                            <div className="font-mono text-xs font-bold text-[#333333]">@{item.handle}</div>
+                            <div className="text-xs font-semibold text-[#475569] mt-0.5">
+                              {item.location} • {item.platform}
+                            </div>
+                          </div>
+                          <div className="text-right shrink-0">
+                            <div className="font-mono text-xs font-black text-black">
+                              {Number(item.follower_count).toLocaleString()} | {Number(item.engagement_rate).toFixed(1)}%
+                            </div>
+                            <div className="text-[10px] font-black text-black bg-[#DCFCE7] px-2.5 py-1 rounded-md border border-[#86EFAC] inline-block mt-1">
+                              {item.qualification_reason || 'Qualified (All criteria passed)'}
+                            </div>
+                          </div>
                         </div>
+                      ))
+                    ) : (
+                      <div className="p-10 text-center text-xs font-bold text-[#64748B]">
+                        No creator profiles passed all active criteria. Try broadening follower bounds or selecting another category.
                       </div>
-                    </div>
-                  ))}
+                    )}
+                  </div>
+                </div>
+
+                {/* 2. Disqualified Profiles (Failed) */}
+                <div data-testid="disqualified-profiles-card" className="border border-[#FCA5A5] rounded-xl overflow-hidden shadow-xs flex flex-col">
+                  <div className="bg-[#FEE2E2] px-4 py-3 border-b border-[#FCA5A5] flex justify-between items-center">
+                    <span className="font-black text-sm text-black">Disqualified Profiles (Failed)</span>
+                    <span className="bg-white border border-[#FCA5A5] text-xs font-black px-2.5 py-0.5 rounded-full text-black shadow-xs">
+                      {failedList.length} Failed
+                    </span>
+                  </div>
+                  <div className="max-h-96 overflow-y-auto divide-y divide-[#E2E8F0] bg-white flex-1">
+                    {failedList.length > 0 ? (
+                      failedList.map((item, idx) => (
+                        <div key={idx} className="p-3.5 flex justify-between items-start hover:bg-[#FEF2F2] transition-colors">
+                          <div className="pr-3">
+                            <div className="font-extrabold text-sm text-black">{item.name}</div>
+                            <div className="font-mono text-xs font-bold text-[#333333]">@{item.handle}</div>
+                            <div className="text-xs font-semibold text-[#475569] mt-0.5">
+                              {item.location} • {item.platform}
+                            </div>
+                          </div>
+                          <div className="text-right max-w-[58%] shrink-0">
+                            <div className="font-mono text-xs font-black text-black">
+                              {Number(item.follower_count).toLocaleString()} | {Number(item.engagement_rate).toFixed(1)}%
+                            </div>
+                            <div
+                              className="text-[10px] font-bold text-black bg-[#FEE2E2] px-2.5 py-1 rounded-md border border-[#FCA5A5] inline-block mt-1 text-right"
+                              title={item.qualification_reason}
+                            >
+                              {item.qualification_reason || 'Disqualified'}
+                            </div>
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="p-10 text-center text-xs font-bold text-[#64748B]">
+                        All evaluated profiles passed criteria.
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
+            );
+          })()}
         </div>
       )}
 
