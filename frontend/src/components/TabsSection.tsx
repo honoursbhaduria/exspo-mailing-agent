@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Download, Sparkles, Send, ExternalLink, Loader2, ChevronDown, CheckCircle2, Mail, MessageSquare } from 'lucide-react';
+import { Search, Download, Sparkles, Send, ExternalLink, Loader2, ChevronDown, CheckCircle2, XCircle, Mail, MessageSquare } from 'lucide-react';
 import AnimatedOutlineNavbar, { type TabItem } from './ui/AnimatedOutlineNavbar';
 import SlideHoverButton from './ui/SlideHoverButton';
 import Pagination from './ui/Pagination';
@@ -521,36 +521,73 @@ export const TabsSection: React.FC<TabsSectionProps> = ({
           {/* Qualified vs Disqualified Strict Split Tables */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* 1. Qualified Profiles (Passed) */}
-            <div data-testid="qualified-profiles-card" className="border border-[#86EFAC] rounded-xl overflow-hidden shadow-xs flex flex-col">
-              <div className="bg-[#DCFCE7] px-4 py-3 border-b border-[#86EFAC] flex justify-between items-center">
-                <span className="font-black text-sm text-black">Qualified Profiles (Passed)</span>
-                <span className="bg-white border border-[#86EFAC] text-xs font-black px-2.5 py-0.5 rounded-full text-black shadow-xs">
+            <div data-testid="qualified-profiles-card" className="border border-[#86EFAC] rounded-2xl overflow-hidden shadow-xs flex flex-col bg-white">
+              <div className="bg-[#DCFCE7] px-4 py-3.5 border-b border-[#86EFAC] flex justify-between items-center">
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-[#166534]" />
+                  <span className="font-black text-sm text-black">Qualified Profiles (Passed)</span>
+                </div>
+                <span className="bg-white border border-[#86EFAC] text-xs font-black px-2.5 py-0.5 rounded-full text-[#14532D] shadow-xs">
                   {passedInfluencers.length} Passed
                 </span>
               </div>
-              <div className="max-h-96 overflow-y-auto divide-y divide-[#E2E8F0] bg-white flex-1">
+              <div className="max-h-[520px] overflow-y-auto p-4 space-y-3 bg-[#F8FAFC]/50 flex-1">
                 {passedInfluencers.length > 0 ? (
                   passedInfluencers.map((item, idx) => (
-                    <div key={idx} className="p-3.5 flex justify-between items-start hover:bg-[#F0FDF4] transition-colors">
-                      <div className="pr-3">
-                        <div className="font-extrabold text-sm text-black">{item.name}</div>
-                        <div className="font-mono text-xs font-bold text-[#333333]">@{item.handle}</div>
-                        <div className="text-xs font-semibold text-[#475569] mt-0.5">
-                          {item.location} • {item.platform}
+                    <div key={idx} className="p-4 bg-white hover:bg-[#F0FDF4]/50 border border-[#E2E8F0] hover:border-[#86EFAC] rounded-xl transition-all shadow-xs space-y-3">
+                      {/* Top Row: Creator Details & Stat Chips */}
+                      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                        <div className="min-w-0 flex-1">
+                          <div className="flex flex-wrap items-center gap-1.5">
+                            <span className="font-black text-sm text-black">{item.name}</span>
+                            <span className="text-xs font-mono font-bold text-[#64748B]">@{item.handle}</span>
+                            {item.contact_email && item.contact_email !== 'Not Found' && (
+                              <span className="text-[10px] font-black bg-[#DCFCE7] text-[#166534] border border-[#86EFAC] px-2 py-0.5 rounded-md">
+                                Verified Email
+                              </span>
+                            )}
+                          </div>
+                          <div className="text-xs font-semibold text-[#475569] mt-1 flex flex-wrap items-center gap-1.5">
+                            <span>📍 {item.location || 'Global'}</span>
+                            <span>•</span>
+                            <span>📱 {item.platform}</span>
+                            <span>•</span>
+                            <span className="font-bold text-black">{item.niche}</span>
+                          </div>
+                        </div>
+
+                        {/* Metric Chips & Status Pill */}
+                        <div className="flex items-center gap-2 shrink-0">
+                          <div className="bg-[#F8FAFC] border border-[#CBD5E1] px-2.5 py-1 rounded-lg text-right shadow-xs">
+                            <span className="text-[9px] font-bold text-[#64748B] block leading-none uppercase">Followers</span>
+                            <span className="text-xs font-black text-black font-mono leading-tight">
+                              {Number(item.follower_count).toLocaleString()}
+                            </span>
+                          </div>
+                          <div className="bg-[#F8FAFC] border border-[#CBD5E1] px-2.5 py-1 rounded-lg text-right shadow-xs">
+                            <span className="text-[9px] font-bold text-[#64748B] block leading-none uppercase">Engagement</span>
+                            <span className="text-xs font-black text-black font-mono leading-tight">
+                              {Number(item.engagement_rate).toFixed(1)}%
+                            </span>
+                          </div>
+                          <div className="bg-[#DCFCE7] border border-[#86EFAC] text-[#14532D] text-xs font-black px-2.5 py-2 rounded-lg flex items-center gap-1 shadow-xs">
+                            <CheckCircle2 className="w-3.5 h-3.5 text-[#166534]" />
+                            <span>PASSED</span>
+                          </div>
                         </div>
                       </div>
-                      <div className="text-right shrink-0">
-                        <div className="font-mono text-xs font-black text-black">
-                          {Number(item.follower_count).toLocaleString()} | {Number(item.engagement_rate).toFixed(1)}%
-                        </div>
-                        <div className="text-[10px] font-black text-black bg-[#DCFCE7] px-2.5 py-1 rounded-md border border-[#86EFAC] inline-block mt-1">
-                          {item.qualification_reason || 'Qualified (All criteria passed)'}
-                        </div>
+
+                      {/* Bottom Row: Full-width Evaluation Reasoning Strip */}
+                      <div className="bg-[#F0FDF4] border border-[#86EFAC] rounded-lg px-3.5 py-2 flex items-start gap-2">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-[#166534] shrink-0 mt-0.5" />
+                        <span className="text-xs font-semibold text-[#14532D] leading-relaxed">
+                          {item.qualification_reason || 'Qualified: Meets follower bounds, engagement threshold, and target demographic criteria.'}
+                        </span>
                       </div>
                     </div>
                   ))
                 ) : (
-                  <div className="p-10 text-center text-xs font-bold text-[#64748B]">
+                  <div className="p-10 text-center text-xs font-bold text-[#64748B] bg-white rounded-xl border border-dashed border-[#CBD5E1]">
                     No creator profiles passed all active criteria for {filters.geo}. Try broadening follower bounds or selecting another category.
                   </div>
                 )}
@@ -558,39 +595,77 @@ export const TabsSection: React.FC<TabsSectionProps> = ({
             </div>
 
             {/* 2. Disqualified Profiles (Failed) */}
-            <div data-testid="disqualified-profiles-card" className="border border-[#FCA5A5] rounded-xl overflow-hidden shadow-xs flex flex-col">
-              <div className="bg-[#FEE2E2] px-4 py-3 border-b border-[#FCA5A5] flex justify-between items-center">
-                <span className="font-black text-sm text-black">Disqualified Profiles (Failed)</span>
-                <span className="bg-white border border-[#FCA5A5] text-xs font-black px-2.5 py-0.5 rounded-full text-black shadow-xs">
+            <div data-testid="disqualified-profiles-card" className="border border-[#FCA5A5] rounded-2xl overflow-hidden shadow-xs flex flex-col bg-white">
+              <div className="bg-[#FEE2E2] px-4 py-3.5 border-b border-[#FCA5A5] flex justify-between items-center">
+                <div className="flex items-center gap-2">
+                  <XCircle className="w-4 h-4 text-[#991B1B]" />
+                  <span className="font-black text-sm text-black">Disqualified Profiles (Failed)</span>
+                </div>
+                <span className="bg-white border border-[#FCA5A5] text-xs font-black px-2.5 py-0.5 rounded-full text-[#991B1B] shadow-xs">
                   {failedInfluencers.length} Failed
                 </span>
               </div>
-              <div className="max-h-96 overflow-y-auto divide-y divide-[#E2E8F0] bg-white flex-1">
+              <div className="max-h-[520px] overflow-y-auto p-4 space-y-3 bg-[#F8FAFC]/50 flex-1">
                 {failedInfluencers.length > 0 ? (
                   failedInfluencers.map((item, idx) => (
-                    <div key={idx} className="p-3.5 flex justify-between items-start hover:bg-[#FEF2F2] transition-colors">
-                      <div className="pr-3">
-                        <div className="font-extrabold text-sm text-black">{item.name}</div>
-                        <div className="font-mono text-xs font-bold text-[#333333]">@{item.handle}</div>
-                        <div className="text-xs font-semibold text-[#475569] mt-0.5">
-                          {item.location} • {item.platform}
+                    <div key={idx} className="p-4 bg-white hover:bg-[#FEF2F2]/50 border border-[#E2E8F0] hover:border-[#FCA5A5] rounded-xl transition-all shadow-xs space-y-3">
+                      {/* Top Row: Creator Details & Stat Chips */}
+                      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                        <div className="min-w-0 flex-1">
+                          <div className="flex flex-wrap items-center gap-1.5">
+                            <span className="font-black text-sm text-black">{item.name}</span>
+                            <span className="text-xs font-mono font-bold text-[#64748B]">@{item.handle}</span>
+                          </div>
+                          <div className="text-xs font-semibold text-[#475569] mt-1 flex flex-wrap items-center gap-1.5">
+                            <span>📍 {item.location || 'Not Specified'}</span>
+                            <span>•</span>
+                            <span>📱 {item.platform}</span>
+                            <span>•</span>
+                            <span className="font-bold text-black">{item.niche}</span>
+                          </div>
+                        </div>
+
+                        {/* Metric Chips & Status Pill */}
+                        <div className="flex items-center gap-2 shrink-0">
+                          <div className="bg-[#F8FAFC] border border-[#CBD5E1] px-2.5 py-1 rounded-lg text-right shadow-xs">
+                            <span className="text-[9px] font-bold text-[#64748B] block leading-none uppercase">Followers</span>
+                            <span className="text-xs font-black text-black font-mono leading-tight">
+                              {Number(item.follower_count).toLocaleString()}
+                            </span>
+                          </div>
+                          <div className="bg-[#F8FAFC] border border-[#CBD5E1] px-2.5 py-1 rounded-lg text-right shadow-xs">
+                            <span className="text-[9px] font-bold text-[#64748B] block leading-none uppercase">Engagement</span>
+                            <span className="text-xs font-black text-black font-mono leading-tight">
+                              {Number(item.engagement_rate).toFixed(1)}%
+                            </span>
+                          </div>
+                          <div className="bg-[#FEE2E2] border border-[#FCA5A5] text-[#991B1B] text-xs font-black px-2.5 py-2 rounded-lg flex items-center gap-1 shadow-xs">
+                            <XCircle className="w-3.5 h-3.5 text-[#991B1B]" />
+                            <span>FAILED</span>
+                          </div>
                         </div>
                       </div>
-                      <div className="text-right max-w-[58%] shrink-0">
-                        <div className="font-mono text-xs font-black text-black">
-                          {Number(item.follower_count).toLocaleString()} | {Number(item.engagement_rate).toFixed(1)}%
-                        </div>
-                        <div
-                          className="text-[10px] font-bold text-black bg-[#FEE2E2] px-2.5 py-1 rounded-md border border-[#FCA5A5] inline-block mt-1 text-right"
-                          title={item.qualification_reason}
-                        >
-                          {item.qualification_reason || 'Disqualified'}
+
+                      {/* Bottom Row: Full-width Disqualification Reasons Breakdown */}
+                      <div className="bg-[#FEF2F2] border border-[#FCA5A5] rounded-lg px-3.5 py-2 flex items-start gap-2">
+                        <XCircle className="w-3.5 h-3.5 text-[#991B1B] shrink-0 mt-0.5" />
+                        <div className="text-xs font-semibold text-[#7F1D1D] leading-relaxed space-y-1">
+                          {item.qualification_reason ? (
+                            item.qualification_reason.split(' | ').map((reason, rIdx) => (
+                              <div key={rIdx} className="flex items-center gap-1.5">
+                                <span className="w-1.5 h-1.5 rounded-full bg-[#EF4444] shrink-0 inline-block" />
+                                <span>{reason}</span>
+                              </div>
+                            ))
+                          ) : (
+                            <span>Disqualified: Did not satisfy active criteria bounds.</span>
+                          )}
                         </div>
                       </div>
                     </div>
                   ))
                 ) : (
-                  <div className="p-10 text-center text-xs font-bold text-[#64748B]">
+                  <div className="p-10 text-center text-xs font-bold text-[#64748B] bg-white rounded-xl border border-dashed border-[#CBD5E1]">
                     All evaluated profiles passed criteria.
                   </div>
                 )}
