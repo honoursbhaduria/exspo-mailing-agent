@@ -13,7 +13,19 @@ const TABS: TabItem[] = [
   { id: 'tracker', label: 'Outreach Audit Log' },
 ];
 
-export const TabsSection: React.FC = () => {
+export interface TabsSectionProps {
+  activeGeo?: string;
+  activePlatform?: string;
+  activeNiche?: string;
+  activeScale?: string;
+}
+
+export const TabsSection: React.FC<TabsSectionProps> = ({
+  activeGeo = 'Global (All Regions)',
+  activePlatform = 'Instagram & TikTok',
+  activeNiche = 'Fashion & Beauty',
+  activeScale = 'Micro-Influencers (5k - 100k)',
+}) => {
   const [activeTab, setActiveTab] = useState('records');
 
   // Datasets & Tab 1 Pagination
@@ -22,6 +34,7 @@ export const TabsSection: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [recordsPage, setRecordsPage] = useState(1);
   const [recordsPerPage, setRecordsPerPage] = useState(10);
+  const [dashboardFilterEnabled, setDashboardFilterEnabled] = useState(true);
 
   // Classification Tab State
   const [minFollowers, setMinFollowers] = useState(5000);
@@ -76,6 +89,15 @@ export const TabsSection: React.FC = () => {
     };
     fetchGeo();
   }, []);
+
+  // Synchronize Tab 2 and Tab 1 when Dashboard filters change
+  useEffect(() => {
+    setFilterGeo(activeGeo);
+    setFilterPlatform(activePlatform);
+    setFilterNiche(activeNiche);
+    runFilter(activeGeo, activePlatform, activeNiche);
+    setRecordsPage(1);
+  }, [activeGeo, activePlatform, activeNiche, activeScale]);
 
   const fetchRawRecords = async () => {
     try {
@@ -162,13 +184,96 @@ export const TabsSection: React.FC = () => {
     document.body.removeChild(link);
   };
 
+  // Helper matching functions for dashboard criteria
+  const matchesGeography = (geo: string, targetGeo?: string) => {
+    if (!targetGeo || targetGeo === 'Global (All Regions)' || targetGeo === 'All') return true;
+    const target = targetGeo.toLowerCase().trim();
+    const g = (geo || '').toLowerCase();
+
+    let iso = '';
+    let countryName = target;
+    if (target.includes('(') && target.includes(')')) {
+      iso = target.slice(target.indexOf('(') + 1, target.indexOf(')')).trim();
+      countryName = target.slice(0, target.indexOf('(')).trim();
+    }
+
+    if (iso === 'ca' || countryName.includes('canada')) {
+      if (
+        g.includes(', ca') ||
+        g.includes('canada') ||
+        g.includes('toronto') ||
+        g.includes('edmonton') ||
+        g.includes('calgary') ||
+        g.includes('montreal') ||
+        g.includes('vancouver')
+      ) {
+        return !g.includes(', us') && !g.includes('united states');
+      }
+      return false;
+    }
+
+    if (iso === 'us' || countryName.includes('united states')) {
+      return g.includes(', us') || g.includes('united states') || g.includes('usa');
+    }
+
+    if (iso === 'gb' || countryName.includes('united kingdom') || countryName.includes('uk')) {
+      return g.includes('gb') || g.includes('uk') || g.includes('london') || g.includes('united kingdom') || g.includes('england');
+    }
+
+    if (iso === 'au' || countryName.includes('australia')) {
+      return g.includes(', au') || g.includes('australia') || g.includes('sydney') || g.includes('melbourne');
+    }
+
+    if (iso && (g.includes(`, ${iso}`) || g.includes(` ${iso}`))) return true;
+    if (countryName && countryName.length > 3 && g.includes(countryName)) return true;
+
+    return false;
+  };
+
+  const matchesPlatform = (platform: string, targetPlatform?: string) => {
+    if (!targetPlatform || targetPlatform === 'All Platforms' || targetPlatform === 'Instagram & TikTok') return true;
+    const p = (platform || '').toLowerCase();
+    const target = targetPlatform.toLowerCase();
+    if (target.includes('instagram only')) return p.includes('instagram');
+    if (target.includes('tiktok only')) return p.includes('tiktok');
+    if (target.includes('youtube')) return p.includes('youtube');
+    return true;
+  };
+
+  const matchesScale = (followers: number, scale?: string) => {
+    if (!scale) return true;
+    if (scale.includes('Nano')) return followers >= 1000 && followers <= 5000;
+    if (scale.includes('Macro')) return followers > 100000;
+    return followers >= 5000 && followers <= 100000;
+  };
+
   // Filtered raw records & Tab 1 Pagination
-  const displayRecords = influencers.filter(
-    (i) =>
-      i.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      i.handle?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      i.location?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const displayRecords = influencers.filter((item) => {
+    // 1. Text search query
+    const matchesSearch =
+      !searchQuery ||
+      item.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.handle?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.location?.toLowerCase().includes(searchQuery.toLowerCase());
+
+    if (!matchesSearch) return false;
+
+    // 2. Active Dashboard Filters
+    if (dashboardFilterEnabled) {
+      if (!matchesGeography(item.audience_geography || item.location || '', activeGeo)) {
+        return false;
+      }
+      if (!matchesPlatform(item.platform, activePlatform)) {
+        return false;
+      }
+      if (!matchesScale(item.follower_count, activeScale)) {
+        return false;
+      }
+    }
+
+    return true;
+  });
+
   const totalRecordsPages = Math.max(1, Math.ceil(displayRecords.length / recordsPerPage));
   const safeRecordsPage = Math.min(recordsPage, totalRecordsPages);
   const paginatedRecords = displayRecords.slice(
@@ -233,6 +338,36 @@ export const TabsSection: React.FC = () => {
             </div>
           ) : (
             <>
+              {/* Active Dashboard Filter Banner */}
+              <div className="flex flex-wrap items-center justify-between gap-3 mb-4 bg-[#F8FAFC] border border-[#CBD5E1] p-3 rounded-xl">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="text-xs font-black text-black">Active Filter:</span>
+                  <span className="bg-white border border-[#94A3B8] text-xs font-black px-2.5 py-1 rounded-md text-black shadow-xs">
+                    🌍 {activeGeo}
+                  </span>
+                  {activePlatform !== 'All Platforms' && activePlatform !== 'Instagram & TikTok' && (
+                    <span className="bg-white border border-[#94A3B8] text-xs font-black px-2.5 py-1 rounded-md text-black shadow-xs">
+                      📱 {activePlatform}
+                    </span>
+                  )}
+                  <span className="bg-white border border-[#94A3B8] text-xs font-black px-2.5 py-1 rounded-md text-black shadow-xs">
+                    👥 {activeScale.replace(/\(.*\)/, '').trim()}
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <span className="text-xs font-black text-black">
+                    Showing <span className="text-[#0284C7] font-mono text-sm">{displayRecords.length}</span> of {influencers.length} creators
+                  </span>
+                  <button
+                    onClick={() => setDashboardFilterEnabled(!dashboardFilterEnabled)}
+                    className="text-xs font-black text-black underline hover:text-[#0284C7] cursor-pointer bg-white px-2.5 py-1 rounded-lg border border-[#CBD5E1] shadow-xs"
+                  >
+                    {dashboardFilterEnabled ? 'Show All Unfiltered' : 'Apply Dashboard Filter'}
+                  </button>
+                </div>
+              </div>
+
               <div className="overflow-x-auto border border-[#E2E8F0] rounded-xl bg-white shadow-sm">
                 <table className="w-full text-left text-sm border-collapse bg-white">
                   <thead>
@@ -289,8 +424,20 @@ export const TabsSection: React.FC = () => {
                       ))
                     ) : (
                       <tr>
-                        <td colSpan={8} className="py-8 text-center text-sm font-bold text-black">
-                          No creator records found matching &ldquo;{searchQuery}&rdquo;.
+                        <td colSpan={8} className="py-10 text-center text-sm font-bold text-black">
+                          <div>
+                            No creator records found matching {dashboardFilterEnabled ? `active filter "${activeGeo}"` : ''}{searchQuery ? ` and search "${searchQuery}"` : ''}.
+                          </div>
+                          {dashboardFilterEnabled && (
+                            <div className="mt-3">
+                              <button
+                                onClick={() => setDashboardFilterEnabled(false)}
+                                className="text-xs font-black underline text-[#0284C7] hover:text-black cursor-pointer bg-[#F1F5F9] px-3 py-1.5 rounded-lg border border-[#CBD5E1]"
+                              >
+                                Click here to show all {influencers.length} creators
+                              </button>
+                            </div>
+                          )}
                         </td>
                       </tr>
                     )}
@@ -524,9 +671,9 @@ export const TabsSection: React.FC = () => {
                 onChange={(e) => setSelectedHandle(e.target.value)}
                 className="w-full appearance-none bg-[#F8FAFC] hover:bg-white focus:bg-white border border-[#CBD5E1] hover:border-black focus:border-black rounded-xl px-3.5 py-2.5 pr-10 text-xs font-black text-black cursor-pointer shadow-xs transition-all focus:outline-none focus:ring-2 focus:ring-[#BAE6FD]/60"
               >
-                {influencers.map((i) => (
+                {(displayRecords.length > 0 ? displayRecords : influencers).map((i) => (
                   <option key={i.handle} value={i.handle} className="bg-white text-black font-bold">
-                    {i.name} (@{i.handle})
+                    {i.name} (@{i.handle}) - {i.location || 'Global'}
                   </option>
                 ))}
               </select>
@@ -634,9 +781,9 @@ export const TabsSection: React.FC = () => {
                   onChange={(e) => setTargetCreator(e.target.value)}
                   className="w-full appearance-none bg-[#F8FAFC] hover:bg-white focus:bg-white border border-[#CBD5E1] hover:border-black focus:border-black rounded-xl px-3.5 py-2.5 pr-10 text-xs font-black text-black cursor-pointer shadow-xs transition-all focus:outline-none focus:ring-2 focus:ring-[#BAE6FD]/60"
                 >
-                  {influencers.map((i) => (
+                  {(displayRecords.length > 0 ? displayRecords : influencers).map((i) => (
                     <option key={i.handle} value={i.handle} className="bg-white text-black font-bold">
-                      {i.name} (@{i.handle})
+                      {i.name} (@{i.handle}) - {i.location || 'Global'}
                     </option>
                   ))}
                 </select>

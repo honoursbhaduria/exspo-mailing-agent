@@ -21,15 +21,18 @@ export const App: React.FC = () => {
   const [currentGeo, setCurrentGeo] = useState('Global (All Regions)');
   const [currentPlatform, setCurrentPlatform] = useState('Instagram & TikTok');
   const [currentNiche, setCurrentNiche] = useState('Fashion & Beauty');
+  const [currentScale, setCurrentScale] = useState('Micro-Influencers (5k - 100k)');
 
   const refreshCounts = async (params?: { geo?: string; platform?: string; niche?: string; scale?: string }) => {
     const geo = params?.geo ?? currentGeo;
     const platform = params?.platform ?? currentPlatform;
     const niche = params?.niche ?? currentNiche;
+    const scale = params?.scale ?? currentScale;
 
     if (params?.geo) setCurrentGeo(params.geo);
     if (params?.platform) setCurrentPlatform(params.platform);
     if (params?.niche) setCurrentNiche(params.niche);
+    if (params?.scale) setCurrentScale(params.scale);
 
     try {
       const rawRes = await api.getRawInfluencers(100);
@@ -42,10 +45,10 @@ export const App: React.FC = () => {
 
       let minF = 5000;
       let maxF = 100000;
-      if (params?.scale?.includes('Nano')) {
+      if (scale.includes('Nano')) {
         minF = 1000;
         maxF = 5000;
-      } else if (params?.scale?.includes('Macro')) {
+      } else if (scale.includes('Macro')) {
         minF = 100000;
         maxF = 10000000;
       }
@@ -154,7 +157,12 @@ export const App: React.FC = () => {
 
       {/* 3. Modular Workspace Tabs (Underline Navigation, No Box Div) */}
       <div className="mb-8">
-        <TabsSection />
+        <TabsSection
+          activeGeo={currentGeo}
+          activePlatform={currentPlatform}
+          activeNiche={currentNiche}
+          activeScale={currentScale}
+        />
       </div>
     </div>
   );
