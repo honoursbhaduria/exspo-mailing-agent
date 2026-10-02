@@ -40,6 +40,18 @@ class InfluencerCleaningPipeline:
             df = pd.DataFrame(self.items)
             # Remove duplicates by handle
             df = df.drop_duplicates(subset=["handle"], keep="first")
+            # Preserve existing verified emails from dataset
+            if RAW_DATA_PATH.exists():
+                try:
+                    old_df = pd.read_csv(RAW_DATA_PATH)
+                    if "contact_email" in old_df.columns:
+                        email_map = dict(zip(old_df["handle"], old_df["contact_email"]))
+                        for idx, row in df.iterrows():
+                            h = row.get("handle")
+                            if h in email_map and email_map[h] != "Not Found":
+                                df.at[idx, "contact_email"] = email_map[h]
+                except Exception as e:
+                    spider.logger.warning(f"Notice: could not merge previous emails: {e}")
             df.to_csv(RAW_DATA_PATH, index=False)
             spider.logger.info(f"Pipeline saved {len(df)} unique influencers to {RAW_DATA_PATH}")
 

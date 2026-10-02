@@ -220,5 +220,33 @@ class TestEDXSOOutreachPipeline(unittest.TestCase):
         self.assertEqual(classifier.min_engagement, 2.0)
         self.assertEqual(classifier.target_niche, "Fashion")
 
+    def test_audience_geography_filtering(self):
+        """Validates that Audience Geography filtering precisely matches countries and rejects mismatches."""
+        us_creator = pd.Series({
+            "name": "US Creator", "handle": "us_creator", "follower_count": 20000,
+            "engagement_rate": 3.5, "niche": "Fashion & Beauty", "location": "Miami, FL, US",
+            "audience_geography": "Miami, FL, US", "platform": "Instagram"
+        })
+        uk_creator = pd.Series({
+            "name": "UK Creator", "handle": "uk_creator", "follower_count": 25000,
+            "engagement_rate": 3.0, "niche": "Fashion & Beauty", "location": "London, LND, GB",
+            "audience_geography": "London, LND, GB", "platform": "Instagram"
+        })
+
+        classifier_us = InfluencerClassifier(target_geography="United States (US)")
+        status_us, _ = classifier_us.evaluate_influencer(us_creator)
+        status_uk, reason_uk = classifier_us.evaluate_influencer(uk_creator)
+
+        self.assertEqual(status_us, "PASSED")
+        self.assertEqual(status_uk, "FAILED")
+        self.assertIn("Audience geography", reason_uk)
+
+    def test_playwright_scraper_engine(self):
+        """Validates PlaywrightInfluencerScraper initialization and headless browser capability."""
+        from src.discovery.playwright_scraper import PlaywrightInfluencerScraper
+        scraper = PlaywrightInfluencerScraper(headless=True)
+        self.assertIsNotNone(scraper)
+        self.assertTrue(scraper.headless)
+
 if __name__ == "__main__":
     unittest.main()

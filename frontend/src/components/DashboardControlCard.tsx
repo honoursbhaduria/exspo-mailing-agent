@@ -9,7 +9,7 @@ interface DashboardControlCardProps {
   sentCount: number;
   mailCount?: number;
   dmCount?: number;
-  onRefresh?: () => void;
+  onRefresh?: (params?: { geo?: string; platform?: string; niche?: string; scale?: string }) => void;
 }
 
 export const DashboardControlCard: React.FC<DashboardControlCardProps> = ({
@@ -22,8 +22,9 @@ export const DashboardControlCard: React.FC<DashboardControlCardProps> = ({
 }) => {
   const [niche, setNiche] = useState('Fashion & Beauty');
   const [platform, setPlatform] = useState('Instagram & TikTok');
-  const [geo, setGeo] = useState('United States (US)');
+  const [geo, setGeo] = useState('Global (All Regions)');
   const [scale, setScale] = useState('Micro-Influencers (5k - 100k)');
+  const [engine, setEngine] = useState<'scrapy' | 'playwright'>('scrapy');
   const [loading, setLoading] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
 
@@ -52,16 +53,47 @@ export const DashboardControlCard: React.FC<DashboardControlCardProps> = ({
     fetchCountries();
   }, []);
 
+  const triggerDynamicFilter = (newGeo?: string, newPlatform?: string, newNiche?: string, newScale?: string) => {
+    const g = newGeo ?? geo;
+    const p = newPlatform ?? platform;
+    const n = newNiche ?? niche;
+    const s = newScale ?? scale;
+    if (onRefresh) {
+      onRefresh({ geo: g, platform: p, niche: n, scale: s });
+    }
+  };
+
   const handleExecute = async () => {
     setLoading(true);
     setFeedback(null);
     try {
-      const res = await api.triggerDiscovery(niche, 65);
-      setFeedback(`Discovered ${res.discovered_count} authentic creator profiles.`);
-      if (onRefresh) onRefresh();
+      const res = await api.triggerDiscovery(niche, 65, engine);
+      let minF = 5000;
+      let maxF = 100000;
+      if (scale.includes('Nano')) {
+        minF = 1000;
+        maxF = 5000;
+      } else if (scale.includes('Macro')) {
+        minF = 100000;
+        maxF = 10000000;
+      }
+      const filterRes = await api.filterInfluencers({
+        min_followers: minF,
+        max_followers: maxF,
+        min_engagement: 1.5,
+        target_niche: niche,
+        target_geography: geo,
+        target_platform: platform,
+      });
+
+      const engineLabel = engine === 'playwright' ? 'Playwright Headless' : 'Scrapy Spider';
+      setFeedback(
+        `${engineLabel} executed. ${res.discovered_count} creators active (${filterRes.passed_count} qualified in ${geo}).`
+      );
+      if (onRefresh) onRefresh({ geo, platform, niche, scale });
     } catch (err: any) {
       setFeedback('Pipeline executed. Active dataset loaded.');
-      if (onRefresh) onRefresh();
+      if (onRefresh) onRefresh({ geo, platform, niche, scale });
     } finally {
       setLoading(false);
     }
@@ -70,18 +102,47 @@ export const DashboardControlCard: React.FC<DashboardControlCardProps> = ({
   const handleReset = () => {
     setNiche('Fashion & Beauty');
     setPlatform('Instagram & TikTok');
-    setGeo('United States (US)');
+    setGeo('Global (All Regions)');
     setScale('Micro-Influencers (5k - 100k)');
+    setEngine('scrapy');
     setFeedback(null);
-    if (onRefresh) onRefresh();
+    if (onRefresh) onRefresh({ geo: 'Global (All Regions)', platform: 'Instagram & TikTok', niche: 'Fashion & Beauty', scale: 'Micro-Influencers (5k - 100k)' });
   };
 
   return (
     <div className="bg-white border border-[#E2E8F0] hover:border-[#BAE6FD] rounded-[20px] p-5 shadow-[0_4px_20px_rgba(0,0,0,0.04)] hover:shadow-[0_12px_28px_-6px_rgba(2,132,199,0.08)] transition-all h-full flex flex-col justify-between">
-      {/* Clean Dashboard Title (Zero Lines, Zero Icons) */}
+      {/* Clean Dashboard Title with Scraper Engine Switcher */}
       <div>
-        <div className="mb-4">
+        <div className="flex justify-between items-center mb-4">
           <span className="text-lg font-black text-black tracking-tight">Dashboard</span>
+          
+          {/* Scraper Engine Toggle: Scrapy vs Playwright */}
+          <div className="flex items-center gap-1 bg-[#F1F5F9] p-1 rounded-xl border border-[#CBD5E1]">
+            <button
+              type="button"
+              onClick={() => setEngine('scrapy')}
+              className={`px-2.5 py-1 text-[11px] font-black rounded-lg transition-all cursor-pointer ${
+                engine === 'scrapy'
+                  ? 'bg-white text-black shadow-xs border border-[#94A3B8]'
+                  : 'text-[#475569] hover:text-black'
+              }`}
+              title="Fast concurrent asynchronous scraper"
+            >
+              Scrapy
+            </button>
+            <button
+              type="button"
+              onClick={() => setEngine('playwright')}
+              className={`px-2.5 py-1 text-[11px] font-black rounded-lg transition-all cursor-pointer ${
+                engine === 'playwright'
+                  ? 'bg-white text-black shadow-xs border border-[#94A3B8]'
+                  : 'text-[#475569] hover:text-black'
+              }`}
+              title="Headless Chromium browser for dynamic JavaScript pages"
+            >
+              Playwright
+            </button>
+          </div>
         </div>
 
         {/* Form Inputs Grid - Redesigned Sleek Dropdowns */}
@@ -91,7 +152,10 @@ export const DashboardControlCard: React.FC<DashboardControlCardProps> = ({
             <div className="relative">
               <select
                 value={niche}
-                onChange={(e) => setNiche(e.target.value)}
+                onChange={(e) => {
+                  setNiche(e.target.value);
+                  triggerDynamicFilter(geo, platform, e.target.value, scale);
+                }}
                 className="w-full appearance-none bg-[#F8FAFC] hover:bg-white focus:bg-white border border-[#CBD5E1] hover:border-black focus:border-black rounded-xl px-3.5 py-2.5 pr-9 text-xs font-black text-black cursor-pointer shadow-xs transition-all focus:outline-none focus:ring-2 focus:ring-[#BAE6FD]/60"
               >
                 <option value="Fashion & Beauty" className="bg-white text-black font-bold">Fashion & Beauty</option>
@@ -112,7 +176,10 @@ export const DashboardControlCard: React.FC<DashboardControlCardProps> = ({
             <div className="relative">
               <select
                 value={platform}
-                onChange={(e) => setPlatform(e.target.value)}
+                onChange={(e) => {
+                  setPlatform(e.target.value);
+                  triggerDynamicFilter(geo, e.target.value, niche, scale);
+                }}
                 className="w-full appearance-none bg-[#F8FAFC] hover:bg-white focus:bg-white border border-[#CBD5E1] hover:border-black focus:border-black rounded-xl px-3.5 py-2.5 pr-9 text-xs font-black text-black cursor-pointer shadow-xs transition-all focus:outline-none focus:ring-2 focus:ring-[#BAE6FD]/60"
               >
                 <option value="Instagram & TikTok" className="bg-white text-black font-bold">Instagram & TikTok</option>
@@ -131,7 +198,10 @@ export const DashboardControlCard: React.FC<DashboardControlCardProps> = ({
             <div className="relative">
               <select
                 value={geo}
-                onChange={(e) => setGeo(e.target.value)}
+                onChange={(e) => {
+                  setGeo(e.target.value);
+                  triggerDynamicFilter(e.target.value, platform, niche, scale);
+                }}
                 className="w-full appearance-none bg-[#F8FAFC] hover:bg-white focus:bg-white border border-[#CBD5E1] hover:border-black focus:border-black rounded-xl px-3.5 py-2.5 pr-9 text-xs font-black text-black cursor-pointer shadow-xs transition-all focus:outline-none focus:ring-2 focus:ring-[#BAE6FD]/60"
               >
                 {countries.map((c) => (
@@ -151,7 +221,10 @@ export const DashboardControlCard: React.FC<DashboardControlCardProps> = ({
             <div className="relative">
               <select
                 value={scale}
-                onChange={(e) => setScale(e.target.value)}
+                onChange={(e) => {
+                  setScale(e.target.value);
+                  triggerDynamicFilter(geo, platform, niche, e.target.value);
+                }}
                 className="w-full appearance-none bg-[#F8FAFC] hover:bg-white focus:bg-white border border-[#CBD5E1] hover:border-black focus:border-black rounded-xl px-3.5 py-2.5 pr-9 text-xs font-black text-black cursor-pointer shadow-xs transition-all focus:outline-none focus:ring-2 focus:ring-[#BAE6FD]/60"
               >
                 <option value="Micro-Influencers (5k - 100k)" className="bg-white text-black font-bold">Micro-Influencers (5k - 100k)</option>
@@ -172,10 +245,10 @@ export const DashboardControlCard: React.FC<DashboardControlCardProps> = ({
               {loading ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin text-black" />
-                  Scraping...
+                  Running {engine === 'playwright' ? 'Playwright' : 'Scrapy'}...
                 </>
               ) : (
-                'EXECUTE SCRAPER PIPELINE'
+                `EXECUTE ${engine.toUpperCase()} PIPELINE`
               )}
             </SlideHoverButton>
           </div>
@@ -201,7 +274,7 @@ export const DashboardControlCard: React.FC<DashboardControlCardProps> = ({
         </div>
         <div className="bg-[#F8FAFC] border border-[#BAE6FD] hover:border-[#0284C7] rounded-xl p-3 flex flex-col justify-center transition-all hover:bg-white">
           <div className="text-2xl font-black text-black font-mono leading-none">{passedCount}</div>
-          <div className="text-[11px] font-bold text-[#222222] mt-1">Qualified (5k-100k)</div>
+          <div className="text-[11px] font-bold text-[#222222] mt-1">Qualified ({geo.replace(/\(.*\)/, '').trim()})</div>
         </div>
         <div className="bg-[#F8FAFC] border border-[#BAE6FD] hover:border-[#0284C7] rounded-xl p-3 flex flex-col justify-center transition-all hover:bg-white">
           <div className="text-2xl font-black text-black font-mono leading-none">{sentCount}</div>

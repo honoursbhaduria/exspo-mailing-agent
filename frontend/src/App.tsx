@@ -18,7 +18,19 @@ export const App: React.FC = () => {
   const [topCreators, setTopCreators] = useState<CreatorHighlight[]>([]);
   const [feedItems, setFeedItems] = useState<FeedItem[]>([]);
 
-  const refreshCounts = async () => {
+  const [currentGeo, setCurrentGeo] = useState('Global (All Regions)');
+  const [currentPlatform, setCurrentPlatform] = useState('Instagram & TikTok');
+  const [currentNiche, setCurrentNiche] = useState('Fashion & Beauty');
+
+  const refreshCounts = async (params?: { geo?: string; platform?: string; niche?: string; scale?: string }) => {
+    const geo = params?.geo ?? currentGeo;
+    const platform = params?.platform ?? currentPlatform;
+    const niche = params?.niche ?? currentNiche;
+
+    if (params?.geo) setCurrentGeo(params.geo);
+    if (params?.platform) setCurrentPlatform(params.platform);
+    if (params?.niche) setCurrentNiche(params.niche);
+
     try {
       const rawRes = await api.getRawInfluencers(100);
       setTotalCount(rawRes.total);
@@ -28,11 +40,23 @@ export const App: React.FC = () => {
       if (trackerRes.stats.mail_sent !== undefined) setMailCount(trackerRes.stats.mail_sent);
       if (trackerRes.stats.dm_sent !== undefined) setDmCount(trackerRes.stats.dm_sent);
 
+      let minF = 5000;
+      let maxF = 100000;
+      if (params?.scale?.includes('Nano')) {
+        minF = 1000;
+        maxF = 5000;
+      } else if (params?.scale?.includes('Macro')) {
+        minF = 100000;
+        maxF = 10000000;
+      }
+
       const filterRes = await api.filterInfluencers({
-        min_followers: 5000,
-        max_followers: 100000,
-        min_engagement: 2.0,
-        target_niche: 'Fashion',
+        min_followers: minF,
+        max_followers: maxF,
+        min_engagement: 1.5,
+        target_niche: niche,
+        target_geography: geo,
+        target_platform: platform,
       });
       setPassedCount(filterRes.passed_count);
 
@@ -68,9 +92,12 @@ export const App: React.FC = () => {
         const feed: FeedItem[] = filterRes.results.slice(0, 5).map((item) => {
           let tag = 'PASS';
           if (item.qualification_status !== 'PASSED') {
-            if (item.follower_count < 5000) tag = '< 5k';
-            else if (item.follower_count > 100000) tag = '> 100k';
-            else if (item.engagement_rate < 2.0) tag = 'Low ER';
+            const reason = item.qualification_reason || '';
+            if (reason.includes('Audience geography')) tag = 'Geo Mismatch';
+            else if (reason.includes('Platform')) tag = 'Platform';
+            else if (item.follower_count < minF) tag = '< 5k';
+            else if (item.follower_count > maxF) tag = '> 100k';
+            else if (item.engagement_rate < 1.5) tag = 'Low ER';
             else tag = 'FAIL';
           }
           return {

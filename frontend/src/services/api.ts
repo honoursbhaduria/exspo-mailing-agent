@@ -65,11 +65,11 @@ export const api = {
     return res.json();
   },
 
-  async triggerDiscovery(niche = 'Fashion', limit = 65): Promise<{ status: string; discovered_count: number }> {
-    const res = await fetch(`${API_BASE}/influencers/discover?niche=${encodeURIComponent(niche)}&limit=${limit}`, {
+  async triggerDiscovery(niche = 'Fashion', limit = 65, engine = 'scrapy'): Promise<{ status: string; discovered_count: number; engine?: string }> {
+    const res = await fetch(`${API_BASE}/influencers/discover?niche=${encodeURIComponent(niche)}&limit=${limit}&engine=${encodeURIComponent(engine)}`, {
       method: 'POST',
     });
-    if (!res.ok) throw new Error('Scrapy discovery pipeline failed');
+    if (!res.ok) throw new Error('Discovery pipeline failed');
     return res.json();
   },
 
@@ -78,7 +78,9 @@ export const api = {
     max_followers: number;
     min_engagement: number;
     target_niche: string;
-  }): Promise<{ total: number; passed_count: number; failed_count: number; results: Influencer[] }> {
+    target_geography?: string;
+    target_platform?: string;
+  }): Promise<{ total: number; passed_count: number; failed_count: number; target_geography?: string; target_platform?: string; results: Influencer[] }> {
     const res = await fetch(`${API_BASE}/influencers/filter`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

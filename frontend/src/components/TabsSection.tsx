@@ -46,11 +46,35 @@ export const TabsSection: React.FC = () => {
   const [auditPage, setAuditPage] = useState(1);
   const [auditPerPage, setAuditPerPage] = useState(10);
 
+  // Tab 2 Classification Filters
+  const [filterGeo, setFilterGeo] = useState('Global (All Regions)');
+  const [filterPlatform, setFilterPlatform] = useState('All Platforms');
+  const [filterNiche, setFilterNiche] = useState('Fashion & Beauty');
+  const [filterCountries, setFilterCountries] = useState<string[]>([
+    'Global (All Regions)',
+    'United States (US)',
+    'United Kingdom (GB)',
+    'Canada (CA)',
+    'Australia (AU)',
+    'Germany (DE)',
+    'France (FR)',
+    'India (IN)',
+  ]);
+
   // Load Initial Datasets
   useEffect(() => {
     fetchRawRecords();
     fetchTracker();
     runFilter();
+    const fetchGeo = async () => {
+      try {
+        const res = await api.getCountries();
+        if (res.countries && res.countries.length > 0) {
+          setFilterCountries(res.countries);
+        }
+      } catch (e) {}
+    };
+    fetchGeo();
   }, []);
 
   const fetchRawRecords = async () => {
@@ -79,15 +103,17 @@ export const TabsSection: React.FC = () => {
     }
   };
 
-  // Run Classification Engine
-  const runFilter = async () => {
+  // Run Classification Engine with full multi-dimensional criteria
+  const runFilter = async (customGeo?: string, customPlatform?: string, customNiche?: string) => {
     try {
       setFilterLoading(true);
       const res = await api.filterInfluencers({
         min_followers: minFollowers,
         max_followers: maxFollowers,
         min_engagement: minEngagement,
-        target_niche: 'Fashion',
+        target_niche: customNiche ?? filterNiche,
+        target_geography: customGeo ?? filterGeo,
+        target_platform: customPlatform ?? filterPlatform,
       });
       setFilteredResults(res.results);
     } catch (err) {
@@ -295,13 +321,13 @@ export const TabsSection: React.FC = () => {
         <div className="bg-white border border-[#E2E8F0] rounded-[20px] p-6 shadow-[0_4px_24px_rgba(0,0,0,0.05)]">
           <div className="flex justify-between items-center mb-5">
             <div>
-              <h2 className="text-xl font-black text-black">Quantitative Filtering & Brand-Fit Classification</h2>
+              <h2 className="text-xl font-black text-black">Quantitative Filtering & Multi-Dimensional Classification</h2>
               <p className="text-xs font-semibold text-[#333333] mt-0.5">
-                Evaluates micro-influencer bounds (5k-100k followers) and minimum engagement rate threshold
+                Evaluates micro-influencer bounds (5k-100k), engagement thresholds, Audience Geography, and platform alignment
               </p>
             </div>
             <button
-              onClick={runFilter}
+              onClick={() => runFilter()}
               disabled={filterLoading}
               className="inline-flex items-center gap-2 bg-[#BAE6FD] hover:bg-[#93C5FD] border border-[#7DD3FC] text-black font-black text-xs px-4 py-2.5 rounded-xl cursor-pointer transition-all"
             >
@@ -309,38 +335,113 @@ export const TabsSection: React.FC = () => {
             </button>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 bg-[#F8FAFC] border border-[#E2E8F0] p-4 rounded-xl">
-            <div>
-              <label className="block text-xs font-black text-black mb-1">Follower Minimum Bound</label>
-              <input
-                type="number"
-                value={minFollowers}
-                onChange={(e) => setMinFollowers(Number(e.target.value))}
-                className="w-full bg-white border border-[#CBD5E1] rounded-lg px-3 py-2 text-sm font-extrabold text-black font-mono"
-              />
+          {/* Expanded 2-Row Filter Grid */}
+          <div className="mb-6 bg-[#F8FAFC] border border-[#E2E8F0] p-4 rounded-xl space-y-3">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <div>
+                <label className="block text-xs font-black text-black mb-1">Audience Geography</label>
+                <div className="relative">
+                  <select
+                    value={filterGeo}
+                    onChange={(e) => {
+                      setFilterGeo(e.target.value);
+                      runFilter(e.target.value, filterPlatform, filterNiche);
+                    }}
+                    className="w-full appearance-none bg-white border border-[#CBD5E1] rounded-lg px-3 py-2 text-xs font-bold text-black cursor-pointer shadow-xs focus:outline-none focus:ring-2 focus:ring-[#BAE6FD]"
+                  >
+                    {filterCountries.map((c) => (
+                      <option key={c} value={c} className="bg-white text-black font-bold">
+                        {c}
+                      </option>
+                    ))}
+                  </select>
+                  <div className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2">
+                    <ChevronDown className="w-3.5 h-3.5 text-black stroke-[2.5]" />
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-black text-black mb-1">Target Platform</label>
+                <div className="relative">
+                  <select
+                    value={filterPlatform}
+                    onChange={(e) => {
+                      setFilterPlatform(e.target.value);
+                      runFilter(filterGeo, e.target.value, filterNiche);
+                    }}
+                    className="w-full appearance-none bg-white border border-[#CBD5E1] rounded-lg px-3 py-2 text-xs font-bold text-black cursor-pointer shadow-xs focus:outline-none focus:ring-2 focus:ring-[#BAE6FD]"
+                  >
+                    <option value="All Platforms" className="bg-white text-black font-bold">All Platforms</option>
+                    <option value="Instagram & TikTok" className="bg-white text-black font-bold">Instagram & TikTok</option>
+                    <option value="Instagram Only" className="bg-white text-black font-bold">Instagram Only</option>
+                    <option value="TikTok Only" className="bg-white text-black font-bold">TikTok Only</option>
+                    <option value="YouTube" className="bg-white text-black font-bold">YouTube</option>
+                  </select>
+                  <div className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2">
+                    <ChevronDown className="w-3.5 h-3.5 text-black stroke-[2.5]" />
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-black text-black mb-1">Category / Niche</label>
+                <div className="relative">
+                  <select
+                    value={filterNiche}
+                    onChange={(e) => {
+                      setFilterNiche(e.target.value);
+                      runFilter(filterGeo, filterPlatform, e.target.value);
+                    }}
+                    className="w-full appearance-none bg-white border border-[#CBD5E1] rounded-lg px-3 py-2 text-xs font-bold text-black cursor-pointer shadow-xs focus:outline-none focus:ring-2 focus:ring-[#BAE6FD]"
+                  >
+                    <option value="Fashion & Beauty" className="bg-white text-black font-bold">Fashion & Beauty</option>
+                    <option value="Fitness" className="bg-white text-black font-bold">Fitness</option>
+                    <option value="Fintech" className="bg-white text-black font-bold">Fintech</option>
+                    <option value="Lifestyle" className="bg-white text-black font-bold">Lifestyle</option>
+                    <option value="Technology" className="bg-white text-black font-bold">Technology</option>
+                    <option value="Gaming" className="bg-white text-black font-bold">Gaming</option>
+                  </select>
+                  <div className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2">
+                    <ChevronDown className="w-3.5 h-3.5 text-black stroke-[2.5]" />
+                  </div>
+                </div>
+              </div>
             </div>
-            <div>
-              <label className="block text-xs font-black text-black mb-1">Follower Maximum Bound</label>
-              <input
-                type="number"
-                value={maxFollowers}
-                onChange={(e) => setMaxFollowers(Number(e.target.value))}
-                className="w-full bg-white border border-[#CBD5E1] rounded-lg px-3 py-2 text-sm font-extrabold text-black font-mono"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-black text-black mb-1">
-                Minimum Engagement ({minEngagement}%)
-              </label>
-              <input
-                type="range"
-                min="0.5"
-                max="8.0"
-                step="0.1"
-                value={minEngagement}
-                onChange={(e) => setMinEngagement(Number(e.target.value))}
-                className="w-full mt-2 cursor-pointer accent-black"
-              />
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-1 border-t border-[#E2E8F0]">
+              <div>
+                <label className="block text-xs font-black text-black mb-1">Follower Min Bound</label>
+                <input
+                  type="number"
+                  value={minFollowers}
+                  onChange={(e) => setMinFollowers(Number(e.target.value))}
+                  className="w-full bg-white border border-[#CBD5E1] rounded-lg px-3 py-1.5 text-xs font-extrabold text-black font-mono"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-black text-black mb-1">Follower Max Bound</label>
+                <input
+                  type="number"
+                  value={maxFollowers}
+                  onChange={(e) => setMaxFollowers(Number(e.target.value))}
+                  className="w-full bg-white border border-[#CBD5E1] rounded-lg px-3 py-1.5 text-xs font-extrabold text-black font-mono"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-black text-black mb-1">
+                  Minimum Engagement ({minEngagement}%)
+                </label>
+                <input
+                  type="range"
+                  min="0.5"
+                  max="8.0"
+                  step="0.1"
+                  value={minEngagement}
+                  onChange={(e) => setMinEngagement(Number(e.target.value))}
+                  className="w-full mt-2 cursor-pointer accent-black"
+                />
+              </div>
             </div>
           </div>
 

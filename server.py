@@ -52,6 +52,8 @@ class FilterRequest(BaseModel):
     max_followers: int = MAX_FOLLOWERS
     min_engagement: float = MIN_ENGAGEMENT_RATE
     target_niche: str = DEFAULT_NICHE
+    target_geography: Optional[str] = "Global (All Regions)"
+    target_platform: Optional[str] = "All Platforms"
 
 class PersonalizeRequest(BaseModel):
     influencer: Dict[str, Any]
@@ -94,14 +96,19 @@ def get_raw_influencers(limit: int = 100):
     }
 
 @app.post("/api/influencers/discover")
-def trigger_discovery(niche: str = Query(DEFAULT_NICHE), limit: int = Query(65)):
+def trigger_discovery(
+    niche: str = Query(DEFAULT_NICHE),
+    limit: int = Query(65),
+    engine: str = Query("scrapy")
+):
     try:
-        df = run_discovery_cli(niche=niche, limit=limit)
+        df = run_discovery_cli(niche=niche, limit=limit, engine=engine)
         df_clean = df.fillna("")
         return {
             "status": "success",
             "discovered_count": len(df),
             "niche": niche,
+            "engine": engine,
             "sample": df_clean[["name", "handle", "follower_count", "engagement_rate"]].head(5).to_dict(orient="records")
         }
     except Exception as e:
@@ -120,7 +127,9 @@ def filter_influencers(req: FilterRequest):
         min_followers=req.min_followers,
         max_followers=req.max_followers,
         min_engagement=req.min_engagement,
-        target_niche=req.target_niche
+        target_niche=req.target_niche,
+        target_geography=req.target_geography or "Global (All Regions)",
+        target_platform=req.target_platform or "All Platforms"
     )
     processed_df = classifier.process_dataset(enriched_df).fillna("")
 
@@ -132,6 +141,8 @@ def filter_influencers(req: FilterRequest):
         "total_evaluated": len(processed_df),
         "passed_count": len(passed),
         "failed_count": len(failed),
+        "target_geography": req.target_geography,
+        "target_platform": req.target_platform,
         "results": processed_df.to_dict(orient="records"),
         "passed_influencers": passed.to_dict(orient="records"),
         "failed_influencers": failed.to_dict(orient="records")

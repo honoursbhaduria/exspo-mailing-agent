@@ -10,11 +10,22 @@ if str(PROJECT_ROOT) not in sys.path:
 import subprocess
 import pandas as pd
 from config.settings import RAW_DATA_PATH, DEFAULT_NICHE
+from src.discovery.playwright_scraper import PlaywrightInfluencerScraper
 
-def run_discovery_cli(niche=DEFAULT_NICHE, limit=65):
+def run_discovery_cli(niche=DEFAULT_NICHE, limit=65, engine="scrapy"):
     """
-    Runs the discovery spider in a clean Python subprocess to avoid Twisted Reactor restart issues.
+    Runs the discovery pipeline using either Scrapy or Playwright headless browser engine.
+    If Scrapy fails or encounters network blocks, automatically falls back to Playwright.
     """
+    if engine.lower() == "playwright":
+        try:
+            scraper = PlaywrightInfluencerScraper(headless=True)
+            df = scraper.scrape_niche(target_niche=niche, limit=limit)
+            if not df.empty:
+                return df
+        except Exception as e:
+            print(f"Playwright discovery engine warning: {e}. Falling back to Scrapy/dataset...")
+
     python_bin = sys.executable
     script_path = Path(__file__).resolve().parent / "_crawl_subprocess.py"
     
@@ -25,10 +36,19 @@ def run_discovery_cli(niche=DEFAULT_NICHE, limit=65):
         df = pd.read_csv(RAW_DATA_PATH)
         return df
     else:
-        raise RuntimeError(f"Discovery failed. Output: {result.stdout}\nErrors: {result.stderr}")
+        # Ultimate fallback to Playwright headless session
+        scraper = PlaywrightInfluencerScraper(headless=True)
+        return scraper.scrape_niche(target_niche=niche, limit=limit)
 
 if __name__ == "__main__":
-    print(f"Running micro-influencer discovery for {DEFAULT_NICHE}...")
-    df = run_discovery_cli()
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--niche", default=DEFAULT_NICHE)
+    parser.add_argument("--limit", default=65, type=int)
+    parser.add_argument("--engine", default="scrapy", choices=["scrapy", "playwright"])
+    args = parser.parse_args()
+
+    print(f"Running micro-influencer discovery for {args.niche} using {args.engine.upper()} engine...")
+    df = run_discovery_cli(niche=args.niche, limit=args.limit, engine=args.engine)
     print(f"Discovery complete! Discovered {len(df)} influencers. Saved to {RAW_DATA_PATH}")
     print(df[["name", "handle", "follower_count", "engagement_rate", "niche", "location"]].head(10))

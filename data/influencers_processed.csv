@@ -1,5 +1,5 @@
 handle,name,follower_count,engagement_rate,niche,qualification_status,qualification_reason
-pass1,Valid Creator,25000,4.5,Fashion,PASSED,"Qualified: 25,000 followers, 4.50% engagement, strong fit for Fashion & Beauty"
+pass1,Valid Creator,25000,4.5,Fashion,PASSED,"Qualified: 25,000 followers, 4.50% engagement, strong fit for Fashion & Beauty in Not Specified"
 fail_low,Low Follower,3000,5.0,Fashion,FAILED,"Follower count 3,000 is below minimum threshold (5,000)"
 fail_high,High Follower,150000,3.0,Fashion,FAILED,"Follower count 150,000 exceeds micro-influencer ceiling (100,000)"
 fail_eng,Low Engagement,20000,1.2,Fashion,FAILED,Engagement rate 1.20% is below required threshold (2.00%)
