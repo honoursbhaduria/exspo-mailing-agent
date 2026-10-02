@@ -4,7 +4,6 @@ import AudienceReachCard, { type CreatorHighlight } from './components/AudienceR
 import DashboardControlCard, { type FilterState } from './components/DashboardControlCard';
 import FeedActivityCard, { type FeedItem } from './components/FeedActivityCard';
 import TabsSection from './components/TabsSection';
-import PipelineAstronautSection from './components/PipelineAstronautSection';
 import BackgroundPattern from './components/ui/BackgroundPattern';
 import { api, type Influencer, type DatabaseStatus } from './services/api';
 
@@ -249,10 +248,7 @@ export const App: React.FC = () => {
         </div>
       </div>
 
-      {/* 3. Pipeline Flowchart Section with Astronaut */}
-      <PipelineAstronautSection />
-
-      {/* 4. Modular Workspace Tabs */}
+      {/* 3. Modular Workspace Tabs */}
       <div className="mb-8">
         <TabsSection
           filters={filters}
