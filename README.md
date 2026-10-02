@@ -158,6 +158,41 @@ To run the end-to-end automated pipeline in the terminal:
 
 ---
 
+## 🌐 Cloud Deployment (Render + Vercel)
+
+This architecture separates the backend (FastAPI, database, background crawlers) and frontend (React SPA).
+
+### 1. Deploying the Backend on Render
+You can deploy using Render's Blueprint (`render.yaml`) or as a manual Web Service:
+
+- **Repository**: Connect your GitHub repository (`exspo-mailing-agent`).
+- **Environment**: Python
+- **Build Command**: `pip install -r requirements.txt`
+- **Start Command**: `uvicorn server:app --host 0.0.0.0 --port $PORT`
+- **Health Check Path**: `/`
+- **Environment Variables**:
+  - `PYTHON_VERSION`: `3.11.9`
+  - `SIMULATION_MODE`: `True` (or `False` for production live outreach)
+  - `GEMINI_API_KEY`: Your Google Gemini API Key
+  - `RESEND_API_KEY`: Your Resend API Key (optional in simulation mode)
+  - `SENDER_EMAIL`: `onboarding@resend.dev` (or your verified domain sender)
+  - `DATABASE_URL`: Your Neon PostgreSQL or Render Postgres connection string (optional; falls back to SQLite)
+
+Once deployed, copy your Render web service URL (e.g. `https://exspo-mailing-backend.onrender.com`).
+
+### 2. Deploying the Frontend on Vercel
+1. In your **Vercel Dashboard**, click **Add New...** > **Project** and import this repository.
+2. Under **Project Settings**:
+   - **Root Directory**: Select `frontend` (or leave as root `/` since `vercel.json` handles monorepo builds).
+   - **Framework Preset**: `Vite`
+   - **Build Command**: `npm run build`
+   - **Output Directory**: `dist`
+3. Under **Environment Variables**, add:
+   - `VITE_API_URL`: `https://<your-render-backend-url>.onrender.com`
+4. Click **Deploy**. Vercel will build the frontend and route all client-side paths smoothly with the included `vercel.json`.
+
+---
+
 ## ⚖️ Design Decisions & Compliance
 
 1. **Meta Graph API Compliance**: To respect Meta platform policies regarding automated cold messaging, the system generates targeted DM copy and provides a 1-click dispatch workflow + simulated audit logging.

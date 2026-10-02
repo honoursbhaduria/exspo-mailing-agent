@@ -78,7 +78,11 @@ export interface FilterResponse {
   failed_influencers: Influencer[];
 }
 
-const API_BASE = '/api';
+const rawBase: string = (import.meta as any).env?.VITE_API_URL || '';
+const cleanBase = rawBase ? rawBase.replace(/\/+$/, '') : '';
+const API_BASE = cleanBase
+  ? (cleanBase.endsWith('/api') ? cleanBase : `${cleanBase}/api`)
+  : '/api';
 
 export const api = {
   async getDatabaseStatus(): Promise<DatabaseStatus> {

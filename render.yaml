@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: exspo-mailing-backend
+    env: python
+    region: ohio
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn server:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: SIMULATION_MODE
+        value: "True"
+      - key: SENDER_EMAIL
+        value: "onboarding@resend.dev"
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: RESEND_API_KEY
+        sync: false
+      - key: DATABASE_URL
+        sync: false
