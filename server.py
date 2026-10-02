@@ -151,7 +151,11 @@ def generate_personalization(req: PersonalizeRequest):
         brand_name=req.brand_name,
         collaboration_type=req.collaboration_type
     )
-    return result
+    return {
+        "status": "SUCCESS",
+        "messages": result,
+        **result
+    }
 
 @app.post("/api/outreach/send")
 def send_outreach(req: SendEmailRequest):

@@ -198,16 +198,16 @@ export const TabsSection: React.FC<TabsSectionProps> = ({
 
   // Set default selected creator when dataset updates
   useEffect(() => {
-    const list = passedInfluencers.length > 0 ? passedInfluencers : filteredResults;
+    const list = passedInfluencers.length > 0 ? passedInfluencers : filteredResults.length > 0 ? filteredResults : allInfluencers;
     if (list.length > 0) {
-      if (!selectedHandle || !list.some((c) => c.handle === selectedHandle)) {
+      if (!selectedHandle || (!allInfluencers.some((c) => c.handle === selectedHandle) && !list.some((c) => c.handle === selectedHandle))) {
         setSelectedHandle(list[0].handle);
       }
-      if (!targetCreator || !list.some((c) => c.handle === targetCreator)) {
+      if (!targetCreator || (!allInfluencers.some((c) => c.handle === targetCreator) && !list.some((c) => c.handle === targetCreator))) {
         setTargetCreator(list[0].handle);
       }
     }
-  }, [passedInfluencers, filteredResults]);
+  }, [passedInfluencers, filteredResults, allInfluencers]);
 
   // Tab 1 Filter Mode: 'qualified' (strict criteria) | 'region' (all in target country) | 'all' (all database)
   const [recordsFilterMode, setRecordsFilterMode] = useState<'qualified' | 'region' | 'all'>('qualified');
@@ -302,7 +302,11 @@ export const TabsSection: React.FC<TabsSectionProps> = ({
 
   // Generate AI Outreach
   const handleGeneratePitch = async () => {
-    const creator = eligibleCreators.find((i) => i.handle === targetCreator);
+    const creator =
+      allInfluencers.find((i) => i.handle === targetCreator) ||
+      eligibleCreators.find((i) => i.handle === targetCreator) ||
+      allInfluencers[0] ||
+      eligibleCreators[0];
     if (!creator) return;
 
     try {
@@ -312,7 +316,8 @@ export const TabsSection: React.FC<TabsSectionProps> = ({
         brand_name: brandName,
         collaboration_type: collabType,
       });
-      setActivePitch(res.messages);
+      const pitch = (res as any).messages || (res as any);
+      setActivePitch(pitch);
     } catch (err) {
       console.error(err);
     } finally {
@@ -1363,7 +1368,7 @@ export const TabsSection: React.FC<TabsSectionProps> = ({
                   onChange={(e) => setTargetCreator(e.target.value)}
                   className="w-full appearance-none bg-[#F8FAFC] hover:bg-white focus:bg-white border border-[#CBD5E1] hover:border-black focus:border-black rounded-xl px-3.5 py-2.5 pr-10 text-xs font-black text-black cursor-pointer shadow-xs transition-all focus:outline-none focus:ring-2 focus:ring-[#BAE6FD]/60"
                 >
-                  {eligibleCreators.map((i) => (
+                  {(allInfluencers.length > 0 ? allInfluencers : eligibleCreators).map((i) => (
                     <option key={i.handle} value={i.handle} className="bg-white text-black font-bold">
                       {i.name} (@{i.handle}) - {i.location || 'Global'}
                     </option>
@@ -1452,7 +1457,9 @@ export const TabsSection: React.FC<TabsSectionProps> = ({
                 <div className="mt-4 pt-3 border-t border-[#E2E8F0]">
                   <button
                     onClick={async () => {
-                      const creator = eligibleCreators.find((i) => i.handle === targetCreator);
+                      const creator =
+                        allInfluencers.find((i) => i.handle === targetCreator) ||
+                        eligibleCreators.find((i) => i.handle === targetCreator);
                       if (!creator || !creator.contact_email || creator.contact_email === 'Not Found') {
                         alert('No public contact email available for this creator. Please use the Instagram DM channel.');
                         return;
@@ -1517,7 +1524,9 @@ export const TabsSection: React.FC<TabsSectionProps> = ({
                   </a>
                   <button
                     onClick={async () => {
-                      const creator = eligibleCreators.find((i) => i.handle === targetCreator);
+                      const creator =
+                        allInfluencers.find((i) => i.handle === targetCreator) ||
+                        eligibleCreators.find((i) => i.handle === targetCreator);
                       if (!creator) return;
                       try {
                         const res = await api.sendOutreach({
