@@ -99,16 +99,18 @@ def get_raw_influencers(limit: int = 100):
 def trigger_discovery(
     niche: str = Query(DEFAULT_NICHE),
     limit: int = Query(65),
-    engine: str = Query("scrapy")
+    engine: str = Query("scrapy"),
+    geo: str = Query("Global (All Regions)")
 ):
     try:
-        df = run_discovery_cli(niche=niche, limit=limit, engine=engine)
+        df = run_discovery_cli(niche=niche, limit=limit, engine=engine, geo=geo)
         df_clean = df.fillna("")
         return {
             "status": "success",
             "discovered_count": len(df),
             "niche": niche,
             "engine": engine,
+            "geo": geo,
             "sample": df_clean[["name", "handle", "follower_count", "engagement_rate"]].head(5).to_dict(orient="records")
         }
     except Exception as e:

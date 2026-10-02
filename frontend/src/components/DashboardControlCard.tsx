@@ -67,7 +67,7 @@ export const DashboardControlCard: React.FC<DashboardControlCardProps> = ({
     setLoading(true);
     setFeedback(null);
     try {
-      const res = await api.triggerDiscovery(niche, 65, engine);
+      const res = await api.triggerDiscovery(niche, 65, engine, geo);
       let minF = 5000;
       let maxF = 100000;
       if (scale.includes('Nano')) {

@@ -152,7 +152,7 @@ export const App: React.FC = () => {
   }, []);
 
   return (
-    <div className="min-h-screen py-8 px-4 sm:px-6 lg:px-8 max-w-[1340px] mx-auto relative">
+    <div className="min-h-screen py-8 px-4 sm:px-6 lg:px-8 max-w-[1340px] w-full mx-auto relative box-border">
       {/* Background Gradient & Grid Pattern with Blur */}
       <BackgroundPattern />
 

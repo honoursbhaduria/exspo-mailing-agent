@@ -65,8 +65,8 @@ export const api = {
     return res.json();
   },
 
-  async triggerDiscovery(niche = 'Fashion', limit = 65, engine = 'scrapy'): Promise<{ status: string; discovered_count: number; engine?: string }> {
-    const res = await fetch(`${API_BASE}/influencers/discover?niche=${encodeURIComponent(niche)}&limit=${limit}&engine=${encodeURIComponent(engine)}`, {
+  async triggerDiscovery(niche = 'Fashion', limit = 65, engine = 'scrapy', geo = 'Global (All Regions)'): Promise<{ status: string; discovered_count: number; engine?: string; geo?: string }> {
+    const res = await fetch(`${API_BASE}/influencers/discover?niche=${encodeURIComponent(niche)}&limit=${limit}&engine=${encodeURIComponent(engine)}&geo=${encodeURIComponent(geo)}`, {
       method: 'POST',
     });
     if (!res.ok) throw new Error('Discovery pipeline failed');

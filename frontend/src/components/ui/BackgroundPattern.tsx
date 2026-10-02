@@ -4,62 +4,49 @@ import styled from 'styled-components';
 export const BackgroundPattern: React.FC = () => {
   return (
     <StyledWrapper>
-      <div className="container" />
+      <div className="ambient-glow" />
+      <div className="grid-overlay" />
     </StyledWrapper>
   );
 };
 
 const StyledWrapper = styled.div`
   position: fixed;
-  inset: 0;
-  width: 100vw;
-  height: 100vh;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
   z-index: -10;
   pointer-events: none;
   overflow: hidden;
   background-color: #F8FAFC;
 
-  .container {
+  .ambient-glow {
+    position: absolute;
+    inset: 0;
     width: 100%;
     height: 100%;
-    background: linear-gradient(
-        to bottom,
-        #ffffff 0%,
-        #ffffff 45%,
-        rgba(255, 255, 255, 0.85) 75%,
-        rgba(255, 255, 255, 0.65) 100%
-      ),
-      linear-gradient(to right, rgba(14, 210, 218, 0.4), rgba(95, 41, 199, 0.35));
-    position: relative;
-    overflow: hidden;
-  }
-
-  .container::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background-image: linear-gradient(90deg, #CBD5E1 1px, transparent 1px);
-    background-size: 50px 100%;
-    pointer-events: none;
-    mask-image: linear-gradient(
-      to bottom,
-      rgba(0, 0, 0, 0.8) 0%,
-      rgba(0, 0, 0, 0) 70%
-    );
-    -webkit-mask-image: linear-gradient(
-      to bottom,
-      rgba(0, 0, 0, 0.8) 0%,
-      rgba(0, 0, 0, 0) 70%
+    background: radial-gradient(
+      circle at 50% 0%,
+      rgba(186, 230, 253, 0.45) 0%,
+      rgba(224, 242, 254, 0.2) 45%,
+      rgba(248, 250, 252, 0) 75%
     );
   }
 
-  .container::after {
-    content: "";
+  .grid-overlay {
     position: absolute;
     inset: 0;
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    pointer-events: none;
+    width: 100%;
+    height: 100%;
+    background-image: 
+      linear-gradient(to right, rgba(203, 213, 225, 0.45) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(203, 213, 225, 0.45) 1px, transparent 1px);
+    background-size: 48px 48px;
+    mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0) 80%);
+    -webkit-mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0) 80%);
   }
 `;
 
