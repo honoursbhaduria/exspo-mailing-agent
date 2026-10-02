@@ -208,6 +208,11 @@ def run_discovery_cli(niche=DEFAULT_NICHE, limit=65, engine="scrapy", geo="Globa
     if new_creators:
         new_df = pd.DataFrame(new_creators)
         combined_df = pd.concat([current_df, new_df]).drop_duplicates(subset=["handle"], keep="first")
+        try:
+            from src.database.db import upsert_many
+            upsert_many(new_creators)
+        except Exception as e:
+            print(f"Database sync notice during discovery: {e}")
     else:
         combined_df = current_df
 

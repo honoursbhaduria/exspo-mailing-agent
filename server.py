@@ -28,6 +28,12 @@ from src.enrichment.enricher import ProfileEnricher
 from src.personalization.generator import OutreachMessageGenerator
 from src.sending.sender import EmailSender, InstagramDMSender
 from src.sending.tracker import OutreachTracker
+from src.database.db import (
+    get_db,
+    get_db_status,
+    get_influencers_from_db,
+    filter_influencers_pipeline
+)
 
 app = FastAPI(
     title="EDXSO Micro-Influencer Outreach Backend API",
@@ -84,15 +90,25 @@ def root():
         "simulation_mode": SIMULATION_MODE
     }
 
+@app.get("/api/database/status")
+def get_db_status_endpoint():
+    """Returns database connection status, active engine (Neon PostgreSQL vs SQLite), and creator count."""
+    return get_db_status()
+
 @app.get("/api/influencers/raw")
-def get_raw_influencers(limit: int = 100):
-    if not RAW_DATA_PATH.exists():
-        raise HTTPException(status_code=404, detail="No raw influencer data found. Run discovery first.")
-    df = pd.read_csv(RAW_DATA_PATH).fillna("")
+def get_raw_influencers(
+    limit: Optional[int] = Query(None),
+    offset: int = Query(0),
+    search: Optional[str] = Query(None)
+):
+    creators = get_influencers_from_db(limit=limit, offset=offset, search=search)
+    db_status = get_db_status()
     return {
-        "total": len(df),
+        "total": db_status["total_records"],
+        "count": len(creators),
         "limit": limit,
-        "influencers": df.head(limit).to_dict(orient="records")
+        "offset": offset,
+        "influencers": creators
     }
 
 @app.post("/api/influencers/discover")
@@ -118,14 +134,7 @@ def trigger_discovery(
 
 @app.post("/api/influencers/filter")
 def filter_influencers(req: FilterRequest):
-    if not RAW_DATA_PATH.exists():
-        raise HTTPException(status_code=404, detail="Raw dataset not found.")
-    
-    raw_df = pd.read_csv(RAW_DATA_PATH)
-    enricher = ProfileEnricher()
-    enriched_df = enricher.enrich_dataset(raw_df)
-
-    classifier = InfluencerClassifier(
+    return filter_influencers_pipeline(
         min_followers=req.min_followers,
         max_followers=req.max_followers,
         min_engagement=req.min_engagement,
@@ -133,22 +142,6 @@ def filter_influencers(req: FilterRequest):
         target_geography=req.target_geography or "Global (All Regions)",
         target_platform=req.target_platform or "All Platforms"
     )
-    processed_df = classifier.process_dataset(enriched_df).fillna("")
-
-    passed = processed_df[processed_df["qualification_status"] == "PASSED"]
-    failed = processed_df[processed_df["qualification_status"] == "FAILED"]
-
-    return {
-        "total": len(processed_df),
-        "total_evaluated": len(processed_df),
-        "passed_count": len(passed),
-        "failed_count": len(failed),
-        "target_geography": req.target_geography,
-        "target_platform": req.target_platform,
-        "results": processed_df.to_dict(orient="records"),
-        "passed_influencers": passed.to_dict(orient="records"),
-        "failed_influencers": failed.to_dict(orient="records")
-    }
 
 @app.post("/api/personalize")
 def generate_personalization(req: PersonalizeRequest):

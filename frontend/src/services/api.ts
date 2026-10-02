@@ -3,10 +3,13 @@ export interface Influencer {
   handle: string;
   platform: string;
   profile_url: string;
+  follower_str?: string;
   follower_count: number;
   engagement_rate: number;
   niche: string;
   location: string;
+  price?: string;
+  rating?: number;
   bio?: string;
   contact_email?: string;
   content_themes?: string;
@@ -15,6 +18,9 @@ export interface Influencer {
   audience_geography?: string;
   qualification_status?: 'PASSED' | 'FAILED';
   qualification_reason?: string;
+  instagram_url?: string;
+  tiktok_url?: string;
+  youtube_url?: string;
 }
 
 export interface PersonalizedPitch {
@@ -50,22 +56,57 @@ export interface TrackerStats {
   skipped: number;
 }
 
+export interface DatabaseStatus {
+  engine: string;
+  is_postgres: boolean;
+  connected: boolean;
+  total_records: number;
+  database_url_configured: boolean;
+  storage_target: string;
+}
+
+export interface FilterResponse {
+  total: number;
+  total_evaluated: number;
+  passed_count: number;
+  failed_count: number;
+  target_geography?: string;
+  target_platform?: string;
+  target_niche?: string;
+  results: Influencer[];
+  passed_influencers: Influencer[];
+  failed_influencers: Influencer[];
+}
+
 const API_BASE = '/api';
 
 export const api = {
+  async getDatabaseStatus(): Promise<DatabaseStatus> {
+    const res = await fetch(`${API_BASE}/database/status`);
+    if (!res.ok) throw new Error('Failed to fetch database status');
+    return res.json();
+  },
+
   async getCountries(): Promise<{ total: number; countries: string[] }> {
     const res = await fetch(`${API_BASE}/geo/countries`);
     if (!res.ok) throw new Error('Failed to fetch countries list');
     return res.json();
   },
 
-  async getRawInfluencers(limit = 100): Promise<{ total: number; influencers: Influencer[] }> {
-    const res = await fetch(`${API_BASE}/influencers/raw?limit=${limit}`);
+  async getRawInfluencers(limit?: number, offset = 0, search?: string): Promise<{ total: number; count: number; limit?: number; offset: number; influencers: Influencer[] }> {
+    let url = `${API_BASE}/influencers/raw?offset=${offset}`;
+    if (limit !== undefined && limit !== null) {
+      url += `&limit=${limit}`;
+    }
+    if (search) {
+      url += `&search=${encodeURIComponent(search)}`;
+    }
+    const res = await fetch(url);
     if (!res.ok) throw new Error('Failed to fetch discovered influencers');
     return res.json();
   },
 
-  async triggerDiscovery(niche = 'Fashion', limit = 65, engine = 'scrapy', geo = 'Global (All Regions)'): Promise<{ status: string; discovered_count: number; engine?: string; geo?: string }> {
+  async triggerDiscovery(niche = 'Fashion & Beauty', limit = 65, engine = 'scrapy', geo = 'Global (All Regions)'): Promise<{ status: string; discovered_count: number; engine?: string; geo?: string }> {
     const res = await fetch(`${API_BASE}/influencers/discover?niche=${encodeURIComponent(niche)}&limit=${limit}&engine=${encodeURIComponent(engine)}&geo=${encodeURIComponent(geo)}`, {
       method: 'POST',
     });
@@ -80,7 +121,7 @@ export const api = {
     target_niche: string;
     target_geography?: string;
     target_platform?: string;
-  }): Promise<{ total: number; passed_count: number; failed_count: number; target_geography?: string; target_platform?: string; results: Influencer[] }> {
+  }): Promise<FilterResponse> {
     const res = await fetch(`${API_BASE}/influencers/filter`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

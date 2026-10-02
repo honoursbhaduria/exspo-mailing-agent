@@ -3,6 +3,7 @@ import { Search, Download, Sparkles, Send, ExternalLink, Loader2, ChevronDown, C
 import AnimatedOutlineNavbar, { type TabItem } from './ui/AnimatedOutlineNavbar';
 import SlideHoverButton from './ui/SlideHoverButton';
 import Pagination from './ui/Pagination';
+import type { FilterState } from './DashboardControlCard';
 import { api, type Influencer, type PersonalizedPitch, type OutreachRecord, type TrackerStats } from '../services/api';
 
 const TABS: TabItem[] = [
@@ -14,140 +15,133 @@ const TABS: TabItem[] = [
 ];
 
 export interface TabsSectionProps {
-  activeGeo?: string;
-  activePlatform?: string;
-  activeNiche?: string;
-  activeScale?: string;
+  filters: FilterState;
+  onFilterChange: (updates: Partial<FilterState>) => void;
+  filteredResults: Influencer[];
+  passedInfluencers: Influencer[];
+  failedInfluencers: Influencer[];
+  filterLoading: boolean;
+  onRunFilter: (overrideFilters?: Partial<FilterState>) => Promise<void>;
+  countries: string[];
+  allInfluencers: Influencer[];
+  onRefreshTracker?: () => void;
 }
 
 export const TabsSection: React.FC<TabsSectionProps> = ({
-  activeGeo = 'Global (All Regions)',
-  activePlatform = 'Instagram & TikTok',
-  activeNiche = 'Fashion & Beauty',
-  activeScale = 'Micro-Influencers (5k - 100k)',
+  filters,
+  onFilterChange,
+  filteredResults,
+  passedInfluencers,
+  failedInfluencers,
+  filterLoading,
+  onRunFilter,
+  countries,
+  allInfluencers,
+  onRefreshTracker,
 }) => {
   const [activeTab, setActiveTab] = useState('records');
 
-  // Datasets & Tab 1 Pagination
-  const [influencers, setInfluencers] = useState<Influencer[]>([]);
-  const [loading, setLoading] = useState(true);
+  // Tab 1 Local State
   const [searchQuery, setSearchQuery] = useState('');
   const [recordsPage, setRecordsPage] = useState(1);
   const [recordsPerPage, setRecordsPerPage] = useState(10);
   const [dashboardFilterEnabled, setDashboardFilterEnabled] = useState(true);
 
-  // Classification Tab State
-  const [minFollowers, setMinFollowers] = useState(5000);
-  const [maxFollowers, setMaxFollowers] = useState(100000);
-  const [minEngagement, setMinEngagement] = useState(2.0);
-  const [filterLoading, setFilterLoading] = useState(false);
-  const [filteredResults, setFilteredResults] = useState<Influencer[]>([]);
-
-  // Enrichment Tab State
+  // Tab 3 & 4 State
   const [selectedHandle, setSelectedHandle] = useState<string>('');
-
-  // AI Personalization Tab State
   const [targetCreator, setTargetCreator] = useState<string>('');
   const [brandName, setBrandName] = useState('LumiGlow');
   const [collabType, setCollabType] = useState('UGC & Paid Showcase');
   const [generating, setGenerating] = useState(false);
   const [activePitch, setActivePitch] = useState<PersonalizedPitch | null>(null);
 
-  // Outreach Tracker State & Pagination
+  // Tab 5 Outreach Tracker State
   const [trackerStats, setTrackerStats] = useState<TrackerStats>({ total_logged: 173, successfully_sent: 128, skipped: 45 });
   const [outreachLogs, setOutreachLogs] = useState<OutreachRecord[]>([]);
   const [auditPage, setAuditPage] = useState(1);
   const [auditPerPage, setAuditPerPage] = useState(10);
 
-  // Tab 2 Classification Filters
-  const [filterGeo, setFilterGeo] = useState('Global (All Regions)');
-  const [filterPlatform, setFilterPlatform] = useState('All Platforms');
-  const [filterNiche, setFilterNiche] = useState('Fashion & Beauty');
-  const [filterCountries, setFilterCountries] = useState<string[]>([
-    'Global (All Regions)',
-    'United States (US)',
-    'United Kingdom (GB)',
-    'Canada (CA)',
-    'Australia (AU)',
-    'Germany (DE)',
-    'France (FR)',
-    'India (IN)',
-  ]);
-
-  // Load Initial Datasets
+  // Fetch Outreach tracker data on mount
   useEffect(() => {
-    fetchRawRecords();
     fetchTracker();
-    runFilter();
-    const fetchGeo = async () => {
-      try {
-        const res = await api.getCountries();
-        if (res.countries && res.countries.length > 0) {
-          setFilterCountries(res.countries);
-        }
-      } catch (e) {}
-    };
-    fetchGeo();
   }, []);
-
-  // Synchronize Tab 2 and Tab 1 when Dashboard filters change
-  useEffect(() => {
-    setFilterGeo(activeGeo);
-    setFilterPlatform(activePlatform);
-    setFilterNiche(activeNiche);
-    runFilter(activeGeo, activePlatform, activeNiche);
-    setRecordsPage(1);
-  }, [activeGeo, activePlatform, activeNiche, activeScale]);
-
-  const fetchRawRecords = async () => {
-    try {
-      setLoading(true);
-      const res = await api.getRawInfluencers(100);
-      setInfluencers(res.influencers);
-      if (res.influencers.length > 0) {
-        setSelectedHandle(res.influencers[0].handle);
-        setTargetCreator(res.influencers[0].handle);
-      }
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const fetchTracker = async () => {
     try {
       const res = await api.getTrackerStats();
       setTrackerStats(res.stats);
       setOutreachLogs(res.logs);
+      if (onRefreshTracker) onRefreshTracker();
     } catch (err) {
       console.error(err);
     }
   };
 
-  // Run Classification Engine with full multi-dimensional criteria
-  const runFilter = async (customGeo?: string, customPlatform?: string, customNiche?: string) => {
-    try {
-      setFilterLoading(true);
-      const res = await api.filterInfluencers({
-        min_followers: minFollowers,
-        max_followers: maxFollowers,
-        min_engagement: minEngagement,
-        target_niche: customNiche ?? filterNiche,
-        target_geography: customGeo ?? filterGeo,
-        target_platform: customPlatform ?? filterPlatform,
-      });
-      setFilteredResults(res.results);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setFilterLoading(false);
+  // Set default selected creator when dataset updates
+  useEffect(() => {
+    const list = passedInfluencers.length > 0 ? passedInfluencers : filteredResults;
+    if (list.length > 0) {
+      if (!selectedHandle || !list.some((c) => c.handle === selectedHandle)) {
+        setSelectedHandle(list[0].handle);
+      }
+      if (!targetCreator || !list.some((c) => c.handle === targetCreator)) {
+        setTargetCreator(list[0].handle);
+      }
     }
-  };
+  }, [passedInfluencers, filteredResults]);
+
+  // Tab 1 Filter Mode: 'qualified' (strict criteria) | 'region' (all in target country) | 'all' (all database)
+  const [recordsFilterMode, setRecordsFilterMode] = useState<'qualified' | 'region' | 'all'>('qualified');
+
+  const isGlobal = !filters.geo || filters.geo.toLowerCase().includes('global') || filters.geo.toLowerCase().includes('all');
+  const geoMatchedList = isGlobal
+    ? filteredResults
+    : filteredResults.filter(
+        (r) => !r.qualification_reason || !r.qualification_reason.includes('does not match target')
+      );
+
+  let activeSourceList = allInfluencers;
+  if (recordsFilterMode === 'qualified') {
+    activeSourceList = passedInfluencers.length > 0 ? passedInfluencers : (geoMatchedList.length > 0 ? geoMatchedList : filteredResults);
+  } else if (recordsFilterMode === 'region') {
+    activeSourceList = geoMatchedList.length > 0 ? geoMatchedList : filteredResults;
+  } else {
+    activeSourceList = allInfluencers.length > 0 ? allInfluencers : filteredResults;
+  }
+
+  const displayRecords = activeSourceList.filter((item) => {
+    if (!searchQuery) return true;
+    const q = searchQuery.toLowerCase().trim();
+    return (
+      (item.name || '').toLowerCase().includes(q) ||
+      (item.handle || '').toLowerCase().includes(q) ||
+      (item.location || '').toLowerCase().includes(q) ||
+      (item.niche || '').toLowerCase().includes(q)
+    );
+  });
+
+  const totalRecordsPages = Math.max(1, Math.ceil(displayRecords.length / recordsPerPage));
+  const safeRecordsPage = Math.min(recordsPage, totalRecordsPages);
+  const paginatedRecords = displayRecords.slice(
+    (safeRecordsPage - 1) * recordsPerPage,
+    safeRecordsPage * recordsPerPage
+  );
+
+  // Tab 5 Outreach Tracker Pagination
+  const totalAuditPages = Math.max(1, Math.ceil(outreachLogs.length / auditPerPage));
+  const safeAuditPage = Math.min(auditPage, totalAuditPages);
+  const paginatedAuditLogs = outreachLogs.slice(
+    (safeAuditPage - 1) * auditPerPage,
+    safeAuditPage * auditPerPage
+  );
+
+  // Current creator for Tab 3 & 4
+  const eligibleCreators = passedInfluencers.length > 0 ? passedInfluencers : filteredResults.length > 0 ? filteredResults : allInfluencers;
+  const currentCreator = eligibleCreators.find((i) => i.handle === selectedHandle) || eligibleCreators[0];
 
   // Generate AI Outreach
   const handleGeneratePitch = async () => {
-    const creator = influencers.find((i) => i.handle === targetCreator);
+    const creator = eligibleCreators.find((i) => i.handle === targetCreator);
     if (!creator) return;
 
     try {
@@ -184,172 +178,50 @@ export const TabsSection: React.FC<TabsSectionProps> = ({
     document.body.removeChild(link);
   };
 
-  // Helper matching functions for dashboard criteria
-  const matchesGeography = (geo: string, targetGeo?: string) => {
-    if (!targetGeo || targetGeo === 'Global (All Regions)' || targetGeo === 'All') return true;
-    const target = targetGeo.toLowerCase().trim();
-    const g = (geo || '').toLowerCase();
-
-    let iso = '';
-    let countryName = target;
-    if (target.includes('(') && target.includes(')')) {
-      iso = target.slice(target.indexOf('(') + 1, target.indexOf(')')).trim();
-      countryName = target.slice(0, target.indexOf('(')).trim();
-    }
-
-    if (iso === 'ca' || countryName.includes('canada')) {
-      if (
-        g.includes(', ca') ||
-        g.includes('canada') ||
-        g.includes('toronto') ||
-        g.includes('edmonton') ||
-        g.includes('calgary') ||
-        g.includes('montreal') ||
-        g.includes('vancouver')
-      ) {
-        return !g.includes(', us') && !g.includes('united states');
-      }
-      return false;
-    }
-
-    if (iso === 'us' || countryName.includes('united states')) {
-      return g.includes(', us') || g.includes('united states') || g.includes('usa');
-    }
-
-    if (iso === 'gb' || countryName.includes('united kingdom') || countryName.includes('uk')) {
-      return g.includes('gb') || g.includes('uk') || g.includes('london') || g.includes('united kingdom') || g.includes('england');
-    }
-
-    if (iso === 'au' || countryName.includes('australia')) {
-      return g.includes(', au') || g.includes('australia') || g.includes('sydney') || g.includes('melbourne');
-    }
-
-    if (iso === 'in' || countryName.includes('india')) {
-      return (
-        g.includes(', in') ||
-        g.includes('india') ||
-        g.includes('mumbai') ||
-        g.includes('delhi') ||
-        g.includes('bangalore') ||
-        g.includes('bengaluru') ||
-        g.includes('jaipur') ||
-        g.includes('chandigarh') ||
-        g.includes('pune') ||
-        g.includes('hyderabad') ||
-        g.includes('chennai') ||
-        g.endsWith(' in')
-      );
-    }
-
-    if (iso && (g.includes(`, ${iso}`) || g.includes(` ${iso}`))) return true;
-    if (countryName && countryName.length > 3 && g.includes(countryName)) return true;
-
-    return false;
-  };
-
-  const matchesPlatform = (platform: string, targetPlatform?: string) => {
-    if (!targetPlatform || targetPlatform === 'All Platforms' || targetPlatform === 'Instagram & TikTok') return true;
-    const p = (platform || '').toLowerCase();
-    const target = targetPlatform.toLowerCase();
-    if (target.includes('instagram only')) return p.includes('instagram');
-    if (target.includes('tiktok only')) return p.includes('tiktok');
-    if (target.includes('youtube')) return p.includes('youtube');
-    return true;
-  };
-
-  const matchesScale = (followers: number, scale?: string) => {
-    if (!scale) return true;
-    if (scale.includes('Nano')) return followers >= 1000 && followers <= 5000;
-    if (scale.includes('Macro')) return followers > 100000;
-    return followers >= 5000 && followers <= 100000;
-  };
-
-  // Filtered raw records & Tab 1 Pagination
-  const displayRecords = influencers.filter((item) => {
-    // 1. Text search query
-    const matchesSearch =
-      !searchQuery ||
-      item.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.handle?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.location?.toLowerCase().includes(searchQuery.toLowerCase());
-
-    if (!matchesSearch) return false;
-
-    // 2. Active Dashboard Filters
-    if (dashboardFilterEnabled) {
-      if (!matchesGeography(item.audience_geography || item.location || '', activeGeo)) {
-        return false;
-      }
-      if (!matchesPlatform(item.platform, activePlatform)) {
-        return false;
-      }
-      if (!matchesScale(item.follower_count, activeScale)) {
-        return false;
-      }
-    }
-
-    return true;
-  });
-
-  const totalRecordsPages = Math.max(1, Math.ceil(displayRecords.length / recordsPerPage));
-  const safeRecordsPage = Math.min(recordsPage, totalRecordsPages);
-  const paginatedRecords = displayRecords.slice(
-    (safeRecordsPage - 1) * recordsPerPage,
-    safeRecordsPage * recordsPerPage
-  );
-
-  // Tab 5 Outreach Tracker Pagination
-  const totalAuditPages = Math.max(1, Math.ceil(outreachLogs.length / auditPerPage));
-  const safeAuditPage = Math.min(auditPage, totalAuditPages);
-  const paginatedAuditLogs = outreachLogs.slice(
-    (safeAuditPage - 1) * auditPerPage,
-    safeAuditPage * auditPerPage
-  );
-
-  // Current selected creator for enrichment
-  const currentCreator = influencers.find((i) => i.handle === selectedHandle) || influencers[0];
-
   return (
-    <div className="w-full">
-      {/* 5-Tab Underline Navigation (NO BOX DIV) */}
-      <AnimatedOutlineNavbar items={TABS} activeId={activeTab} onSelect={setActiveTab} />
+    <div className="space-y-6">
+      {/* 1. Header Navigation Bar (Underline Animated Tabs) */}
+      <div className="flex justify-between items-center border-b border-[#E2E8F0] pb-2">
+        <AnimatedOutlineNavbar items={TABS} activeId={activeTab} onSelect={setActiveTab} />
+      </div>
 
       {/* =========================================================================
-          TAB 1: DISCOVERED RECORDS (PAGINATED WITH CSV EXPORT)
+          TAB 1: DISCOVERED RECORDS
           ========================================================================= */}
       {activeTab === 'records' && (
         <div className="bg-white border border-[#E2E8F0] rounded-[20px] p-6 shadow-[0_4px_24px_rgba(0,0,0,0.05)]">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-5">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-5">
             <div>
               <h2 className="text-xl font-black text-black">Discovered Micro-Influencer Records</h2>
               <p className="text-xs font-semibold text-[#333333] mt-0.5">
-                Authentic creator dataset scraped via Scrapy engine (Paginated with CSV export)
+                Targeted creator dataset scraped and synchronized with indexed database
               </p>
             </div>
-            <div className="flex gap-3 w-full md:w-auto">
-              <div className="relative flex-1 md:w-80">
-                <Search className="w-4 h-4 absolute left-3 top-3 text-black" />
+
+            <div className="flex items-center gap-3">
+              <div className="relative">
+                <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-black stroke-[2.5]" />
                 <input
                   type="text"
-                  placeholder="Filter records by name, handle, location..."
+                  placeholder="Search name, handle, location..."
                   value={searchQuery}
                   onChange={(e) => {
                     setSearchQuery(e.target.value);
                     setRecordsPage(1);
                   }}
-                  className="w-full bg-[#F8FAFC] border border-[#CBD5E1] rounded-xl pl-9 pr-3 py-2 text-sm font-bold text-black focus:outline-none focus:border-[#0284C7]"
+                  className="bg-[#F8FAFC] border border-[#CBD5E1] rounded-xl pl-9 pr-3.5 py-2 text-xs font-bold text-black focus:outline-none focus:border-black focus:bg-white w-64 shadow-xs"
                 />
               </div>
               <button
-                onClick={() => downloadCSV(influencers, 'discovered_creators.csv')}
-                className="inline-flex items-center gap-2 bg-white border border-[#BAE6FD] hover:bg-[#F0F9FF] text-black font-extrabold text-xs px-4 py-2 rounded-xl transition-all cursor-pointer whitespace-nowrap"
+                onClick={() => downloadCSV(displayRecords, 'discovered_influencers.csv')}
+                className="inline-flex items-center gap-2 bg-white border border-[#CBD5E1] hover:border-black hover:bg-[#F8FAFC] text-black font-extrabold text-xs px-3.5 py-2 rounded-xl transition-all cursor-pointer shadow-xs"
               >
-                <Download className="w-3.5 h-3.5 text-black" /> Export CSV
+                <Download className="w-3.5 h-3.5 text-black stroke-[2.5]" /> Export
               </button>
             </div>
           </div>
 
-          {loading ? (
+          {filterLoading ? (
             <div className="flex items-center justify-center py-16">
               <Loader2 className="w-6 h-6 animate-spin text-black" />
             </div>
@@ -360,28 +232,72 @@ export const TabsSection: React.FC<TabsSectionProps> = ({
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="text-xs font-black text-black">Active Filter:</span>
                   <span className="bg-white border border-[#94A3B8] text-xs font-black px-2.5 py-1 rounded-md text-black shadow-xs">
-                    🌍 {activeGeo}
+                    🌍 {filters.geo}
                   </span>
-                  {activePlatform !== 'All Platforms' && activePlatform !== 'Instagram & TikTok' && (
+                  <span className="bg-white border border-[#94A3B8] text-xs font-black px-2.5 py-1 rounded-md text-black shadow-xs">
+                    🏷️ {filters.niche}
+                  </span>
+                  {filters.platform !== 'All Platforms' && filters.platform !== 'Instagram & TikTok' && (
                     <span className="bg-white border border-[#94A3B8] text-xs font-black px-2.5 py-1 rounded-md text-black shadow-xs">
-                      📱 {activePlatform}
+                      📱 {filters.platform}
                     </span>
                   )}
                   <span className="bg-white border border-[#94A3B8] text-xs font-black px-2.5 py-1 rounded-md text-black shadow-xs">
-                    👥 {activeScale.replace(/\(.*\)/, '').trim()}
+                    👥 {filters.scale.replace(/\(.*\)/, '').trim()}
                   </span>
                 </div>
 
-                <div className="flex items-center gap-3">
+                <div className="flex flex-wrap items-center gap-2">
                   <span className="text-xs font-black text-black">
-                    Showing <span className="text-[#0284C7] font-mono text-sm">{displayRecords.length}</span> of {influencers.length} creators
+                    Showing <span className="text-[#0284C7] font-mono text-sm">{displayRecords.length}</span> creators:
                   </span>
-                  <button
-                    onClick={() => setDashboardFilterEnabled(!dashboardFilterEnabled)}
-                    className="text-xs font-black text-black underline hover:text-[#0284C7] cursor-pointer bg-white px-2.5 py-1 rounded-lg border border-[#CBD5E1] shadow-xs"
-                  >
-                    {dashboardFilterEnabled ? 'Show All Unfiltered' : 'Apply Dashboard Filter'}
-                  </button>
+                  
+                  <div className="inline-flex items-center gap-1 bg-[#F1F5F9] p-1 rounded-xl border border-[#CBD5E1]">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setRecordsFilterMode('qualified');
+                        setRecordsPage(1);
+                      }}
+                      className={`px-2.5 py-1 text-[11px] font-black rounded-lg transition-all cursor-pointer ${
+                        recordsFilterMode === 'qualified'
+                          ? 'bg-white text-black shadow-xs border border-[#94A3B8]'
+                          : 'text-[#475569] hover:text-black'
+                      }`}
+                    >
+                      Qualified ({passedInfluencers.length})
+                    </button>
+                    {!isGlobal && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setRecordsFilterMode('region');
+                          setRecordsPage(1);
+                        }}
+                        className={`px-2.5 py-1 text-[11px] font-black rounded-lg transition-all cursor-pointer ${
+                          recordsFilterMode === 'region'
+                            ? 'bg-white text-black shadow-xs border border-[#94A3B8]'
+                            : 'text-[#475569] hover:text-black'
+                        }`}
+                      >
+                        All in {filters.geo.replace(/\(.*\)/, '').trim()} ({geoMatchedList.length})
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setRecordsFilterMode('all');
+                        setRecordsPage(1);
+                      }}
+                      className={`px-2.5 py-1 text-[11px] font-black rounded-lg transition-all cursor-pointer ${
+                        recordsFilterMode === 'all'
+                          ? 'bg-white text-black shadow-xs border border-[#94A3B8]'
+                          : 'text-[#475569] hover:text-black'
+                      }`}
+                    >
+                      All Database ({allInfluencers.length || filteredResults.length})
+                    </button>
+                  </div>
                 </div>
               </div>
 
@@ -443,15 +359,15 @@ export const TabsSection: React.FC<TabsSectionProps> = ({
                       <tr>
                         <td colSpan={8} className="py-10 text-center text-sm font-bold text-black">
                           <div>
-                            No creator records found matching {dashboardFilterEnabled ? `active filter "${activeGeo}"` : ''}{searchQuery ? ` and search "${searchQuery}"` : ''}.
+                            No creator records found matching {dashboardFilterEnabled ? `active filter "${filters.geo}"` : ''}{searchQuery ? ` and search "${searchQuery}"` : ''}.
                           </div>
                           {dashboardFilterEnabled && (
                             <div className="mt-3">
                               <button
                                 onClick={() => setDashboardFilterEnabled(false)}
-                                className="text-xs font-black underline text-[#0284C7] hover:text-black cursor-pointer bg-[#F1F5F9] px-3 py-1.5 rounded-lg border border-[#CBD5E1]"
+                                className="text-xs font-black text-black underline bg-[#F1F5F9] px-3 py-1.5 rounded-lg border border-[#CBD5E1]"
                               >
-                                Click here to show all {influencers.length} creators
+                                View full unfiltered dataset ({allInfluencers.length} creators)
                               </button>
                             </div>
                           )}
@@ -491,7 +407,7 @@ export const TabsSection: React.FC<TabsSectionProps> = ({
               </p>
             </div>
             <button
-              onClick={() => runFilter()}
+              onClick={() => onRunFilter()}
               disabled={filterLoading}
               className="inline-flex items-center gap-2 bg-[#BAE6FD] hover:bg-[#93C5FD] border border-[#7DD3FC] text-black font-black text-xs px-4 py-2.5 rounded-xl cursor-pointer transition-all"
             >
@@ -499,21 +415,18 @@ export const TabsSection: React.FC<TabsSectionProps> = ({
             </button>
           </div>
 
-          {/* Expanded 2-Row Filter Grid */}
+          {/* Unified 2-Row Filter Grid (Controlled via Single Source of Truth) */}
           <div className="mb-6 bg-[#F8FAFC] border border-[#E2E8F0] p-4 rounded-xl space-y-3">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               <div>
                 <label className="block text-xs font-black text-black mb-1">Audience Geography</label>
                 <div className="relative">
                   <select
-                    value={filterGeo}
-                    onChange={(e) => {
-                      setFilterGeo(e.target.value);
-                      runFilter(e.target.value, filterPlatform, filterNiche);
-                    }}
+                    value={filters.geo}
+                    onChange={(e) => onFilterChange({ geo: e.target.value })}
                     className="w-full appearance-none bg-white border border-[#CBD5E1] rounded-lg px-3 py-2 text-xs font-bold text-black cursor-pointer shadow-xs focus:outline-none focus:ring-2 focus:ring-[#BAE6FD]"
                   >
-                    {filterCountries.map((c) => (
+                    {countries.map((c) => (
                       <option key={c} value={c} className="bg-white text-black font-bold">
                         {c}
                       </option>
@@ -529,11 +442,8 @@ export const TabsSection: React.FC<TabsSectionProps> = ({
                 <label className="block text-xs font-black text-black mb-1">Target Platform</label>
                 <div className="relative">
                   <select
-                    value={filterPlatform}
-                    onChange={(e) => {
-                      setFilterPlatform(e.target.value);
-                      runFilter(filterGeo, e.target.value, filterNiche);
-                    }}
+                    value={filters.platform}
+                    onChange={(e) => onFilterChange({ platform: e.target.value })}
                     className="w-full appearance-none bg-white border border-[#CBD5E1] rounded-lg px-3 py-2 text-xs font-bold text-black cursor-pointer shadow-xs focus:outline-none focus:ring-2 focus:ring-[#BAE6FD]"
                   >
                     <option value="All Platforms" className="bg-white text-black font-bold">All Platforms</option>
@@ -552,11 +462,8 @@ export const TabsSection: React.FC<TabsSectionProps> = ({
                 <label className="block text-xs font-black text-black mb-1">Category / Niche</label>
                 <div className="relative">
                   <select
-                    value={filterNiche}
-                    onChange={(e) => {
-                      setFilterNiche(e.target.value);
-                      runFilter(filterGeo, filterPlatform, e.target.value);
-                    }}
+                    value={filters.niche}
+                    onChange={(e) => onFilterChange({ niche: e.target.value })}
                     className="w-full appearance-none bg-white border border-[#CBD5E1] rounded-lg px-3 py-2 text-xs font-bold text-black cursor-pointer shadow-xs focus:outline-none focus:ring-2 focus:ring-[#BAE6FD]"
                   >
                     <option value="Fashion & Beauty" className="bg-white text-black font-bold">Fashion & Beauty</option>
@@ -578,9 +485,9 @@ export const TabsSection: React.FC<TabsSectionProps> = ({
                 <label className="block text-xs font-black text-black mb-1">Follower Min Bound</label>
                 <input
                   type="number"
-                  value={minFollowers}
-                  onChange={(e) => setMinFollowers(Number(e.target.value))}
-                  onKeyDown={(e) => { if (e.key === 'Enter') runFilter(); }}
+                  value={filters.minFollowers}
+                  onChange={(e) => onFilterChange({ minFollowers: Number(e.target.value) })}
+                  onKeyDown={(e) => { if (e.key === 'Enter') onRunFilter(); }}
                   className="w-full bg-white border border-[#CBD5E1] rounded-lg px-3 py-1.5 text-xs font-extrabold text-black font-mono"
                 />
               </div>
@@ -588,115 +495,108 @@ export const TabsSection: React.FC<TabsSectionProps> = ({
                 <label className="block text-xs font-black text-black mb-1">Follower Max Bound</label>
                 <input
                   type="number"
-                  value={maxFollowers}
-                  onChange={(e) => setMaxFollowers(Number(e.target.value))}
-                  onKeyDown={(e) => { if (e.key === 'Enter') runFilter(); }}
+                  value={filters.maxFollowers}
+                  onChange={(e) => onFilterChange({ maxFollowers: Number(e.target.value) })}
+                  onKeyDown={(e) => { if (e.key === 'Enter') onRunFilter(); }}
                   className="w-full bg-white border border-[#CBD5E1] rounded-lg px-3 py-1.5 text-xs font-extrabold text-black font-mono"
                 />
               </div>
               <div>
                 <label className="block text-xs font-black text-black mb-1">
-                  Minimum Engagement ({minEngagement}%)
+                  Minimum Engagement ({filters.minEngagement}%)
                 </label>
                 <input
                   type="range"
                   min="0.5"
                   max="8.0"
                   step="0.1"
-                  value={minEngagement}
-                  onChange={(e) => setMinEngagement(Number(e.target.value))}
+                  value={filters.minEngagement}
+                  onChange={(e) => onFilterChange({ minEngagement: Number(e.target.value) })}
                   className="w-full mt-2 cursor-pointer accent-black"
                 />
               </div>
             </div>
           </div>
 
-          {/* Qualified vs Disqualified Split Tables */}
-          {(() => {
-            const passedList = filteredResults.filter((i) => i.qualification_status === 'PASSED');
-            const failedList = filteredResults.filter((i) => i.qualification_status === 'FAILED');
-
-            return (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* 1. Qualified Profiles (Passed) */}
-                <div data-testid="qualified-profiles-card" className="border border-[#86EFAC] rounded-xl overflow-hidden shadow-xs flex flex-col">
-                  <div className="bg-[#DCFCE7] px-4 py-3 border-b border-[#86EFAC] flex justify-between items-center">
-                    <span className="font-black text-sm text-black">Qualified Profiles (Passed)</span>
-                    <span className="bg-white border border-[#86EFAC] text-xs font-black px-2.5 py-0.5 rounded-full text-black shadow-xs">
-                      {passedList.length} Passed
-                    </span>
-                  </div>
-                  <div className="max-h-96 overflow-y-auto divide-y divide-[#E2E8F0] bg-white flex-1">
-                    {passedList.length > 0 ? (
-                      passedList.map((item, idx) => (
-                        <div key={idx} className="p-3.5 flex justify-between items-start hover:bg-[#F0FDF4] transition-colors">
-                          <div className="pr-3">
-                            <div className="font-extrabold text-sm text-black">{item.name}</div>
-                            <div className="font-mono text-xs font-bold text-[#333333]">@{item.handle}</div>
-                            <div className="text-xs font-semibold text-[#475569] mt-0.5">
-                              {item.location} • {item.platform}
-                            </div>
-                          </div>
-                          <div className="text-right shrink-0">
-                            <div className="font-mono text-xs font-black text-black">
-                              {Number(item.follower_count).toLocaleString()} | {Number(item.engagement_rate).toFixed(1)}%
-                            </div>
-                            <div className="text-[10px] font-black text-black bg-[#DCFCE7] px-2.5 py-1 rounded-md border border-[#86EFAC] inline-block mt-1">
-                              {item.qualification_reason || 'Qualified (All criteria passed)'}
-                            </div>
-                          </div>
-                        </div>
-                      ))
-                    ) : (
-                      <div className="p-10 text-center text-xs font-bold text-[#64748B]">
-                        No creator profiles passed all active criteria. Try broadening follower bounds or selecting another category.
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* 2. Disqualified Profiles (Failed) */}
-                <div data-testid="disqualified-profiles-card" className="border border-[#FCA5A5] rounded-xl overflow-hidden shadow-xs flex flex-col">
-                  <div className="bg-[#FEE2E2] px-4 py-3 border-b border-[#FCA5A5] flex justify-between items-center">
-                    <span className="font-black text-sm text-black">Disqualified Profiles (Failed)</span>
-                    <span className="bg-white border border-[#FCA5A5] text-xs font-black px-2.5 py-0.5 rounded-full text-black shadow-xs">
-                      {failedList.length} Failed
-                    </span>
-                  </div>
-                  <div className="max-h-96 overflow-y-auto divide-y divide-[#E2E8F0] bg-white flex-1">
-                    {failedList.length > 0 ? (
-                      failedList.map((item, idx) => (
-                        <div key={idx} className="p-3.5 flex justify-between items-start hover:bg-[#FEF2F2] transition-colors">
-                          <div className="pr-3">
-                            <div className="font-extrabold text-sm text-black">{item.name}</div>
-                            <div className="font-mono text-xs font-bold text-[#333333]">@{item.handle}</div>
-                            <div className="text-xs font-semibold text-[#475569] mt-0.5">
-                              {item.location} • {item.platform}
-                            </div>
-                          </div>
-                          <div className="text-right max-w-[58%] shrink-0">
-                            <div className="font-mono text-xs font-black text-black">
-                              {Number(item.follower_count).toLocaleString()} | {Number(item.engagement_rate).toFixed(1)}%
-                            </div>
-                            <div
-                              className="text-[10px] font-bold text-black bg-[#FEE2E2] px-2.5 py-1 rounded-md border border-[#FCA5A5] inline-block mt-1 text-right"
-                              title={item.qualification_reason}
-                            >
-                              {item.qualification_reason || 'Disqualified'}
-                            </div>
-                          </div>
-                        </div>
-                      ))
-                    ) : (
-                      <div className="p-10 text-center text-xs font-bold text-[#64748B]">
-                        All evaluated profiles passed criteria.
-                      </div>
-                    )}
-                  </div>
-                </div>
+          {/* Qualified vs Disqualified Strict Split Tables */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* 1. Qualified Profiles (Passed) */}
+            <div data-testid="qualified-profiles-card" className="border border-[#86EFAC] rounded-xl overflow-hidden shadow-xs flex flex-col">
+              <div className="bg-[#DCFCE7] px-4 py-3 border-b border-[#86EFAC] flex justify-between items-center">
+                <span className="font-black text-sm text-black">Qualified Profiles (Passed)</span>
+                <span className="bg-white border border-[#86EFAC] text-xs font-black px-2.5 py-0.5 rounded-full text-black shadow-xs">
+                  {passedInfluencers.length} Passed
+                </span>
               </div>
-            );
-          })()}
+              <div className="max-h-96 overflow-y-auto divide-y divide-[#E2E8F0] bg-white flex-1">
+                {passedInfluencers.length > 0 ? (
+                  passedInfluencers.map((item, idx) => (
+                    <div key={idx} className="p-3.5 flex justify-between items-start hover:bg-[#F0FDF4] transition-colors">
+                      <div className="pr-3">
+                        <div className="font-extrabold text-sm text-black">{item.name}</div>
+                        <div className="font-mono text-xs font-bold text-[#333333]">@{item.handle}</div>
+                        <div className="text-xs font-semibold text-[#475569] mt-0.5">
+                          {item.location} • {item.platform}
+                        </div>
+                      </div>
+                      <div className="text-right shrink-0">
+                        <div className="font-mono text-xs font-black text-black">
+                          {Number(item.follower_count).toLocaleString()} | {Number(item.engagement_rate).toFixed(1)}%
+                        </div>
+                        <div className="text-[10px] font-black text-black bg-[#DCFCE7] px-2.5 py-1 rounded-md border border-[#86EFAC] inline-block mt-1">
+                          {item.qualification_reason || 'Qualified (All criteria passed)'}
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="p-10 text-center text-xs font-bold text-[#64748B]">
+                    No creator profiles passed all active criteria for {filters.geo}. Try broadening follower bounds or selecting another category.
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* 2. Disqualified Profiles (Failed) */}
+            <div data-testid="disqualified-profiles-card" className="border border-[#FCA5A5] rounded-xl overflow-hidden shadow-xs flex flex-col">
+              <div className="bg-[#FEE2E2] px-4 py-3 border-b border-[#FCA5A5] flex justify-between items-center">
+                <span className="font-black text-sm text-black">Disqualified Profiles (Failed)</span>
+                <span className="bg-white border border-[#FCA5A5] text-xs font-black px-2.5 py-0.5 rounded-full text-black shadow-xs">
+                  {failedInfluencers.length} Failed
+                </span>
+              </div>
+              <div className="max-h-96 overflow-y-auto divide-y divide-[#E2E8F0] bg-white flex-1">
+                {failedInfluencers.length > 0 ? (
+                  failedInfluencers.map((item, idx) => (
+                    <div key={idx} className="p-3.5 flex justify-between items-start hover:bg-[#FEF2F2] transition-colors">
+                      <div className="pr-3">
+                        <div className="font-extrabold text-sm text-black">{item.name}</div>
+                        <div className="font-mono text-xs font-bold text-[#333333]">@{item.handle}</div>
+                        <div className="text-xs font-semibold text-[#475569] mt-0.5">
+                          {item.location} • {item.platform}
+                        </div>
+                      </div>
+                      <div className="text-right max-w-[58%] shrink-0">
+                        <div className="font-mono text-xs font-black text-black">
+                          {Number(item.follower_count).toLocaleString()} | {Number(item.engagement_rate).toFixed(1)}%
+                        </div>
+                        <div
+                          className="text-[10px] font-bold text-black bg-[#FEE2E2] px-2.5 py-1 rounded-md border border-[#FCA5A5] inline-block mt-1 text-right"
+                          title={item.qualification_reason}
+                        >
+                          {item.qualification_reason || 'Disqualified'}
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="p-10 text-center text-xs font-bold text-[#64748B]">
+                    All evaluated profiles passed criteria.
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
         </div>
       )}
 
@@ -720,7 +620,7 @@ export const TabsSection: React.FC<TabsSectionProps> = ({
                 onChange={(e) => setSelectedHandle(e.target.value)}
                 className="w-full appearance-none bg-[#F8FAFC] hover:bg-white focus:bg-white border border-[#CBD5E1] hover:border-black focus:border-black rounded-xl px-3.5 py-2.5 pr-10 text-xs font-black text-black cursor-pointer shadow-xs transition-all focus:outline-none focus:ring-2 focus:ring-[#BAE6FD]/60"
               >
-                {(displayRecords.length > 0 ? displayRecords : influencers).map((i) => (
+                {eligibleCreators.map((i) => (
                   <option key={i.handle} value={i.handle} className="bg-white text-black font-bold">
                     {i.name} (@{i.handle}) - {i.location || 'Global'}
                   </option>
@@ -775,12 +675,12 @@ export const TabsSection: React.FC<TabsSectionProps> = ({
                   <div className="text-base font-black text-black mb-2">Content Themes & Bio Context</div>
                   <p className="text-sm font-semibold text-[#222222] leading-relaxed mb-4">
                     {currentCreator.bio ||
-                      'Verified content creator specializing in contemporary fashion styling, outfit inspirations, and aesthetic lifestyle UGC.'}
+                      'Verified content creator sharing authentic perspectives, daily tutorials, and engaging brand partnerships.'}
                   </p>
 
                   <div className="text-xs font-extrabold text-black uppercase tracking-wider">Identified Themes:</div>
                   <div className="font-mono text-sm font-extrabold text-black mt-1 bg-white border border-[#BAE6FD] px-3 py-1.5 rounded-xl inline-block">
-                    {currentCreator.content_themes || 'Seasonal Styling, Sustainable Wardrobe, UGC'}
+                    {currentCreator.content_themes || `${filters.niche} Content, UGC, Brand Collaborations`}
                   </div>
                 </div>
 
@@ -799,7 +699,7 @@ export const TabsSection: React.FC<TabsSectionProps> = ({
                     </div>
                     <div className="bg-white border border-[#E2E8F0] p-2.5 rounded-xl">
                       <div className="text-[11px] font-bold text-[#333333]">Top Geography</div>
-                      <div className="font-mono text-sm font-black text-black">{currentCreator.audience_geography || 'US / Global'}</div>
+                      <div className="font-mono text-sm font-black text-black">{currentCreator.audience_geography || filters.geo}</div>
                     </div>
                   </div>
                 </div>
@@ -830,7 +730,7 @@ export const TabsSection: React.FC<TabsSectionProps> = ({
                   onChange={(e) => setTargetCreator(e.target.value)}
                   className="w-full appearance-none bg-[#F8FAFC] hover:bg-white focus:bg-white border border-[#CBD5E1] hover:border-black focus:border-black rounded-xl px-3.5 py-2.5 pr-10 text-xs font-black text-black cursor-pointer shadow-xs transition-all focus:outline-none focus:ring-2 focus:ring-[#BAE6FD]/60"
                 >
-                  {(displayRecords.length > 0 ? displayRecords : influencers).map((i) => (
+                  {eligibleCreators.map((i) => (
                     <option key={i.handle} value={i.handle} className="bg-white text-black font-bold">
                       {i.name} (@{i.handle}) - {i.location || 'Global'}
                     </option>
@@ -919,7 +819,7 @@ export const TabsSection: React.FC<TabsSectionProps> = ({
                 <div className="mt-4 pt-3 border-t border-[#E2E8F0]">
                   <button
                     onClick={async () => {
-                      const creator = influencers.find((i) => i.handle === targetCreator);
+                      const creator = eligibleCreators.find((i) => i.handle === targetCreator);
                       if (!creator || !creator.contact_email || creator.contact_email === 'Not Found') {
                         alert('No public contact email available for this creator. Please use the Instagram DM channel.');
                         return;
@@ -984,7 +884,7 @@ export const TabsSection: React.FC<TabsSectionProps> = ({
                   </a>
                   <button
                     onClick={async () => {
-                      const creator = influencers.find((i) => i.handle === targetCreator);
+                      const creator = eligibleCreators.find((i) => i.handle === targetCreator);
                       if (!creator) return;
                       try {
                         const res = await api.sendOutreach({

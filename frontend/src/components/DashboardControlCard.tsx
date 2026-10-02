@@ -1,7 +1,17 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Loader2, ChevronDown } from 'lucide-react';
 import SlideHoverButton from './ui/SlideHoverButton';
 import { api } from '../services/api';
+
+export interface FilterState {
+  niche: string;
+  platform: string;
+  geo: string;
+  scale: string;
+  minFollowers: number;
+  maxFollowers: number;
+  minEngagement: number;
+}
 
 interface DashboardControlCardProps {
   totalCount: number;
@@ -9,7 +19,10 @@ interface DashboardControlCardProps {
   sentCount: number;
   mailCount?: number;
   dmCount?: number;
+  filters?: FilterState;
+  onFilterChange?: (updates: Partial<FilterState>) => void;
   onRefresh?: (params?: { geo?: string; platform?: string; niche?: string; scale?: string }) => void;
+  countries?: string[];
 }
 
 export const DashboardControlCard: React.FC<DashboardControlCardProps> = ({
@@ -18,17 +31,10 @@ export const DashboardControlCard: React.FC<DashboardControlCardProps> = ({
   sentCount = 173,
   mailCount = 9,
   dmCount = 6,
+  filters,
+  onFilterChange,
   onRefresh,
-}) => {
-  const [niche, setNiche] = useState('Fashion & Beauty');
-  const [platform, setPlatform] = useState('Instagram & TikTok');
-  const [geo, setGeo] = useState('Global (All Regions)');
-  const [scale, setScale] = useState('Micro-Influencers (5k - 100k)');
-  const [engine, setEngine] = useState<'scrapy' | 'playwright'>('scrapy');
-  const [loading, setLoading] = useState(false);
-  const [feedback, setFeedback] = useState<string | null>(null);
-
-  const [countries, setCountries] = useState<string[]>([
+  countries = [
     'Global (All Regions)',
     'United States (US)',
     'United Kingdom (GB)',
@@ -37,29 +43,39 @@ export const DashboardControlCard: React.FC<DashboardControlCardProps> = ({
     'Germany (DE)',
     'France (FR)',
     'India (IN)',
-  ]);
+  ],
+}) => {
+  // Use controlled filters if provided, otherwise fallback to local state
+  const [localNiche, setLocalNiche] = useState('Fashion & Beauty');
+  const [localPlatform, setLocalPlatform] = useState('Instagram & TikTok');
+  const [localGeo, setLocalGeo] = useState('Global (All Regions)');
+  const [localScale, setLocalScale] = useState('Micro-Influencers (5k - 100k)');
 
-  useEffect(() => {
-    const fetchCountries = async () => {
-      try {
-        const res = await api.getCountries();
-        if (res.countries && res.countries.length > 0) {
-          setCountries(res.countries);
-        }
-      } catch (e) {
-        console.log('Using default country list');
-      }
-    };
-    fetchCountries();
-  }, []);
+  const niche = filters ? filters.niche : localNiche;
+  const platform = filters ? filters.platform : localPlatform;
+  const geo = filters ? filters.geo : localGeo;
+  const scale = filters ? filters.scale : localScale;
 
-  const triggerDynamicFilter = (newGeo?: string, newPlatform?: string, newNiche?: string, newScale?: string) => {
-    const g = newGeo ?? geo;
-    const p = newPlatform ?? platform;
-    const n = newNiche ?? niche;
-    const s = newScale ?? scale;
+  const [engine, setEngine] = useState<'scrapy' | 'playwright'>('scrapy');
+  const [loading, setLoading] = useState(false);
+  const [feedback, setFeedback] = useState<string | null>(null);
+
+  const updateField = (updates: Partial<FilterState>) => {
+    if (updates.niche) setLocalNiche(updates.niche);
+    if (updates.platform) setLocalPlatform(updates.platform);
+    if (updates.geo) setLocalGeo(updates.geo);
+    if (updates.scale) setLocalScale(updates.scale);
+
+    if (onFilterChange) {
+      onFilterChange(updates);
+    }
     if (onRefresh) {
-      onRefresh({ geo: g, platform: p, niche: n, scale: s });
+      onRefresh({
+        niche: updates.niche ?? niche,
+        platform: updates.platform ?? platform,
+        geo: updates.geo ?? geo,
+        scale: updates.scale ?? scale,
+      });
     }
   };
 
@@ -68,8 +84,8 @@ export const DashboardControlCard: React.FC<DashboardControlCardProps> = ({
     setFeedback(null);
     try {
       const res = await api.triggerDiscovery(niche, 65, engine, geo);
-      let minF = 5000;
-      let maxF = 100000;
+      let minF = filters ? filters.minFollowers : 5000;
+      let maxF = filters ? filters.maxFollowers : 100000;
       if (scale.includes('Nano')) {
         minF = 1000;
         maxF = 5000;
@@ -80,7 +96,7 @@ export const DashboardControlCard: React.FC<DashboardControlCardProps> = ({
       const filterRes = await api.filterInfluencers({
         min_followers: minF,
         max_followers: maxF,
-        min_engagement: 1.5,
+        min_engagement: filters ? filters.minEngagement : 2.0,
         target_niche: niche,
         target_geography: geo,
         target_platform: platform,
@@ -90,9 +106,13 @@ export const DashboardControlCard: React.FC<DashboardControlCardProps> = ({
       setFeedback(
         `${engineLabel} executed. ${res.discovered_count} creators active (${filterRes.passed_count} qualified in ${geo}).`
       );
+      if (onFilterChange) {
+        onFilterChange({ geo, platform, niche, scale });
+      }
       if (onRefresh) onRefresh({ geo, platform, niche, scale });
     } catch (err: any) {
       setFeedback('Pipeline executed. Active dataset loaded.');
+      if (onFilterChange) onFilterChange({ geo, platform, niche, scale });
       if (onRefresh) onRefresh({ geo, platform, niche, scale });
     } finally {
       setLoading(false);
@@ -100,13 +120,30 @@ export const DashboardControlCard: React.FC<DashboardControlCardProps> = ({
   };
 
   const handleReset = () => {
-    setNiche('Fashion & Beauty');
-    setPlatform('Instagram & TikTok');
-    setGeo('Global (All Regions)');
-    setScale('Micro-Influencers (5k - 100k)');
+    const resetValues: Partial<FilterState> = {
+      niche: 'Fashion & Beauty',
+      platform: 'Instagram & TikTok',
+      geo: 'Global (All Regions)',
+      scale: 'Micro-Influencers (5k - 100k)',
+      minFollowers: 5000,
+      maxFollowers: 100000,
+      minEngagement: 2.0,
+    };
+    setLocalNiche('Fashion & Beauty');
+    setLocalPlatform('Instagram & TikTok');
+    setLocalGeo('Global (All Regions)');
+    setLocalScale('Micro-Influencers (5k - 100k)');
     setEngine('scrapy');
     setFeedback(null);
-    if (onRefresh) onRefresh({ geo: 'Global (All Regions)', platform: 'Instagram & TikTok', niche: 'Fashion & Beauty', scale: 'Micro-Influencers (5k - 100k)' });
+    if (onFilterChange) onFilterChange(resetValues);
+    if (onRefresh) {
+      onRefresh({
+        geo: 'Global (All Regions)',
+        platform: 'Instagram & TikTok',
+        niche: 'Fashion & Beauty',
+        scale: 'Micro-Influencers (5k - 100k)',
+      });
+    }
   };
 
   return (
@@ -152,10 +189,7 @@ export const DashboardControlCard: React.FC<DashboardControlCardProps> = ({
             <div className="relative">
               <select
                 value={niche}
-                onChange={(e) => {
-                  setNiche(e.target.value);
-                  triggerDynamicFilter(geo, platform, e.target.value, scale);
-                }}
+                onChange={(e) => updateField({ niche: e.target.value })}
                 className="w-full appearance-none bg-[#F8FAFC] hover:bg-white focus:bg-white border border-[#CBD5E1] hover:border-black focus:border-black rounded-xl px-3.5 py-2.5 pr-9 text-xs font-black text-black cursor-pointer shadow-xs transition-all focus:outline-none focus:ring-2 focus:ring-[#BAE6FD]/60"
               >
                 <option value="Fashion & Beauty" className="bg-white text-black font-bold">Fashion & Beauty</option>
@@ -176,16 +210,14 @@ export const DashboardControlCard: React.FC<DashboardControlCardProps> = ({
             <div className="relative">
               <select
                 value={platform}
-                onChange={(e) => {
-                  setPlatform(e.target.value);
-                  triggerDynamicFilter(geo, e.target.value, niche, scale);
-                }}
+                onChange={(e) => updateField({ platform: e.target.value })}
                 className="w-full appearance-none bg-[#F8FAFC] hover:bg-white focus:bg-white border border-[#CBD5E1] hover:border-black focus:border-black rounded-xl px-3.5 py-2.5 pr-9 text-xs font-black text-black cursor-pointer shadow-xs transition-all focus:outline-none focus:ring-2 focus:ring-[#BAE6FD]/60"
               >
                 <option value="Instagram & TikTok" className="bg-white text-black font-bold">Instagram & TikTok</option>
                 <option value="Instagram Only" className="bg-white text-black font-bold">Instagram Only</option>
                 <option value="TikTok Only" className="bg-white text-black font-bold">TikTok Only</option>
                 <option value="YouTube" className="bg-white text-black font-bold">YouTube</option>
+                <option value="All Platforms" className="bg-white text-black font-bold">All Platforms</option>
               </select>
               <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 flex items-center">
                 <ChevronDown className="w-4 h-4 text-black stroke-[2.5]" />
@@ -198,10 +230,7 @@ export const DashboardControlCard: React.FC<DashboardControlCardProps> = ({
             <div className="relative">
               <select
                 value={geo}
-                onChange={(e) => {
-                  setGeo(e.target.value);
-                  triggerDynamicFilter(e.target.value, platform, niche, scale);
-                }}
+                onChange={(e) => updateField({ geo: e.target.value })}
                 className="w-full appearance-none bg-[#F8FAFC] hover:bg-white focus:bg-white border border-[#CBD5E1] hover:border-black focus:border-black rounded-xl px-3.5 py-2.5 pr-9 text-xs font-black text-black cursor-pointer shadow-xs transition-all focus:outline-none focus:ring-2 focus:ring-[#BAE6FD]/60"
               >
                 {countries.map((c) => (
@@ -221,10 +250,7 @@ export const DashboardControlCard: React.FC<DashboardControlCardProps> = ({
             <div className="relative">
               <select
                 value={scale}
-                onChange={(e) => {
-                  setScale(e.target.value);
-                  triggerDynamicFilter(geo, platform, niche, e.target.value);
-                }}
+                onChange={(e) => updateField({ scale: e.target.value })}
                 className="w-full appearance-none bg-[#F8FAFC] hover:bg-white focus:bg-white border border-[#CBD5E1] hover:border-black focus:border-black rounded-xl px-3.5 py-2.5 pr-9 text-xs font-black text-black cursor-pointer shadow-xs transition-all focus:outline-none focus:ring-2 focus:ring-[#BAE6FD]/60"
               >
                 <option value="Micro-Influencers (5k - 100k)" className="bg-white text-black font-bold">Micro-Influencers (5k - 100k)</option>
