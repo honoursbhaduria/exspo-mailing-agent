@@ -1,9 +1,7 @@
 # Automated Micro-Influencer Outreach System
-### EDXSO AI Engineer Intern – Assignment 1
+### Autonomous Creator Discovery, Context Enrichment & Multi-Channel AI Personalization Engine
 
-An automated, end-to-end intelligent pipeline that discovers authentic micro-influencers, filters and classifies them according to multi-factor criteria, enriches their profiles with contextual intelligence, and generates hyper-personalized collaboration outreach messages via LLMs with a multi-channel delivery & tracking layer.
-
-![EDXSO Logo](images/logo.png)
+An automated, end-to-end intelligent pipeline that discovers authentic micro-influencers across platforms, evaluates them according to multi-factor quantitative and qualitative criteria, enriches their profiles with contextual intelligence, and generates hyper-personalized collaboration outreach messages via Google Gemini LLM with an integrated delivery and tracking layer.
 
 ---
 
@@ -11,14 +9,14 @@ An automated, end-to-end intelligent pipeline that discovers authentic micro-inf
 1. [System Architecture](#-system-architecture)
 2. [Technology Stack](#-technology-stack)
 3. [Core Pipeline Phases](#-core-pipeline-phases)
-   - [Phase 1: Discovery Engine](#phase-1-influencer-discovery-scrapy)
+   - [Phase 1: Discovery Engine](#phase-1-influencer-discovery)
    - [Phase 2: Filtering & Classification](#phase-2-filtering--classification)
    - [Phase 3: Profile Enrichment](#phase-3-profile-enrichment)
    - [Phase 4: AI Personalization Engine](#phase-4-ai-personalization-engine)
-   - [Phase 5: Sending Layer & Tracker](#phase-5-sending-layer--outreach-tracker)
-4. [Deliverables & Data Schemas](#-deliverables--data-schemas)
+   - [Phase 5: Sending Layer & Outreach Tracker](#phase-5-sending-layer--outreach-tracker)
+4. [Data Architecture & Schemas](#-data-architecture--schemas)
 5. [Setup & Execution Instructions](#-setup--execution-instructions)
-6. [Design Decisions & Limitations](#-design-decisions--limitations)
+6. [Design Decisions & Compliance](#-design-decisions--compliance)
 
 ---
 
@@ -26,13 +24,13 @@ An automated, end-to-end intelligent pipeline that discovers authentic micro-inf
 
 ```mermaid
 flowchart TD
-    A["1. Discovery Engine<br/>(Scrapy Async Spider)"] -->|65+ Authentic Profiles| B["2. Profile Enrichment<br/>(Themes, Demographics, Emails)"]
-    B --> C["3. Filtering & Classification<br/>(Follower Range, Eng Rate, Brand Fit)"]
-    C -->|Passed (29 Qualified)| D["4. AI Personalization Studio<br/>(Google Gemini / Dynamic LLM)"]
-    C -->|Failed (36 Disqualified)| J["Disqualification Audit<br/>(Explicit Failure Reasons)"]
-    D -->|Email: 60-90w & DM: 15-30w| E["5. Sending Layer<br/>(Resend API / Safe Simulator)"]
-    E --> F["6. Outreach Audit Tracker<br/>(Deduplication + Status Logs)"]
-    F --> G["7. Presentation Layer<br/>(Streamlit Web Dashboard + CLI)"]
+    A["1. Discovery Engine<br/>(Scrapy & Playwright Crawlers)"] -->|"270+ Creator Profiles"| B["2. Profile Enrichment<br/>(Themes, Demographics, Emails)"]
+    B --> C["3. Filtering & Classification<br/>(Follower Range, Engagement, Brand Fit)"]
+    C -->|"Passed Criteria"| D["4. AI Personalization Studio<br/>(Google Gemini LLM)"]
+    C -->|"Disqualified"| J["Disqualification Audit<br/>(Explicit Metric Reasons)"]
+    D -->|"Email: 60-90w & DM: 15-30w"| E["5. Sending Layer<br/>(Resend API / DM Workflow)"]
+    E --> F["6. Outreach Audit Tracker<br/>(Neon PostgreSQL / Deduplication)"]
+    F --> G["7. Presentation Layer<br/>(React + Vite Dashboard & FastAPI)"]
 ```
 
 ---
@@ -41,59 +39,64 @@ flowchart TD
 
 | Component | Technology | Rationale |
 | :--- | :--- | :--- |
-| **Scraping Framework** | **Scrapy 2.19** + **Requests Middleware** | Production-grade, asynchronous crawler architecture bypassing TLS fingerprinting via standard HTTP adapters. |
-| **Email Delivery** | **Resend** (`resend` Python SDK) | Modern transactional email API with 3,000 free emails/month, delivery status tracking, and safe simulation sandbox. |
-| **AI Personalization** | **Google Gemini** (`google-genai` SDK) | Ultra-fast LLM generation with strict JSON formatting for word counts and contextual hook alignment. |
+| **Frontend Dashboard** | **React 18** + **Vite** + **Tailwind CSS** | High-performance, responsive UI with real-time creator search, interactive filtering, and pitch dispatch. |
+| **Backend API** | **FastAPI** + **Uvicorn** | Asynchronous REST backend handling pipeline orchestration, AI generation, and database synchronization. |
+| **Database** | **Neon PostgreSQL** (Cloud Serverless) | Scalable PostgreSQL database with pooled connections and atomic batch upserts for creator metrics. |
+| **Scraping Framework** | **Scrapy 2.19** + **Playwright** | Asynchronous crawling engine extracting public creator handles, metrics, bios, and engagement stats. |
+| **AI Personalization** | **Google Gemini LLM** (`gemini-2.5-flash`) | Rapid LLM generation with strict JSON schema validation for length, tone, and contextual alignment. |
+| **Email Delivery** | **Resend** (`resend` Python SDK) | Modern transactional email API with sandbox simulation, delivery status tracking, and verification. |
 | **Data Processing** | **Pandas** & **Pydantic** | Strict schema validation, data deduplication, and structured CSV/JSON persistence. |
-| **Web Dashboard** | **Streamlit** | Interactive UI with landing page overview, real-time filtering sliders, AI preview cards, and CSV export. |
-| **CLI Presentation** | **Rich** | Formatted terminal tables, colors, and progress indicators for headless runs. |
 
 ---
 
 ## 🚀 Core Pipeline Phases
 
-### Phase 1: Influencer Discovery (Scrapy)
-- **Engine**: Custom `MicroInfluencerSpider` built in Scrapy with an asynchronous crawling process.
-- **Target Category**: Fashion & Beauty (with support for Tech, Fitness, Lifestyle).
-- **Yield**: Discovers **65+ real creator profiles** with handles, platform links, locations, ratings, and follower metrics.
+### Phase 1: Influencer Discovery
+- **Engine**: Asynchronous web crawler built with Scrapy and Playwright to extract creator public profiles.
+- **Target Niches**: Fashion & Beauty, Gaming, Tech, Fitness, and Lifestyle.
+- **Yield**: Discovers **270+ creator profiles** with handles, platform links, geographic locations, ratings, and follower metrics.
 
 ### Phase 2: Filtering & Classification
-Every influencer is evaluated using deterministic criteria:
-1. **Follower Count Bounds**: $5,000 \le \text{followers} \le 100,000$ (Micro-influencer criteria).
-2. **Engagement Rate**: $\ge 2.0\%$ threshold.
-3. **Category Relevance**: Contextual matching against target niche tokens.
+Every creator is evaluated using multi-dimensional criteria:
+1. **Follower Count Bounds**: Configurable micro-influencer window (e.g. $5,000 \le \text{followers} \le 100,000$).
+2. **Minimum Engagement Rate**: Dynamic engagement threshold (e.g. $\ge 2.0\%$).
+3. **Audience Geography & Platform Alignment**: Regional matching (e.g. India, US, UK, Global) and platform availability (Instagram & TikTok).
+4. **Category Relevance**: Contextual token analysis against target niche content.
 
-**Output Guarantee**: Every record is tagged with `PASSED` or `FAILED` accompanied by the exact reason (e.g. *"Follower count 4,200 is below minimum threshold (5,000)"* or *"Engagement rate 1.50% is below required threshold (2.00%)"*).
+**Output Guarantee**: Every creator profile is classified with `PASSED` or `FAILED` accompanied by an explicit evaluation reason.
 
-### Phase 3: Profile Enrichment
-Each profile is enriched with:
-- **Mandatory Fields**: Name, Platform, Profile URL, Follower Count, Engagement Rate, Category, Content Themes, Contact Email (marked strictly as `"Not Found"` if unavailable—never guessed or hallucinated).
-- **Optional Context**: Instagram / TikTok handles, Audience Geography, Audience Age distribution, and Audience Gender ratio.
+### Phase 3: Profile Context Enrichment
+Each profile is enriched with structured metadata:
+- **Verified Metrics**: Platform handle, profile URL, follower count, engagement rate, primary category.
+- **Content Themes & Context**: Extracted bio keywords and core styling/content focus areas.
+- **Audience Demographics**: Core age cohort, gender distribution, and top geographic locations.
+- **Contact Extraction**: Verified contact email (marked strictly as `"Not Found"` if unavailable—never guessed or hallucinated).
 
 ### Phase 4: AI Personalization Engine
-Dynamically generates two tailored outreach messages per shortlisted creator:
+Generates two tailored outreach messages per shortlisted creator via Google Gemini:
 1. **Email Collaboration Pitch**:
    - **Target**: 60–90 words.
-   - **Elements**: Specific compliment on recent content theme, proposed collaboration angle (UGC, sponsorship, affiliate), compensation value proposition, and low-friction call to action.
-2. **Instagram DM**:
+   - **Elements**: Contextual compliment referencing creator themes, proposed collaboration angle (UGC, paid showcase, brand ambassador), clear compensation offer, and low-friction call-to-action.
+2. **Instagram Direct Message (DM)**:
    - **Target**: 15–30 words.
-   - **Tone**: Casual, human, authentic conversation starter.
+   - **Tone**: Authentic, friendly conversation starter tailored to recent content.
 
 ### Phase 5: Sending Layer & Outreach Tracker
 - **Email Channel**: Dispatches emails via **Resend API** in Live Mode, or simulates delivery in Safe Simulation Mode (`sim_<hash>`).
-- **Instagram DM Channel**: Compliant simulated workflow with deep-links to creator DMs (`https://ig.me/m/<handle>`), respecting Meta Graph API restrictions.
-- **Deduplication Engine**: Prevents duplicate contact attempts by checking prior handles and email hashes.
-- **Audit Log**: Persistent records stored in `data/outreach_log.csv`.
+- **Instagram DM Channel**: Integrated direct message workflow with deep-links (`https://ig.me/m/<handle>`), respecting Meta Graph API boundaries.
+- **Deduplication Engine**: Prevents duplicate outreach attempts by verifying prior handles and email hashes.
+- **Audit Log**: Persistent records stored in **Neon PostgreSQL** and mirrored in `data/outreach_log.csv`.
 
 ---
 
-## 📊 Deliverables & Data Schemas
+## 📊 Data Architecture & Schemas
 
-The repository includes all primary artifacts required by the assignment:
+The pipeline maintains persistent, structured records across:
 
-1. **`data/influencers_raw.csv`**: 65 authentic influencer records collected by Scrapy.
+1. **`data/influencers_raw.csv`**: Raw creator records extracted by discovery crawlers.
 2. **`data/influencers_processed.csv`**: Enriched dataset with `qualification_status` and `qualification_reason`.
 3. **`data/outreach_log.csv`**: Outreach tracking history with message payloads, delivery IDs, timestamps, and delivery statuses.
+4. **Neon PostgreSQL Cloud Tables**: Synchronized cloud storage with indexed handles and execution timestamps.
 
 ---
 
@@ -102,43 +105,45 @@ The repository includes all primary artifacts required by the assignment:
 ### 1. Clone & Set Up Environment
 ```bash
 # Clone the repository
-git clone https://github.com/your-username/edxso-A1.git
-cd edxso-A1
+git clone https://github.com/honoursbhaduria/exspo-mailing-agent.git
+cd exspo-mailing-agent
 
 # Create and activate virtual environment
 python3 -m venv venv
 source venv/bin/activate
 
-# Install dependencies
+# Install Python dependencies
 pip install -r requirements.txt
 ```
 
-### 2. Configure Environment Variables (Optional)
+### 2. Configure Environment Variables
 Copy `.env.example` to `.env`:
 ```bash
 cp .env.example .env
 ```
-Configure your keys if you want live API calls:
+Configure your keys:
 ```env
 GEMINI_API_KEY=your_gemini_api_key_here
 RESEND_API_KEY=your_resend_api_key_here
+DATABASE_URL=postgresql://user:pass@host/neondb?sslmode=require
+DATABASE_URL_POOLED=postgresql://user:pass@host-pooler/neondb?sslmode=require
 SIMULATION_MODE=True
 ```
-> **Note:** The system includes complete fallback generators and a sandbox simulator, so it runs out-of-the-box even without active API keys!
+> **Note:** The system includes complete fallback generators and a sandbox simulator, allowing it to run out-of-the-box even without active external API keys.
 
-### 3. Launch Interactive Dashboards & API
+### 3. Launch Dashboards & API
 
-#### Option A: Production React + TypeScript + Tailwind CSS v4 Frontend (Recommended)
+#### Option A: Fullstack React Dashboard + FastAPI Backend (Recommended)
 ```bash
-# 1. Start FastAPI Backend (Terminal 1)
-./venv/bin/python3 -m uvicorn server:app --host 0.0.0.0 --port 8000
+# Terminal 1: Start FastAPI Backend
+./venv/bin/python3 -m uvicorn server:app --host 0.0.0.0 --port 8000 --reload
 
-# 2. Start Vite React Frontend (Terminal 2)
+# Terminal 2: Start Vite React Frontend
 cd frontend
 npm install
 npm run dev
 ```
-Open **`http://localhost:3000`** to view the fullstack React dashboard with live proxy to FastAPI on port 8000.
+Open **`http://localhost:3000`** to access the dashboard.
 
 #### Option B: Streamlit Python Dashboard
 ```bash
@@ -146,24 +151,23 @@ Open **`http://localhost:3000`** to view the fullstack React dashboard with live
 ```
 Open **`http://localhost:8501`** in your browser.
 
-### 4. Run Automated Unit Test Suite
-To run the automated verification suite validating all 5 assignment requirements:
+### 4. Run Automated Test Suite
+To run the automated verification suite:
 ```bash
 ./venv/bin/python -m unittest discover -s tests -v
 ```
 
 ### 5. Run Headless CLI Pipeline
-To run the full end-to-end automated pipeline in the terminal:
+To run the end-to-end automated pipeline in the terminal:
 ```bash
 ./venv/bin/python run_pipeline.py
 ```
 
 ---
 
-## ⚖️ Design Decisions & Limitations
+## ⚖️ Design Decisions & Compliance
 
-1. **Meta Graph API Compliance**: Meta prohibits automated cold DMs from unofficial bots to creator personal inboxes. To ensure platform compliance, our system generates the DM and provides a 1-click manual dispatch workflow + simulated audit log.
-2. **Anti-Hallucination Email Policy**: As required by Section 3, missing contact emails are strictly marked as `"Not Found"`. Creators without public emails are automatically routed to the Instagram DM outreach workflow.
-3. **Safe Simulation Mode**: A global simulation toggle guarantees that evaluators can run the entire pipeline end-to-end without sending unsolicited emails to real creators or requiring paid credentials.
-4. **Idempotency & Deduplication**: Prevents sending duplicate pitches to the same handle or email, maintaining a verifiable audit trail in `data/outreach_log.csv`.
-
+1. **Meta Graph API Compliance**: To respect Meta platform policies regarding automated cold messaging, the system generates targeted DM copy and provides a 1-click dispatch workflow + simulated audit logging.
+2. **Anti-Hallucination Email Policy**: Missing contact emails are strictly marked as `"Not Found"`. Creators without public emails are automatically routed to the Instagram DM outreach workflow.
+3. **Safe Simulation Mode**: A global simulation toggle guarantees that users can run the entire pipeline end-to-end without sending unsolicited live emails or requiring paid credentials.
+4. **Idempotency & Deduplication**: Prevents sending duplicate pitches to the same handle or email, maintaining a verifiable audit trail.
