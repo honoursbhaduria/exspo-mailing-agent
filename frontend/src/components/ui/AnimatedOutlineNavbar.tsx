@@ -45,18 +45,24 @@ const NavWrapper = styled.div`
   .tab-list {
     display: flex;
     align-items: center;
-    gap: 32px;
+    gap: 24px;
     border-bottom: 2px solid #E2E8F0;
-    padding: 0;
+    padding: 0 4px;
     background: transparent;
     overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    &::-webkit-scrollbar {
+      display: none;
+    }
   }
 
   .tab-btn {
     position: relative;
+    flex-shrink: 0;
     background: transparent;
     border: none;
-    padding: 12px 2px 14px 2px;
+    padding: 12px 4px 14px 4px;
     cursor: pointer;
     outline: none;
     transition: all 0.2s ease;

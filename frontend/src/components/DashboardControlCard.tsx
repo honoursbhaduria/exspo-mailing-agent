@@ -293,7 +293,7 @@ export const DashboardControlCard: React.FC<DashboardControlCardProps> = ({
       </div>
 
       {/* Uniform Stat Cards (Identical Styling, Bold Pure Black Text) */}
-      <div className="grid grid-cols-3 gap-3 pt-3">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3 pt-3">
         <div className="bg-[#F8FAFC] border border-[#BAE6FD] hover:border-[#0284C7] rounded-xl p-3 flex flex-col justify-center transition-all hover:bg-white">
           <div className="text-2xl font-black text-black font-mono leading-none">{totalCount}</div>
           <div className="text-[11px] font-bold text-[#222222] mt-1">Total Profiles</div>

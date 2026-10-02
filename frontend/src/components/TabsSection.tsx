@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Download, Sparkles, Send, ExternalLink, Loader2, ChevronDown, CheckCircle2, XCircle, Mail, MessageSquare, Globe, Tag, Smartphone, Users, MapPin } from 'lucide-react';
+import { Search, Download, Sparkles, Send, ExternalLink, Loader2, ChevronDown, CheckCircle2, XCircle, Mail, MessageSquare, Globe, Tag, Smartphone, Users, MapPin, X, AlertCircle } from 'lucide-react';
 import AnimatedOutlineNavbar, { type TabItem } from './ui/AnimatedOutlineNavbar';
 import SlideHoverButton from './ui/SlideHoverButton';
 import Pagination from './ui/Pagination';
@@ -61,6 +61,16 @@ export const TabsSection: React.FC<TabsSectionProps> = ({
   const [auditPage, setAuditPage] = useState(1);
   const [auditPerPage, setAuditPerPage] = useState(10);
 
+  // Tab 1 Direct Outreach Messaging State
+  const [directOutreachCreator, setDirectOutreachCreator] = useState<Influencer | null>(null);
+  const [directSubject, setDirectSubject] = useState('');
+  const [directBody, setDirectBody] = useState('');
+  const [directChannel, setDirectChannel] = useState<'Email' | 'Instagram Direct'>('Email');
+  const [directSending, setDirectSending] = useState(false);
+  const [directGenerating, setDirectGenerating] = useState(false);
+  const [directStatusNotice, setDirectStatusNotice] = useState<{ type: 'success' | 'error' | 'info'; message: string } | null>(null);
+  const [contactedHandles, setContactedHandles] = useState<Set<string>>(new Set());
+
   // Fetch Outreach tracker data on mount
   useEffect(() => {
     fetchTracker();
@@ -71,9 +81,116 @@ export const TabsSection: React.FC<TabsSectionProps> = ({
       const res = await api.getTrackerStats();
       setTrackerStats(res.stats);
       setOutreachLogs(res.logs);
+      if (res.logs && res.logs.length > 0) {
+        const handles = new Set<string>();
+        res.logs.forEach((l) => {
+          if (l.handle) handles.add(l.handle.replace('@', '').toLowerCase());
+        });
+        setContactedHandles(handles);
+      }
       if (onRefreshTracker) onRefreshTracker();
     } catch (err) {
       console.error(err);
+    }
+  };
+
+  const handleOpenDirectOutreach = (creator: Influencer) => {
+    setDirectOutreachCreator(creator);
+    setDirectStatusNotice(null);
+    const hasEmail = Boolean(creator.contact_email && creator.contact_email !== 'Not Found');
+    const channel = hasEmail ? 'Email' : 'Instagram Direct';
+    setDirectChannel(channel);
+
+    const firstName = creator.name.split(' ')[0] || creator.name;
+    const nicheTag = creator.niche || 'Fashion & Beauty';
+
+    if (channel === 'Email') {
+      setDirectSubject(`Collaboration Opportunity: LumiGlow x ${creator.name}`);
+      setDirectBody(
+        `Hi ${firstName},\n\nWe love your creative content in ${nicheTag} and your authentic audience engagement! At LumiGlow, we develop clean, high-performance skincare essentials, and we'd love to partner with you for an authentic showcase. We offer gifted PR packages along with competitive compensation per deliverable. Let us know if you're open to collaborating, and we'll send our campaign brief right over!`
+      );
+    } else {
+      setDirectSubject(`Instagram Direct Outreach to @${creator.handle}`);
+      setDirectBody(
+        `Hey ${firstName}! Love your ${nicheTag} posts. We'd love to collaborate with you on our upcoming LumiGlow campaign. Mind if we send over the brief?`
+      );
+    }
+  };
+
+  const handleGenerateAIDirectPitch = async () => {
+    if (!directOutreachCreator) return;
+    try {
+      setDirectGenerating(true);
+      const res = await api.generatePersonalization({
+        influencer: directOutreachCreator,
+        brand_name: 'LumiGlow',
+        collaboration_type: 'UGC & Paid Showcase',
+      });
+      if (res.messages) {
+        if (directChannel === 'Email') {
+          setDirectSubject(res.messages.subject);
+          setDirectBody(res.messages.email_pitch);
+        } else {
+          setDirectBody(res.messages.instagram_dm);
+        }
+        setDirectStatusNotice({ type: 'info', message: 'Pitch hyper-personalized with Google Gemini!' });
+      }
+    } catch (e: any) {
+      setDirectStatusNotice({ type: 'error', message: 'Failed to generate pitch. Using default template.' });
+    } finally {
+      setDirectGenerating(false);
+    }
+  };
+
+  const handleDispatchDirectOutreach = async () => {
+    if (!directOutreachCreator) return;
+    try {
+      setDirectSending(true);
+      setDirectStatusNotice(null);
+
+      const hasEmail = Boolean(
+        directOutreachCreator.contact_email && directOutreachCreator.contact_email !== 'Not Found'
+      );
+      const emailToSend = directChannel === 'Email' && hasEmail ? directOutreachCreator.contact_email! : 'Not Found';
+
+      const res = await api.sendOutreach({
+        to_email: emailToSend,
+        subject: directSubject || `Partnership Opportunity with LumiGlow`,
+        message_body: directBody,
+        recipient_name: directOutreachCreator.name,
+        handle: directOutreachCreator.handle,
+        platform: directOutreachCreator.platform,
+        instagram_dm: directBody,
+        notes: `Dispatched directly via Discovered Records table (${directChannel})`,
+      });
+
+      if (res.status === 'SKIPPED') {
+        setDirectStatusNotice({ type: 'info', message: res.message || 'Already contacted. Duplicate prevented.' });
+      } else {
+        setDirectStatusNotice({
+          type: 'success',
+          message: `Outreach dispatched successfully via ${res.channel}! Delivery ID: ${
+            res.delivery_id || 'sim_' + Date.now()
+          }`,
+        });
+
+        // Mark creator as contacted
+        setContactedHandles((prev) => new Set(prev).add(directOutreachCreator.handle.replace('@', '').toLowerCase()));
+
+        // Refresh tracker in background
+        await fetchTracker();
+        if (onRefreshTracker) onRefreshTracker();
+
+        // Close after a brief moment
+        setTimeout(() => {
+          setDirectOutreachCreator(null);
+          setDirectStatusNotice(null);
+        }, 1800);
+      }
+    } catch (e: any) {
+      setDirectStatusNotice({ type: 'error', message: e.message || 'Failed to dispatch outreach' });
+    } finally {
+      setDirectSending(false);
     }
   };
 
@@ -181,7 +298,7 @@ export const TabsSection: React.FC<TabsSectionProps> = ({
   return (
     <div className="space-y-6">
       {/* 1. Header Navigation Bar (Underline Animated Tabs) */}
-      <div className="flex justify-between items-center border-b border-[#E2E8F0] pb-2">
+      <div className="w-full overflow-x-auto no-scrollbar pb-1">
         <AnimatedOutlineNavbar items={TABS} activeId={activeTab} onSelect={setActiveTab} />
       </div>
 
@@ -198,8 +315,8 @@ export const TabsSection: React.FC<TabsSectionProps> = ({
               </p>
             </div>
 
-            <div className="flex items-center gap-3">
-              <div className="relative">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 w-full sm:w-auto">
+              <div className="relative w-full sm:w-auto">
                 <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-black stroke-[2.5]" />
                 <input
                   type="text"
@@ -209,12 +326,12 @@ export const TabsSection: React.FC<TabsSectionProps> = ({
                     setSearchQuery(e.target.value);
                     setRecordsPage(1);
                   }}
-                  className="bg-[#F8FAFC] border border-[#CBD5E1] rounded-xl pl-9 pr-3.5 py-2 text-xs font-bold text-black focus:outline-none focus:border-black focus:bg-white w-64 shadow-xs"
+                  className="bg-[#F8FAFC] border border-[#CBD5E1] rounded-xl pl-9 pr-3.5 py-2 text-xs font-bold text-black focus:outline-none focus:border-black focus:bg-white w-full sm:w-64 shadow-xs"
                 />
               </div>
               <button
                 onClick={() => downloadCSV(displayRecords, 'discovered_influencers.csv')}
-                className="inline-flex items-center gap-2 bg-white border border-[#CBD5E1] hover:border-black hover:bg-[#F8FAFC] text-black font-extrabold text-xs px-3.5 py-2 rounded-xl transition-all cursor-pointer shadow-xs"
+                className="inline-flex items-center justify-center gap-2 bg-white border border-[#CBD5E1] hover:border-black hover:bg-[#F8FAFC] text-black font-extrabold text-xs px-3.5 py-2 rounded-xl transition-all cursor-pointer shadow-xs shrink-0"
               >
                 <Download className="w-3.5 h-3.5 text-black stroke-[2.5]" /> Export
               </button>
@@ -316,52 +433,80 @@ export const TabsSection: React.FC<TabsSectionProps> = ({
                       <th className="py-3 px-4">Niche</th>
                       <th className="py-3 px-4">Contact Email</th>
                       <th className="py-3 px-4">Location</th>
-                      <th className="py-3 px-4 text-right">Profile</th>
+                      <th className="py-3 px-4 text-center">Profile</th>
+                      <th className="py-3 px-4 text-right">Outreach</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-[#E2E8F0] bg-white font-medium text-black">
                     {paginatedRecords.length > 0 ? (
-                      paginatedRecords.map((item, idx) => (
-                        <tr key={idx} className="hover:bg-[#F0F9FF] transition-colors">
-                          <td className="py-3 px-4">
-                            <div className="font-extrabold text-black">{item.name}</div>
-                            <div className="font-mono text-xs font-bold text-[#333333]">@{item.handle}</div>
-                          </td>
-                          <td className="py-3 px-4 font-bold text-black">{item.platform}</td>
-                          <td className="py-3 px-4 font-mono font-black text-black">
-                            {Number(item.follower_count).toLocaleString()}
-                          </td>
-                          <td className="py-3 px-4 font-mono font-black text-black">
-                            {Number(item.engagement_rate).toFixed(1)}%
-                          </td>
-                          <td className="py-3 px-4 font-bold text-black">{item.niche}</td>
-                          <td className="py-3 px-4">
-                            <span
-                              className={`inline-block font-mono text-xs font-bold px-2 py-0.5 rounded-md border ${
-                                item.contact_email && item.contact_email !== 'Not Found'
-                                  ? 'bg-[#DCFCE7] text-black border-[#86EFAC]'
-                                  : 'bg-[#F1F5F9] text-[#64748B] border-[#CBD5E1]'
-                              }`}
-                            >
-                              {item.contact_email || 'Not Found'}
-                            </span>
-                          </td>
-                          <td className="py-3 px-4 font-semibold text-[#333333]">{item.location}</td>
-                          <td className="py-3 px-4 text-right">
-                            <a
-                              href={item.profile_url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="inline-flex items-center gap-1 font-bold text-xs text-black hover:underline"
-                            >
-                              View <ExternalLink className="w-3 h-3 text-black" />
-                            </a>
-                          </td>
-                        </tr>
-                      ))
+                      paginatedRecords.map((item, idx) => {
+                        const isContacted = contactedHandles.has((item.handle || '').replace('@', '').toLowerCase());
+                        return (
+                          <tr key={idx} className="hover:bg-[#F0F9FF] transition-colors">
+                            <td className="py-3 px-4">
+                              <div className="font-extrabold text-black">{item.name}</div>
+                              <div className="font-mono text-xs font-bold text-[#333333]">@{item.handle}</div>
+                            </td>
+                            <td className="py-3 px-4 font-bold text-black">{item.platform}</td>
+                            <td className="py-3 px-4 font-mono font-black text-black">
+                              {Number(item.follower_count).toLocaleString()}
+                            </td>
+                            <td className="py-3 px-4 font-mono font-black text-black">
+                              {Number(item.engagement_rate).toFixed(1)}%
+                            </td>
+                            <td className="py-3 px-4 font-bold text-black">{item.niche}</td>
+                            <td className="py-3 px-4">
+                              <span
+                                className={`inline-block font-mono text-xs font-bold px-2 py-0.5 rounded-md border ${
+                                  item.contact_email && item.contact_email !== 'Not Found'
+                                    ? 'bg-[#DCFCE7] text-black border-[#86EFAC]'
+                                    : 'bg-[#F1F5F9] text-[#64748B] border-[#CBD5E1]'
+                                }`}
+                              >
+                                {item.contact_email || 'Not Found'}
+                              </span>
+                            </td>
+                            <td className="py-3 px-4 font-semibold text-[#333333]">{item.location}</td>
+                            <td className="py-3 px-4 text-center">
+                              <a
+                                href={item.profile_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1 font-bold text-xs text-black hover:underline"
+                              >
+                                View <ExternalLink className="w-3 h-3 text-black" />
+                              </a>
+                            </td>
+                            <td className="py-3 px-4 text-right whitespace-nowrap">
+                              <button
+                                type="button"
+                                onClick={() => handleOpenDirectOutreach(item)}
+                                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer border shadow-xs ${
+                                  isContacted
+                                    ? 'bg-[#DCFCE7] text-black border-[#86EFAC] hover:bg-[#BBF7D0]'
+                                    : 'bg-black text-white border-black hover:bg-[#1E293B]'
+                                }`}
+                                title={`Send personalized pitch to ${item.name}`}
+                              >
+                                {isContacted ? (
+                                  <>
+                                    <CheckCircle2 className="w-3.5 h-3.5 text-black" />
+                                    <span>Contacted</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <Send className="w-3.5 h-3.5 text-white" />
+                                    <span>Send Message</span>
+                                  </>
+                                )}
+                              </button>
+                            </td>
+                          </tr>
+                        );
+                      })
                     ) : (
                       <tr>
-                        <td colSpan={8} className="py-10 text-center text-sm font-bold text-black">
+                        <td colSpan={9} className="py-10 text-center text-sm font-bold text-black">
                           <div>
                             No creator records found matching {dashboardFilterEnabled ? `active filter "${filters.geo}"` : ''}{searchQuery ? ` and search "${searchQuery}"` : ''}.
                           </div>
@@ -393,6 +538,177 @@ export const TabsSection: React.FC<TabsSectionProps> = ({
                 onPageSizeChange={setRecordsPerPage}
                 itemLabel="creators"
               />
+
+              {/* Direct Outreach Dispatch Modal */}
+              {directOutreachCreator && (
+                <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
+                  <div className="bg-white border border-[#CBD5E1] rounded-2xl max-w-lg w-full p-5 sm:p-6 shadow-2xl relative max-h-[92vh] overflow-y-auto">
+                    {/* Header */}
+                    <div className="flex items-start justify-between gap-3 border-b border-[#E2E8F0] pb-3 mb-4">
+                      <div>
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="text-[10px] font-black uppercase tracking-wider text-black bg-[#E0F2FE] border border-[#BAE6FD] px-2 py-0.5 rounded-full">
+                            Direct Outreach Dispatch
+                          </span>
+                        </div>
+                        <h3 className="text-lg font-black text-black">
+                          Send Message to {directOutreachCreator.name}
+                        </h3>
+                        <div className="font-mono text-xs font-bold text-[#64748B] flex items-center gap-2 mt-0.5">
+                          <span>@{directOutreachCreator.handle}</span>
+                          <span>•</span>
+                          <span>{directOutreachCreator.platform}</span>
+                          <span>•</span>
+                          <span>{Number(directOutreachCreator.follower_count).toLocaleString()} followers</span>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setDirectOutreachCreator(null)}
+                        className="text-[#64748B] hover:text-black p-1.5 rounded-lg hover:bg-[#F1F5F9] transition-all cursor-pointer"
+                      >
+                        <X className="w-5 h-5" />
+                      </button>
+                    </div>
+
+                    {/* Delivery Channel Switcher */}
+                    <div className="mb-4">
+                      <label className="block text-xs font-black text-black mb-1.5">Delivery Channel</label>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setDirectChannel('Email')}
+                          className={`flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl border text-xs font-black transition-all cursor-pointer ${
+                            directChannel === 'Email'
+                              ? 'bg-white text-black border-black shadow-xs ring-2 ring-[#BAE6FD]/60'
+                              : 'bg-[#F8FAFC] text-[#64748B] border-[#CBD5E1] hover:text-black'
+                          }`}
+                        >
+                          <Mail className="w-3.5 h-3.5" />
+                          <span className="truncate">
+                            Email ({directOutreachCreator.contact_email && directOutreachCreator.contact_email !== 'Not Found' ? directOutreachCreator.contact_email : 'Not Found'})
+                          </span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setDirectChannel('Instagram Direct')}
+                          className={`flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl border text-xs font-black transition-all cursor-pointer ${
+                            directChannel === 'Instagram Direct'
+                              ? 'bg-white text-black border-black shadow-xs ring-2 ring-[#BAE6FD]/60'
+                              : 'bg-[#F8FAFC] text-[#64748B] border-[#CBD5E1] hover:text-black'
+                          }`}
+                        >
+                          <MessageSquare className="w-3.5 h-3.5" />
+                          <span className="truncate">Instagram DM (@{directOutreachCreator.handle})</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Subject Line (for Email) */}
+                    {directChannel === 'Email' && (
+                      <div className="mb-3">
+                        <label className="block text-xs font-black text-black mb-1">Subject Line</label>
+                        <input
+                          type="text"
+                          value={directSubject}
+                          onChange={(e) => setDirectSubject(e.target.value)}
+                          className="w-full bg-[#F8FAFC] focus:bg-white border border-[#CBD5E1] focus:border-black rounded-xl px-3.5 py-2 text-xs font-bold text-black focus:outline-none transition-all"
+                          placeholder="Subject line..."
+                        />
+                      </div>
+                    )}
+
+                    {/* Message Body */}
+                    <div className="mb-4">
+                      <div className="flex justify-between items-center mb-1">
+                        <label className="text-xs font-black text-black">
+                          {directChannel === 'Email' ? 'Collaboration Email Pitch' : 'Instagram DM Message'}
+                        </label>
+                        <span className="text-[11px] font-mono font-bold text-[#64748B]">
+                          {directBody.trim() ? directBody.trim().split(/\s+/).length : 0} words
+                        </span>
+                      </div>
+                      <textarea
+                        rows={5}
+                        value={directBody}
+                        onChange={(e) => setDirectBody(e.target.value)}
+                        className="w-full bg-[#F8FAFC] focus:bg-white border border-[#CBD5E1] focus:border-black rounded-xl p-3 text-xs font-medium text-black focus:outline-none leading-relaxed transition-all"
+                        placeholder="Compose your personalized pitch..."
+                      />
+                    </div>
+
+                    {/* Status Notice */}
+                    {directStatusNotice && (
+                      <div
+                        className={`mb-4 p-3 rounded-xl text-xs font-bold border flex items-start gap-2 ${
+                          directStatusNotice.type === 'success'
+                            ? 'bg-[#DCFCE7] text-black border-[#86EFAC]'
+                            : directStatusNotice.type === 'error'
+                            ? 'bg-[#FEE2E2] text-black border-[#FCA5A5]'
+                            : 'bg-[#E0F2FE] text-black border-[#BAE6FD]'
+                        }`}
+                      >
+                        {directStatusNotice.type === 'success' ? (
+                          <CheckCircle2 className="w-4 h-4 shrink-0 text-black" />
+                        ) : (
+                          <AlertCircle className="w-4 h-4 shrink-0 text-black" />
+                        )}
+                        <span>{directStatusNotice.message}</span>
+                      </div>
+                    )}
+
+                    {/* Actions */}
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 pt-3 border-t border-[#E2E8F0]">
+                      <button
+                        type="button"
+                        onClick={handleGenerateAIDirectPitch}
+                        disabled={directGenerating}
+                        className="inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-[#F8FAFC] hover:bg-white border border-[#CBD5E1] hover:border-black text-xs font-black text-black rounded-xl transition-all cursor-pointer"
+                      >
+                        {directGenerating ? (
+                          <>
+                            <Loader2 className="w-3.5 h-3.5 animate-spin text-black" />
+                            <span>Personalizing...</span>
+                          </>
+                        ) : (
+                          <>
+                            <Sparkles className="w-3.5 h-3.5 text-black" />
+                            <span>Regenerate with Gemini AI</span>
+                          </>
+                        )}
+                      </button>
+
+                      <div className="flex items-center justify-end gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setDirectOutreachCreator(null)}
+                          className="px-3.5 py-2 text-xs font-black text-[#64748B] hover:text-black rounded-xl hover:bg-[#F1F5F9] transition-all cursor-pointer"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          type="button"
+                          onClick={handleDispatchDirectOutreach}
+                          disabled={directSending}
+                          className="inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-black hover:bg-[#1E293B] text-white text-xs font-black rounded-xl transition-all cursor-pointer shadow-xs disabled:opacity-50"
+                        >
+                          {directSending ? (
+                            <>
+                              <Loader2 className="w-3.5 h-3.5 animate-spin text-white" />
+                              <span>Dispatching...</span>
+                            </>
+                          ) : (
+                            <>
+                              <Send className="w-3.5 h-3.5 text-white" />
+                              <span>{directChannel === 'Email' ? 'Send Email via Resend' : 'Dispatch Instagram DM'}</span>
+                            </>
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </>
           )}
         </div>

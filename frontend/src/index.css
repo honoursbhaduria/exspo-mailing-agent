@@ -24,3 +24,24 @@ html, body, #root {
 .font-mono {
   font-family: 'Iosevka Charon', monospace;
 }
+
+@keyframes astronaut-float {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-7px) rotate(1deg);
+  }
+}
+
+.animate-astronaut-float {
+  animation: astronaut-float 3.5s ease-in-out infinite;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
