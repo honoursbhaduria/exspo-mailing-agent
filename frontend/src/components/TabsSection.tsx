@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Download, Sparkles, Send, ExternalLink, Loader2, ChevronDown, CheckCircle2, XCircle, Mail, MessageSquare } from 'lucide-react';
+import { Search, Download, Sparkles, Send, ExternalLink, Loader2, ChevronDown, CheckCircle2, XCircle, Mail, MessageSquare, Globe, Tag, Smartphone, Users, MapPin } from 'lucide-react';
 import AnimatedOutlineNavbar, { type TabItem } from './ui/AnimatedOutlineNavbar';
 import SlideHoverButton from './ui/SlideHoverButton';
 import Pagination from './ui/Pagination';
@@ -231,19 +231,23 @@ export const TabsSection: React.FC<TabsSectionProps> = ({
               <div className="flex flex-wrap items-center justify-between gap-3 mb-4 bg-[#F8FAFC] border border-[#CBD5E1] p-3 rounded-xl">
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="text-xs font-black text-black">Active Filter:</span>
-                  <span className="bg-white border border-[#94A3B8] text-xs font-black px-2.5 py-1 rounded-md text-black shadow-xs">
-                    🌍 {filters.geo}
+                  <span className="inline-flex items-center gap-1.5 bg-white border border-[#94A3B8] text-xs font-black px-2.5 py-1 rounded-md text-black shadow-xs">
+                    <Globe className="w-3.5 h-3.5 text-black" />
+                    <span>{filters.geo}</span>
                   </span>
-                  <span className="bg-white border border-[#94A3B8] text-xs font-black px-2.5 py-1 rounded-md text-black shadow-xs">
-                    🏷️ {filters.niche}
+                  <span className="inline-flex items-center gap-1.5 bg-white border border-[#94A3B8] text-xs font-black px-2.5 py-1 rounded-md text-black shadow-xs">
+                    <Tag className="w-3.5 h-3.5 text-black" />
+                    <span>{filters.niche}</span>
                   </span>
                   {filters.platform !== 'All Platforms' && filters.platform !== 'Instagram & TikTok' && (
-                    <span className="bg-white border border-[#94A3B8] text-xs font-black px-2.5 py-1 rounded-md text-black shadow-xs">
-                      📱 {filters.platform}
+                    <span className="inline-flex items-center gap-1.5 bg-white border border-[#94A3B8] text-xs font-black px-2.5 py-1 rounded-md text-black shadow-xs">
+                      <Smartphone className="w-3.5 h-3.5 text-black" />
+                      <span>{filters.platform}</span>
                     </span>
                   )}
-                  <span className="bg-white border border-[#94A3B8] text-xs font-black px-2.5 py-1 rounded-md text-black shadow-xs">
-                    👥 {filters.scale.replace(/\(.*\)/, '').trim()}
+                  <span className="inline-flex items-center gap-1.5 bg-white border border-[#94A3B8] text-xs font-black px-2.5 py-1 rounded-md text-black shadow-xs">
+                    <Users className="w-3.5 h-3.5 text-black" />
+                    <span>{filters.scale.replace(/\(.*\)/, '').trim()}</span>
                   </span>
                 </div>
 
@@ -548,10 +552,13 @@ export const TabsSection: React.FC<TabsSectionProps> = ({
                             )}
                           </div>
                           <div className="text-xs font-semibold text-[#475569] mt-1 flex flex-wrap items-center gap-1.5">
-                            <span>📍 {item.location || 'Global'}</span>
-                            <span>•</span>
-                            <span>📱 {item.platform}</span>
-                            <span>•</span>
+                            <span className="inline-flex items-center gap-1">
+                              <MapPin className="w-3 h-3 text-[#64748B]" />
+                              <span>{item.location || 'Global'}</span>
+                            </span>
+                            <span className="text-[#94A3B8]">•</span>
+                            <span>{item.platform}</span>
+                            <span className="text-[#94A3B8]">•</span>
                             <span className="font-bold text-black">{item.niche}</span>
                           </div>
                         </div>
@@ -617,10 +624,13 @@ export const TabsSection: React.FC<TabsSectionProps> = ({
                             <span className="text-xs font-mono font-bold text-[#64748B]">@{item.handle}</span>
                           </div>
                           <div className="text-xs font-semibold text-[#475569] mt-1 flex flex-wrap items-center gap-1.5">
-                            <span>📍 {item.location || 'Not Specified'}</span>
-                            <span>•</span>
-                            <span>📱 {item.platform}</span>
-                            <span>•</span>
+                            <span className="inline-flex items-center gap-1">
+                              <MapPin className="w-3 h-3 text-[#64748B]" />
+                              <span>{item.location || 'Not Specified'}</span>
+                            </span>
+                            <span className="text-[#94A3B8]">•</span>
+                            <span>{item.platform}</span>
+                            <span className="text-[#94A3B8]">•</span>
                             <span className="font-bold text-black">{item.niche}</span>
                           </div>
                         </div>
