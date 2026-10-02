@@ -375,13 +375,26 @@ export const TabsSection: React.FC<TabsSectionProps> = ({
                     setSearchQuery(e.target.value);
                     setRecordsPage(1);
                   }}
-                  className="bg-[#F8FAFC] border border-[#CBD5E1] rounded-xl pl-9 pr-3.5 py-2 text-xs font-bold text-black focus:outline-none focus:border-black focus:bg-white w-full sm:w-64 shadow-xs"
+                  className="bg-[#F8FAFC] border border-[#CBD5E1] hover:border-black focus:border-black rounded-xl pl-9 pr-8 py-2.5 sm:py-2 text-[15px] sm:text-xs font-bold text-black focus:outline-none focus:bg-white w-full sm:w-64 shadow-xs min-h-[44px] sm:min-h-[38px] transition-all"
                 />
+                {searchQuery && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSearchQuery('');
+                      setRecordsPage(1);
+                    }}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#64748B] hover:text-black p-1 cursor-pointer"
+                    title="Clear search"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                )}
               </div>
               <button
                 type="button"
                 onClick={() => downloadCSV(displayRecords, 'discovered_influencers.csv')}
-                className="inline-flex items-center justify-center gap-2 bg-white border border-[#CBD5E1] hover:border-black hover:bg-[#F8FAFC] text-black font-extrabold text-xs px-3.5 py-2 rounded-xl transition-all cursor-pointer shadow-xs shrink-0"
+                className="inline-flex items-center justify-center gap-2 bg-white border border-[#CBD5E1] hover:border-black hover:bg-[#F8FAFC] text-black font-extrabold text-xs px-3.5 py-2.5 sm:py-2 rounded-xl transition-all cursor-pointer shadow-xs shrink-0 min-h-[44px] sm:min-h-[38px]"
               >
                 <Download className="w-3.5 h-3.5 text-black stroke-[2.5]" /> Export
               </button>
@@ -711,18 +724,18 @@ export const TabsSection: React.FC<TabsSectionProps> = ({
 
               {/* Direct Outreach Dispatch Modal */}
               {directOutreachCreator && (
-                <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-                  <div className="bg-white border border-[#CBD5E1] rounded-2xl max-w-lg w-full p-5 sm:p-6 shadow-2xl relative max-h-[92vh] overflow-y-auto">
-                    {/* Header */}
-                    <div className="flex items-start justify-between gap-3 border-b border-[#E2E8F0] pb-3 mb-4">
-                      <div>
+                <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 overscroll-contain">
+                  <div className="bg-white border border-[#CBD5E1] rounded-2xl max-w-lg w-full flex flex-col max-h-[92vh] sm:max-h-[88vh] shadow-2xl relative overflow-hidden">
+                    {/* Fixed Header */}
+                    <div className="p-4 sm:p-5 border-b border-[#E2E8F0] flex items-start justify-between gap-3 shrink-0">
+                      <div className="min-w-0 flex-1">
                         <div className="text-[11px] font-bold text-[#64748B] mb-0.5">
                           Direct Outreach Dispatch
                         </div>
-                        <h3 className="text-lg font-black text-black">
+                        <h3 className="text-base sm:text-lg font-black text-black truncate">
                           Send Message to {directOutreachCreator.name}
                         </h3>
-                        <div className="font-mono text-xs font-bold text-[#64748B] flex items-center gap-2 mt-0.5">
+                        <div className="font-mono text-xs font-bold text-[#64748B] flex flex-wrap items-center gap-1.5 mt-0.5">
                           <span>@{directOutreachCreator.handle}</span>
                           <span>•</span>
                           <span>{directOutreachCreator.platform}</span>
@@ -733,105 +746,108 @@ export const TabsSection: React.FC<TabsSectionProps> = ({
                       <button
                         type="button"
                         onClick={() => setDirectOutreachCreator(null)}
-                        className="text-[#64748B] hover:text-black p-1.5 rounded-lg hover:bg-[#F1F5F9] transition-all cursor-pointer"
+                        className="text-[#64748B] hover:text-black p-1.5 rounded-lg hover:bg-[#F1F5F9] transition-all cursor-pointer shrink-0"
                       >
                         <X className="w-5 h-5" />
                       </button>
                     </div>
 
-                    {/* Delivery Channel Switcher */}
-                    <div className="mb-4">
-                      <label className="block text-xs font-black text-black mb-1.5">Delivery Channel</label>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                        <button
-                          type="button"
-                          onClick={() => setDirectChannel('Email')}
-                          className={`flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl border text-xs font-black transition-all cursor-pointer ${
-                            directChannel === 'Email'
-                              ? 'bg-white text-black border-black shadow-xs ring-2 ring-[#BAE6FD]/60'
-                              : 'bg-[#F8FAFC] text-[#64748B] border-[#CBD5E1] hover:text-black'
-                          }`}
-                        >
-                          <Mail className="w-3.5 h-3.5" />
-                          <span className="truncate">
-                            Email ({directOutreachCreator.contact_email && directOutreachCreator.contact_email !== 'Not Found' ? directOutreachCreator.contact_email : 'Not Found'})
-                          </span>
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setDirectChannel('Instagram Direct')}
-                          className={`flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl border text-xs font-black transition-all cursor-pointer ${
-                            directChannel === 'Instagram Direct'
-                              ? 'bg-white text-black border-black shadow-xs ring-2 ring-[#BAE6FD]/60'
-                              : 'bg-[#F8FAFC] text-[#64748B] border-[#CBD5E1] hover:text-black'
-                          }`}
-                        >
-                          <MessageSquare className="w-3.5 h-3.5" />
-                          <span className="truncate">Instagram DM (@{directOutreachCreator.handle})</span>
-                        </button>
+                    {/* Scrollable Body */}
+                    <div className="p-4 sm:p-5 overflow-y-auto space-y-3.5 flex-1">
+                      {/* Delivery Channel Switcher */}
+                      <div>
+                        <label className="block text-xs font-black text-black mb-1.5">Delivery Channel</label>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                          <button
+                            type="button"
+                            onClick={() => setDirectChannel('Email')}
+                            className={`flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl border text-[13px] sm:text-xs font-black transition-all cursor-pointer min-h-[44px] sm:min-h-[38px] ${
+                              directChannel === 'Email'
+                                ? 'bg-white text-black border-black shadow-xs ring-2 ring-[#BAE6FD]/60'
+                                : 'bg-[#F8FAFC] text-[#64748B] border-[#CBD5E1] hover:text-black'
+                            }`}
+                          >
+                            <Mail className="w-3.5 h-3.5 shrink-0" />
+                            <span className="truncate">
+                              Email ({directOutreachCreator.contact_email && directOutreachCreator.contact_email !== 'Not Found' ? directOutreachCreator.contact_email : 'Not Found'})
+                            </span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setDirectChannel('Instagram Direct')}
+                            className={`flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl border text-[13px] sm:text-xs font-black transition-all cursor-pointer min-h-[44px] sm:min-h-[38px] ${
+                              directChannel === 'Instagram Direct'
+                                ? 'bg-white text-black border-black shadow-xs ring-2 ring-[#BAE6FD]/60'
+                                : 'bg-[#F8FAFC] text-[#64748B] border-[#CBD5E1] hover:text-black'
+                            }`}
+                          >
+                            <MessageSquare className="w-3.5 h-3.5 shrink-0" />
+                            <span className="truncate">Instagram DM (@{directOutreachCreator.handle})</span>
+                          </button>
+                        </div>
                       </div>
-                    </div>
 
-                    {/* Subject Line (for Email) */}
-                    {directChannel === 'Email' && (
-                      <div className="mb-3">
-                        <label className="block text-xs font-black text-black mb-1">Subject Line</label>
-                        <input
-                          type="text"
-                          value={directSubject}
-                          onChange={(e) => setDirectSubject(e.target.value)}
-                          className="w-full bg-[#F8FAFC] focus:bg-white border border-[#CBD5E1] focus:border-black rounded-xl px-3.5 py-2 text-xs font-bold text-black focus:outline-none transition-all"
-                          placeholder="Subject line..."
+                      {/* Subject Line (for Email) */}
+                      {directChannel === 'Email' && (
+                        <div>
+                          <label className="block text-xs font-black text-black mb-1">Subject Line</label>
+                          <input
+                            type="text"
+                            value={directSubject}
+                            onChange={(e) => setDirectSubject(e.target.value)}
+                            className="w-full bg-[#F8FAFC] focus:bg-white border border-[#CBD5E1] hover:border-black focus:border-black rounded-xl px-3.5 py-2.5 text-[15px] sm:text-xs font-bold text-black focus:outline-none transition-all min-h-[44px] sm:min-h-[38px]"
+                            placeholder="Subject line..."
+                          />
+                        </div>
+                      )}
+
+                      {/* Message Body */}
+                      <div>
+                        <div className="flex justify-between items-center mb-1">
+                          <label className="text-xs font-black text-black">
+                            {directChannel === 'Email' ? 'Collaboration Email Pitch' : 'Instagram DM Message'}
+                          </label>
+                          <span className="text-[11px] font-mono font-bold text-[#64748B]">
+                            {directBody.trim() ? directBody.trim().split(/\s+/).length : 0} words
+                          </span>
+                        </div>
+                        <textarea
+                          rows={5}
+                          value={directBody}
+                          onChange={(e) => setDirectBody(e.target.value)}
+                          className="w-full bg-[#F8FAFC] focus:bg-white border border-[#CBD5E1] hover:border-black focus:border-black rounded-xl p-3 text-[15px] sm:text-xs font-medium text-black focus:outline-none leading-relaxed transition-all"
+                          placeholder="Compose your personalized pitch..."
                         />
                       </div>
-                    )}
 
-                    {/* Message Body */}
-                    <div className="mb-4">
-                      <div className="flex justify-between items-center mb-1">
-                        <label className="text-xs font-black text-black">
-                          {directChannel === 'Email' ? 'Collaboration Email Pitch' : 'Instagram DM Message'}
-                        </label>
-                        <span className="text-[11px] font-mono font-bold text-[#64748B]">
-                          {directBody.trim() ? directBody.trim().split(/\s+/).length : 0} words
-                        </span>
-                      </div>
-                      <textarea
-                        rows={5}
-                        value={directBody}
-                        onChange={(e) => setDirectBody(e.target.value)}
-                        className="w-full bg-[#F8FAFC] focus:bg-white border border-[#CBD5E1] focus:border-black rounded-xl p-3 text-xs font-medium text-black focus:outline-none leading-relaxed transition-all"
-                        placeholder="Compose your personalized pitch..."
-                      />
+                      {/* Status Notice */}
+                      {directStatusNotice && (
+                        <div
+                          className={`p-3 rounded-xl text-xs font-bold border flex items-start gap-2 ${
+                            directStatusNotice.type === 'success'
+                              ? 'bg-[#DCFCE7] text-black border-[#86EFAC]'
+                              : directStatusNotice.type === 'error'
+                              ? 'bg-[#FEE2E2] text-black border-[#FCA5A5]'
+                              : 'bg-[#E0F2FE] text-black border-[#BAE6FD]'
+                          }`}
+                        >
+                          {directStatusNotice.type === 'success' ? (
+                            <CheckCircle2 className="w-4 h-4 shrink-0 text-black" />
+                          ) : (
+                            <AlertCircle className="w-4 h-4 shrink-0 text-black" />
+                          )}
+                          <span>{directStatusNotice.message}</span>
+                        </div>
+                      )}
                     </div>
 
-                    {/* Status Notice */}
-                    {directStatusNotice && (
-                      <div
-                        className={`mb-4 p-3 rounded-xl text-xs font-bold border flex items-start gap-2 ${
-                          directStatusNotice.type === 'success'
-                            ? 'bg-[#DCFCE7] text-black border-[#86EFAC]'
-                            : directStatusNotice.type === 'error'
-                            ? 'bg-[#FEE2E2] text-black border-[#FCA5A5]'
-                            : 'bg-[#E0F2FE] text-black border-[#BAE6FD]'
-                        }`}
-                      >
-                        {directStatusNotice.type === 'success' ? (
-                          <CheckCircle2 className="w-4 h-4 shrink-0 text-black" />
-                        ) : (
-                          <AlertCircle className="w-4 h-4 shrink-0 text-black" />
-                        )}
-                        <span>{directStatusNotice.message}</span>
-                      </div>
-                    )}
-
-                    {/* Actions */}
-                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 pt-3 border-t border-[#E2E8F0]">
+                    {/* Fixed Footer */}
+                    <div className="p-4 sm:p-5 border-t border-[#E2E8F0] bg-[#F8FAFC] flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 shrink-0">
                       <button
                         type="button"
                         onClick={handleGenerateAIDirectPitch}
                         disabled={directGenerating}
-                        className="inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-[#F8FAFC] hover:bg-white border border-[#CBD5E1] hover:border-black text-xs font-black text-black rounded-xl transition-all cursor-pointer"
+                        className="inline-flex items-center justify-center gap-1.5 px-3 py-2.5 bg-white hover:bg-[#F1F5F9] border border-[#CBD5E1] hover:border-black text-xs font-black text-black rounded-xl transition-all cursor-pointer min-h-[44px] sm:min-h-[38px]"
                       >
                         {directGenerating ? (
                           <>
@@ -846,11 +862,11 @@ export const TabsSection: React.FC<TabsSectionProps> = ({
                         )}
                       </button>
 
-                      <div className="flex items-center justify-end gap-2">
+                      <div className="flex items-center gap-2">
                         <button
                           type="button"
                           onClick={() => setDirectOutreachCreator(null)}
-                          className="px-3.5 py-2 text-xs font-black text-[#64748B] hover:text-black rounded-xl hover:bg-[#F1F5F9] transition-all cursor-pointer"
+                          className="flex-1 sm:flex-none px-4 py-2.5 text-xs font-black text-[#64748B] hover:text-black rounded-xl hover:bg-[#E2E8F0] transition-all cursor-pointer min-h-[44px] sm:min-h-[38px]"
                         >
                           Cancel
                         </button>
@@ -858,7 +874,7 @@ export const TabsSection: React.FC<TabsSectionProps> = ({
                           type="button"
                           onClick={handleDispatchDirectOutreach}
                           disabled={directSending}
-                          className="inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-black hover:bg-[#1E293B] text-white text-xs font-black rounded-xl transition-all cursor-pointer shadow-xs disabled:opacity-50"
+                          className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 px-4 py-2.5 bg-black hover:bg-[#1E293B] text-white text-xs font-black rounded-xl transition-all cursor-pointer shadow-xs disabled:opacity-50 min-h-[44px] sm:min-h-[38px]"
                         >
                           {directSending ? (
                             <>
@@ -898,7 +914,7 @@ export const TabsSection: React.FC<TabsSectionProps> = ({
               type="button"
               onClick={() => onRunFilter()}
               disabled={filterLoading}
-              className="inline-flex items-center justify-center gap-2 bg-[#BAE6FD] hover:bg-[#93C5FD] border border-[#7DD3FC] text-black font-black text-xs px-4 py-2.5 rounded-xl cursor-pointer transition-all w-full sm:w-auto shadow-xs"
+              className="inline-flex items-center justify-center gap-2 bg-[#BAE6FD] hover:bg-[#93C5FD] border border-[#7DD3FC] text-black font-black text-xs px-4 py-2.5 rounded-xl cursor-pointer transition-all w-full sm:w-auto shadow-xs min-h-[44px] sm:min-h-[38px]"
             >
               {filterLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin text-black" /> : 'APPLY FILTERS'}
             </button>
@@ -913,7 +929,7 @@ export const TabsSection: React.FC<TabsSectionProps> = ({
                   <select
                     value={filters.geo}
                     onChange={(e) => onFilterChange({ geo: e.target.value })}
-                    className="w-full appearance-none bg-white border border-[#CBD5E1] rounded-lg px-3 py-2 text-xs font-bold text-black cursor-pointer shadow-xs focus:outline-none focus:ring-2 focus:ring-[#BAE6FD]"
+                    className="w-full appearance-none bg-white hover:bg-white focus:bg-white border border-[#CBD5E1] hover:border-black focus:border-black rounded-xl px-3.5 py-2.5 pr-10 text-[15px] sm:text-xs font-black text-black cursor-pointer shadow-xs transition-all focus:outline-none focus:ring-2 focus:ring-[#BAE6FD]/60 truncate min-h-[44px] sm:min-h-[38px]"
                   >
                     {countries.map((c) => (
                       <option key={c} value={c} className="bg-white text-black font-bold">
@@ -921,8 +937,8 @@ export const TabsSection: React.FC<TabsSectionProps> = ({
                       </option>
                     ))}
                   </select>
-                  <div className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2">
-                    <ChevronDown className="w-3.5 h-3.5 text-black stroke-[2.5]" />
+                  <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 flex items-center">
+                    <ChevronDown className="w-4 h-4 text-black stroke-[2.5]" />
                   </div>
                 </div>
               </div>
@@ -933,16 +949,16 @@ export const TabsSection: React.FC<TabsSectionProps> = ({
                   <select
                     value={filters.platform}
                     onChange={(e) => onFilterChange({ platform: e.target.value })}
-                    className="w-full appearance-none bg-white border border-[#CBD5E1] rounded-lg px-3 py-2 text-xs font-bold text-black cursor-pointer shadow-xs focus:outline-none focus:ring-2 focus:ring-[#BAE6FD]"
+                    className="w-full appearance-none bg-white hover:bg-white focus:bg-white border border-[#CBD5E1] hover:border-black focus:border-black rounded-xl px-3.5 py-2.5 pr-10 text-[15px] sm:text-xs font-black text-black cursor-pointer shadow-xs transition-all focus:outline-none focus:ring-2 focus:ring-[#BAE6FD]/60 truncate min-h-[44px] sm:min-h-[38px]"
                   >
-                    <option value="All Platforms" className="bg-white text-black font-bold">All Platforms</option>
                     <option value="Instagram & TikTok" className="bg-white text-black font-bold">Instagram & TikTok</option>
                     <option value="Instagram Only" className="bg-white text-black font-bold">Instagram Only</option>
                     <option value="TikTok Only" className="bg-white text-black font-bold">TikTok Only</option>
                     <option value="YouTube" className="bg-white text-black font-bold">YouTube</option>
+                    <option value="All Platforms" className="bg-white text-black font-bold">All Platforms</option>
                   </select>
-                  <div className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2">
-                    <ChevronDown className="w-3.5 h-3.5 text-black stroke-[2.5]" />
+                  <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 flex items-center">
+                    <ChevronDown className="w-4 h-4 text-black stroke-[2.5]" />
                   </div>
                 </div>
               </div>
@@ -953,7 +969,7 @@ export const TabsSection: React.FC<TabsSectionProps> = ({
                   <select
                     value={filters.niche}
                     onChange={(e) => onFilterChange({ niche: e.target.value })}
-                    className="w-full appearance-none bg-white border border-[#CBD5E1] rounded-lg px-3 py-2 text-xs font-bold text-black cursor-pointer shadow-xs focus:outline-none focus:ring-2 focus:ring-[#BAE6FD]"
+                    className="w-full appearance-none bg-white hover:bg-white focus:bg-white border border-[#CBD5E1] hover:border-black focus:border-black rounded-xl px-3.5 py-2.5 pr-10 text-[15px] sm:text-xs font-black text-black cursor-pointer shadow-xs transition-all focus:outline-none focus:ring-2 focus:ring-[#BAE6FD]/60 truncate min-h-[44px] sm:min-h-[38px]"
                   >
                     <option value="Fashion & Beauty" className="bg-white text-black font-bold">Fashion & Beauty</option>
                     <option value="Fitness" className="bg-white text-black font-bold">Fitness</option>
@@ -962,14 +978,14 @@ export const TabsSection: React.FC<TabsSectionProps> = ({
                     <option value="Technology" className="bg-white text-black font-bold">Technology</option>
                     <option value="Gaming" className="bg-white text-black font-bold">Gaming</option>
                   </select>
-                  <div className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2">
-                    <ChevronDown className="w-3.5 h-3.5 text-black stroke-[2.5]" />
+                  <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 flex items-center">
+                    <ChevronDown className="w-4 h-4 text-black stroke-[2.5]" />
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-1 border-t border-[#E2E8F0]">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-2 border-t border-[#E2E8F0]">
               <div>
                 <label className="block text-xs font-black text-black mb-1">Follower Min Bound</label>
                 <input
@@ -977,7 +993,7 @@ export const TabsSection: React.FC<TabsSectionProps> = ({
                   value={filters.minFollowers}
                   onChange={(e) => onFilterChange({ minFollowers: Number(e.target.value) })}
                   onKeyDown={(e) => { if (e.key === 'Enter') onRunFilter(); }}
-                  className="w-full bg-white border border-[#CBD5E1] rounded-lg px-3 py-1.5 text-xs font-extrabold text-black font-mono"
+                  className="w-full bg-white border border-[#CBD5E1] hover:border-black focus:border-black rounded-xl px-3.5 py-2 text-[15px] sm:text-xs font-black text-black font-mono shadow-xs transition-all focus:outline-none focus:ring-2 focus:ring-[#BAE6FD]/60 min-h-[44px] sm:min-h-[38px]"
                 />
               </div>
               <div>
@@ -987,13 +1003,18 @@ export const TabsSection: React.FC<TabsSectionProps> = ({
                   value={filters.maxFollowers}
                   onChange={(e) => onFilterChange({ maxFollowers: Number(e.target.value) })}
                   onKeyDown={(e) => { if (e.key === 'Enter') onRunFilter(); }}
-                  className="w-full bg-white border border-[#CBD5E1] rounded-lg px-3 py-1.5 text-xs font-extrabold text-black font-mono"
+                  className="w-full bg-white border border-[#CBD5E1] hover:border-black focus:border-black rounded-xl px-3.5 py-2 text-[15px] sm:text-xs font-black text-black font-mono shadow-xs transition-all focus:outline-none focus:ring-2 focus:ring-[#BAE6FD]/60 min-h-[44px] sm:min-h-[38px]"
                 />
               </div>
               <div>
-                <label className="block text-xs font-black text-black mb-1">
-                  Minimum Engagement ({filters.minEngagement}%)
-                </label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-xs font-black text-black">
+                    Minimum Engagement
+                  </label>
+                  <span className="font-mono text-xs font-black text-black px-2 py-0.5 bg-white border border-[#CBD5E1] rounded-md shadow-2xs">
+                    {filters.minEngagement}%
+                  </span>
+                </div>
                 <input
                   type="range"
                   min="0.5"
@@ -1001,7 +1022,7 @@ export const TabsSection: React.FC<TabsSectionProps> = ({
                   step="0.1"
                   value={filters.minEngagement}
                   onChange={(e) => onFilterChange({ minEngagement: Number(e.target.value) })}
-                  className="w-full mt-2 cursor-pointer accent-black"
+                  className="w-full mt-2 cursor-pointer accent-black h-2.5 bg-[#CBD5E1] rounded-lg"
                 />
               </div>
             </div>
@@ -1238,7 +1259,7 @@ export const TabsSection: React.FC<TabsSectionProps> = ({
                     value={enrichmentSearchQuery}
                     onChange={(e) => handleEnrichmentSearchChange(e.target.value)}
                     placeholder="Type name (e.g. Malvika, Devika, Mumbai)..."
-                    className="w-full bg-white border border-[#CBD5E1] hover:border-black focus:border-black rounded-xl pl-9 pr-8 py-2.5 text-xs font-bold text-black placeholder:text-[#94A3B8] shadow-xs transition-all focus:outline-none focus:ring-2 focus:ring-[#BAE6FD]/60"
+                    className="w-full bg-white border border-[#CBD5E1] hover:border-black focus:border-black rounded-xl pl-9 pr-8 py-2.5 text-[15px] sm:text-xs font-bold text-black placeholder:text-[#94A3B8] shadow-xs transition-all focus:outline-none focus:ring-2 focus:ring-[#BAE6FD]/60 min-h-[44px] sm:min-h-[38px]"
                   />
                   {enrichmentSearchQuery && (
                     <button
@@ -1262,7 +1283,7 @@ export const TabsSection: React.FC<TabsSectionProps> = ({
                   <select
                     value={currentCreator?.handle || ''}
                     onChange={(e) => setSelectedHandle(e.target.value)}
-                    className="w-full appearance-none bg-white border border-[#CBD5E1] hover:border-black focus:border-black rounded-xl px-3.5 py-2.5 pr-10 text-xs font-black text-black cursor-pointer shadow-xs transition-all focus:outline-none focus:ring-2 focus:ring-[#BAE6FD]/60"
+                    className="w-full appearance-none bg-white border border-[#CBD5E1] hover:border-black focus:border-black rounded-xl px-3.5 py-2.5 pr-10 text-[15px] sm:text-xs font-black text-black cursor-pointer shadow-xs transition-all focus:outline-none focus:ring-2 focus:ring-[#BAE6FD]/60 truncate min-h-[44px] sm:min-h-[38px]"
                   >
                     {filteredEnrichmentCreators.length > 0 ? (
                       filteredEnrichmentCreators.map((i) => (
@@ -1488,7 +1509,7 @@ export const TabsSection: React.FC<TabsSectionProps> = ({
                 <select
                   value={targetCreator}
                   onChange={(e) => setTargetCreator(e.target.value)}
-                  className="w-full appearance-none bg-[#F8FAFC] hover:bg-white focus:bg-white border border-[#CBD5E1] hover:border-black focus:border-black rounded-xl px-3.5 py-2.5 pr-10 text-xs font-black text-black cursor-pointer shadow-xs transition-all focus:outline-none focus:ring-2 focus:ring-[#BAE6FD]/60"
+                  className="w-full appearance-none bg-[#F8FAFC] hover:bg-white focus:bg-white border border-[#CBD5E1] hover:border-black focus:border-black rounded-xl px-3.5 py-2.5 pr-10 text-[15px] sm:text-xs font-black text-black cursor-pointer shadow-xs transition-all focus:outline-none focus:ring-2 focus:ring-[#BAE6FD]/60 truncate min-h-[44px] sm:min-h-[38px]"
                 >
                   {(allInfluencers.length > 0 ? allInfluencers : eligibleCreators).map((i) => (
                     <option key={i.handle} value={i.handle} className="bg-white text-black font-bold">
@@ -1508,7 +1529,7 @@ export const TabsSection: React.FC<TabsSectionProps> = ({
                 type="text"
                 value={brandName}
                 onChange={(e) => setBrandName(e.target.value)}
-                className="w-full bg-[#F8FAFC] hover:bg-white focus:bg-white border border-[#CBD5E1] hover:border-black focus:border-black rounded-xl px-3.5 py-2.5 text-xs font-black text-black shadow-xs transition-all focus:outline-none focus:ring-2 focus:ring-[#BAE6FD]/60"
+                className="w-full bg-[#F8FAFC] hover:bg-white focus:bg-white border border-[#CBD5E1] hover:border-black focus:border-black rounded-xl px-3.5 py-2.5 text-[15px] sm:text-xs font-black text-black shadow-xs transition-all focus:outline-none focus:ring-2 focus:ring-[#BAE6FD]/60 min-h-[44px] sm:min-h-[38px]"
               />
             </div>
 
@@ -1518,7 +1539,7 @@ export const TabsSection: React.FC<TabsSectionProps> = ({
                 <select
                   value={collabType}
                   onChange={(e) => setCollabType(e.target.value)}
-                  className="w-full appearance-none bg-[#F8FAFC] hover:bg-white focus:bg-white border border-[#CBD5E1] hover:border-black focus:border-black rounded-xl px-3.5 py-2.5 pr-10 text-xs font-black text-black cursor-pointer shadow-xs transition-all focus:outline-none focus:ring-2 focus:ring-[#BAE6FD]/60"
+                  className="w-full appearance-none bg-[#F8FAFC] hover:bg-white focus:bg-white border border-[#CBD5E1] hover:border-black focus:border-black rounded-xl px-3.5 py-2.5 pr-10 text-[15px] sm:text-xs font-black text-black cursor-pointer shadow-xs transition-all focus:outline-none focus:ring-2 focus:ring-[#BAE6FD]/60 truncate min-h-[44px] sm:min-h-[38px]"
                 >
                   <option value="UGC & Paid Showcase" className="bg-white text-black font-bold">UGC &amp; Paid Showcase</option>
                   <option value="Brand Ambassador Program" className="bg-white text-black font-bold">Brand Ambassador Program</option>

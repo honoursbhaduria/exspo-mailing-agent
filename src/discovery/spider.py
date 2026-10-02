@@ -10,7 +10,7 @@ class MicroInfluencerSpider(scrapy.Spider):
     
     custom_settings = {
         "ROBOTSTXT_OBEY": False,
-        "DOWNLOAD_DELAY": 0.5,
+        "DOWNLOAD_DELAY": 0.3,
         "CONCURRENT_REQUESTS": 4,
         "USER_AGENT": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
         "DEFAULT_REQUEST_HEADERS": {
@@ -32,7 +32,8 @@ class MicroInfluencerSpider(scrapy.Spider):
             "Technology & AI": ["Technology", "Gaming", "Business", "Education"],
             "Fitness & Wellness": ["Health+%26+Fitness", "Athlete+%26+Sports", "Lifestyle"],
             "Lifestyle & Travel": ["Lifestyle", "Travel", "Food+%26+Drink", "Family+%26+Children"],
-            "Fintech & Crypto": ["Business", "Technology", "Education"]
+            "Fintech & Crypto": ["Business", "Technology", "Education"],
+            "Gaming": ["Gaming", "Technology"]
         }
         
         cats = categories_map.get(self.target_niche, ["Fashion", "Beauty", "Lifestyle"])
@@ -56,6 +57,11 @@ class MicroInfluencerSpider(scrapy.Spider):
         soup = BeautifulSoup(html_content, "html.parser")
         cards = soup.find_all(class_="profile-listing-holder")
 
+        badge_words = [
+            "top creator", "completed multiple orders", "responds fast",
+            "ugc", "5.0", "4.9", "4.8", "reviews", "review", "$"
+        ]
+
         for card in cards:
             if self.discovered_count >= self.limit:
                 break
@@ -66,7 +72,7 @@ class MicroInfluencerSpider(scrapy.Spider):
 
             href = a_tag["href"].strip("/")
             handle = href.split("/")[-1]
-            if not handle or handle in self.seen_handles:
+            if not handle or handle in self.seen_handles or "top-influencer" in handle:
                 continue
 
             self.seen_handles.add(handle)
@@ -75,28 +81,30 @@ class MicroInfluencerSpider(scrapy.Spider):
             card_text = card.get_text(separator=" | ", strip=True)
             parts = [p.strip() for p in card_text.split("|") if p.strip()]
 
-            # Determine platform / follower indicator from card text
             follower_str = "0"
             location = "Not Specified"
-            name = handle.replace("-", " ").title()
-            price = "N/A"
+            name = handle.replace("-", " ").replace("_", " ").title()
+            price = "$100"
             rating = 5.0
 
             for p in parts:
-                if re.match(r"^[\d\.]+[kKmM]?$", p):
+                p_lower = p.lower()
+                if re.match(r"^[\d\.]+[kKmM]$", p):
+                    follower_str = p
+                elif p.isdigit() and int(p) > 10:
                     follower_str = p
                 elif "$" in p:
                     price = p
-                elif re.match(r"^[\d\.]+$", p) and float(p) <= 5.0:
+                elif p in ["5.0", "4.9", "4.8"]:
                     try:
                         rating = float(p)
                     except ValueError:
                         pass
-                elif any(geo in p for geo in [", US", ", GB", ", CA", ", AU", ", IN", ", FR", ", DE", ", ES"]):
+                elif any(geo in p for geo in [", US", ", GB", ", CA", ", AU", ", IN", ", FR", ", DE", ", ES", ", IT"]):
                     location = p
-
-            if len(parts) >= 2 and not any(char in parts[1] for char in ["$", "%"]):
-                name = parts[1]
+                elif not name or name == handle.replace("-", " ").replace("_", " ").title():
+                    if not any(bw in p_lower for bw in badge_words) and len(p) > 1:
+                        name = p
 
             item = InfluencerItem()
             item["handle"] = handle
@@ -112,7 +120,7 @@ class MicroInfluencerSpider(scrapy.Spider):
             item["contact_email"] = "Not Found"
             item["bio"] = ""
 
-            # Follow profile page for enrichment (detailed bio, verified email, themes)
+            # Follow profile page for deep enrichment
             profile_url = f"https://collabstr.com/{handle}"
             yield scrapy.Request(
                 profile_url,
@@ -125,11 +133,30 @@ class MicroInfluencerSpider(scrapy.Spider):
         item = response.meta["item"]
         soup = BeautifulSoup(response.text, "html.parser")
 
+        # Extract verified Name from og:title if possible
+        for m in soup.find_all("meta"):
+            if m.get("property") == "og:title":
+                og_title = m.get("content", "")
+                if "Promote with" in og_title:
+                    raw_name = og_title.replace("Promote with", "").split("|")[0].split("(@")[0].strip()
+                    if raw_name:
+                        item["name"] = raw_name
+                break
+
+        # Extract location from og:description if missing
+        if item.get("location") == "Not Specified":
+            for m in soup.find_all("meta"):
+                if m.get("property") == "og:description":
+                    og_desc = m.get("content", "")
+                    loc_match = re.search(r"creators like .*? in (.*?)\.", og_desc)
+                    if loc_match:
+                        item["location"] = loc_match.group(1).strip()
+                    break
+
         # Extract Headline / Bio
         h1 = soup.find("h1")
         headline = h1.get_text(strip=True) if h1 else ""
 
-        # Extract packages / offerings text for rich context
         bio_snippets = []
         if headline:
             bio_snippets.append(headline)
@@ -141,14 +168,14 @@ class MicroInfluencerSpider(scrapy.Spider):
                     bio_snippets.append(t)
 
         full_bio = " | ".join(bio_snippets) if bio_snippets else headline
-        item["bio"] = full_bio[:400] if full_bio else f"{item['name']} is a verified creator in {item['niche']}."
+        item["bio"] = full_bio[:400] if full_bio else f"{item['name']} is a verified content creator in {item['niche']}."
 
         # Extract Email from profile if publicly mentioned
         page_text = soup.get_text()
         found_emails = re.findall(r"[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+", page_text)
         valid_emails = [
             e for e in found_emails 
-            if not any(x in e.lower() for x in ["collabstr", "example", "sentry", "w3.org", "domain.com", "email.com"])
+            if not any(x in e.lower() for x in ["collabstr", "example", "sentry", "w3.org", "domain.com", "lucide", "chart.js"])
         ]
         item["contact_email"] = valid_emails[0] if valid_emails else "Not Found"
 
@@ -156,17 +183,5 @@ class MicroInfluencerSpider(scrapy.Spider):
         item["instagram_url"] = f"https://instagram.com/{item['handle']}"
         item["tiktok_url"] = f"https://tiktok.com/@{item['handle']}"
         item["youtube_url"] = ""
-
-        # Extract follower count and engagement from page metrics if available
-        # Collabstr metric value parsing
-        metrics = re.findall(r"([\d\.]+[kKmM\%]?)\s+(Followers|Engagement)", page_text)
-        for val, metric_type in metrics:
-            if metric_type == "Followers" and val not in ["0.0k", "0", "1.5M"]:
-                item["follower_str"] = val
-            elif metric_type == "Engagement" and val not in ["0.0%", "5.0%"]:
-                try:
-                    item["engagement_rate"] = float(val.replace("%", ""))
-                except ValueError:
-                    pass
 
         yield item

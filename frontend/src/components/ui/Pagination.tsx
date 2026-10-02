@@ -66,7 +66,7 @@ export const Pagination: React.FC<PaginationProps> = ({
 
         {/* Page Size Selector */}
         {onPageSizeChange && (
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1.5 shrink-0">
             <span className="text-[11px] sm:text-xs font-black text-black">Rows:</span>
             <div className="relative">
               <select
@@ -75,7 +75,7 @@ export const Pagination: React.FC<PaginationProps> = ({
                   onPageSizeChange(Number(e.target.value));
                   onPageChange(1);
                 }}
-                className="appearance-none bg-[#F8FAFC] hover:bg-white focus:bg-white border border-[#CBD5E1] hover:border-black focus:border-black rounded-lg px-2 py-1 pr-5 text-[11px] sm:text-xs font-black text-black cursor-pointer shadow-xs transition-all focus:outline-none"
+                className="appearance-none bg-[#F8FAFC] hover:bg-white focus:bg-white border border-[#CBD5E1] hover:border-black focus:border-black rounded-lg px-2.5 py-1.5 sm:py-1 pr-6 text-[15px] sm:text-xs font-black text-black cursor-pointer shadow-xs transition-all focus:outline-none min-h-[36px] sm:min-h-[28px]"
               >
                 {pageSizeOptions.map((opt) => (
                   <option key={opt} value={opt} className="bg-white text-black font-bold">
@@ -83,8 +83,8 @@ export const Pagination: React.FC<PaginationProps> = ({
                   </option>
                 ))}
               </select>
-              <div className="pointer-events-none absolute right-1 top-1/2 -translate-y-1/2 flex items-center">
-                <ChevronDown className="w-3 h-3 text-black stroke-[2.5]" />
+              <div className="pointer-events-none absolute right-1.5 top-1/2 -translate-y-1/2 flex items-center">
+                <ChevronDown className="w-3.5 h-3.5 text-black stroke-[2.5]" />
               </div>
             </div>
           </div>

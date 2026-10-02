@@ -21,6 +21,23 @@ html, body, #root {
   box-sizing: border-box;
 }
 
+/* Ensure mobile form controls never trigger iOS Safari viewport auto-zoom (<16px) */
+@media (max-width: 639px) {
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
+
+/* Ensure select dropdown options render with crisp contrast across all operating systems */
+select option {
+  background-color: #ffffff;
+  color: #000000;
+  font-weight: 700;
+  padding: 8px 12px;
+}
+
 .font-mono {
   font-family: 'Iosevka Charon', monospace;
 }
@@ -45,3 +62,4 @@ html, body, #root {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+

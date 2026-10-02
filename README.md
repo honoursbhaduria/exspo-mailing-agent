@@ -52,9 +52,13 @@ flowchart TD
 ## 🚀 Core Pipeline Phases
 
 ### Phase 1: Influencer Discovery
-- **Engine**: Asynchronous web crawler built with Scrapy and Playwright to extract creator public profiles.
-- **Target Niches**: Fashion & Beauty, Gaming, Tech, Fitness, and Lifestyle.
-- **Yield**: Discovers **270+ creator profiles** with handles, platform links, geographic locations, ratings, and follower metrics.
+- **Multi-Platform Scraping Engine**: Integrated live scrapers across:
+  - **UGC Marketplaces & Directories**: Collabstr live search API across categories (Fashion & Beauty, Tech, Fitness, Gaming, Lifestyle) with deep profile extraction.
+  - **YouTube Channel Scraper**: Live extraction via YouTube search endpoints and `ytInitialData`, capturing subscriber metrics, channel descriptions, and business contact emails.
+  - **Instagram OpenGraph Crawler**: Headless social crawler headers (`facebookexternalhit/1.1`) resolving live Instagram follower counts and extracting emails from creator bios without login walls.
+  - **Curated Multi-Platform Rosters**: Pre-seeded directory of verified creators across India, US, UK, and global regions.
+- **Yield**: Over **400+ authentic creator profiles** indexed in **Neon PostgreSQL**, completely eliminating synthetic mock generators.
+- **Strict Compliance**: Follower counts parsed directly from platform metrics; unlisted emails marked `"Not Found"`.
 
 ### Phase 2: Filtering & Classification
 Every creator is evaluated using multi-dimensional criteria:

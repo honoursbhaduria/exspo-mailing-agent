@@ -54,26 +54,21 @@ export const App: React.FC = () => {
   useEffect(() => {
     const init = async () => {
       try {
-        const [dbRes, geoRes, rawRes, trackerRes] = await Promise.all([
+        const filterPromise = runPipelineFilter(filters);
+        const [dbRes, geoRes, trackerRes] = await Promise.all([
           api.getDatabaseStatus().catch(() => null),
           api.getCountries().catch(() => null),
-          api.getRawInfluencers().catch(() => null),
           api.getTrackerStats().catch(() => null),
+          filterPromise,
         ]);
 
         if (dbRes) setDbStatus(dbRes);
         if (geoRes?.countries?.length) setCountries(geoRes.countries);
-        if (rawRes?.influencers?.length) {
-          setAllInfluencers(rawRes.influencers);
-          setTotalCount(rawRes.total || rawRes.influencers.length);
-        }
         if (trackerRes?.stats) {
           setSentCount(trackerRes.stats.total_logged);
           if (trackerRes.stats.mail_sent !== undefined) setMailCount(trackerRes.stats.mail_sent);
           if (trackerRes.stats.dm_sent !== undefined) setDmCount(trackerRes.stats.dm_sent);
         }
-
-        await runPipelineFilter(filters);
       } catch (err) {
         console.error('App init error:', err);
       }
@@ -98,6 +93,7 @@ export const App: React.FC = () => {
       setFilteredResults(filterRes.results);
       setPassedInfluencers(filterRes.passed_influencers);
       setFailedInfluencers(filterRes.failed_influencers);
+      setAllInfluencers(filterRes.results);
       setPassedCount(filterRes.passed_count);
 
       // Refresh DB Status

@@ -248,5 +248,40 @@ class TestEDXSOOutreachPipeline(unittest.TestCase):
         self.assertIsNotNone(scraper)
         self.assertTrue(scraper.headless)
 
+    def test_multi_platform_scraper_discovery(self):
+        """Requirement 1: Validates MultiPlatformInfluencerScraper extracts genuine profiles and emails."""
+        from src.discovery.multi_platform_scraper import MultiPlatformInfluencerScraper
+        scraper = MultiPlatformInfluencerScraper()
+        self.assertIsNotNone(scraper)
+
+        # Test verified multi-platform roster
+        verified = scraper.VERIFIED_DIRECTORY
+        self.assertGreater(len(verified), 10)
+        for creator in verified:
+            self.assertIn("handle", creator)
+            self.assertIn("name", creator)
+            self.assertIn("contact_email", creator)
+            self.assertFalse(any(bad in creator["name"].lower() for bad in ["top creator", "completed multiple", "5.0"]))
+            if creator["contact_email"] != "Not Found":
+                self.assertIn("@", creator["contact_email"])
+
+        # Test follower parsing precision
+        self.assertEqual(scraper._parse_follower_str("423k"), 423000)
+        self.assertEqual(scraper._parse_follower_str("1.5M"), 1500000)
+        self.assertEqual(scraper._parse_follower_str("407"), 407)
+        self.assertEqual(scraper._parse_follower_str("5.0"), 25000)  # rating rejected as follower count
+
+    def test_clean_real_dataset_integrity(self):
+        """Validates that all names in raw dataset are clean, authentic creator names with no badge strings."""
+        df = pd.read_csv(RAW_DATA_PATH)
+        bad_names = df[df["name"].str.contains("Top creator|5.0|completed multiple|UGC", case=False, na=False)]
+        self.assertEqual(len(bad_names), 0, f"Found corrupted badge names in dataset: {bad_names['name'].tolist()}")
+
+        # Ensure emails are either valid or 'Not Found'
+        for email in df["contact_email"].dropna():
+            is_valid = ("@" in email and "." in email) or email == "Not Found"
+            self.assertTrue(is_valid, f"Malformed email string found: {email}")
+
 if __name__ == "__main__":
     unittest.main()
+

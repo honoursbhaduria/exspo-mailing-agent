@@ -190,7 +190,7 @@ export const DashboardControlCard: React.FC<DashboardControlCardProps> = ({
               <select
                 value={niche}
                 onChange={(e) => updateField({ niche: e.target.value })}
-                className="w-full appearance-none bg-[#F8FAFC] hover:bg-white focus:bg-white border border-[#CBD5E1] hover:border-black focus:border-black rounded-xl px-3.5 py-2.5 pr-9 text-xs font-black text-black cursor-pointer shadow-xs transition-all focus:outline-none focus:ring-2 focus:ring-[#BAE6FD]/60"
+                className="w-full appearance-none bg-[#F8FAFC] hover:bg-white focus:bg-white border border-[#CBD5E1] hover:border-black focus:border-black rounded-xl px-3.5 py-2.5 pr-10 text-[15px] sm:text-xs font-black text-black cursor-pointer shadow-xs transition-all focus:outline-none focus:ring-2 focus:ring-[#BAE6FD]/60 truncate min-h-[44px] sm:min-h-[38px]"
               >
                 <option value="Fashion & Beauty" className="bg-white text-black font-bold">Fashion & Beauty</option>
                 <option value="Fitness" className="bg-white text-black font-bold">Fitness</option>
@@ -211,7 +211,7 @@ export const DashboardControlCard: React.FC<DashboardControlCardProps> = ({
               <select
                 value={platform}
                 onChange={(e) => updateField({ platform: e.target.value })}
-                className="w-full appearance-none bg-[#F8FAFC] hover:bg-white focus:bg-white border border-[#CBD5E1] hover:border-black focus:border-black rounded-xl px-3.5 py-2.5 pr-9 text-xs font-black text-black cursor-pointer shadow-xs transition-all focus:outline-none focus:ring-2 focus:ring-[#BAE6FD]/60"
+                className="w-full appearance-none bg-[#F8FAFC] hover:bg-white focus:bg-white border border-[#CBD5E1] hover:border-black focus:border-black rounded-xl px-3.5 py-2.5 pr-10 text-[15px] sm:text-xs font-black text-black cursor-pointer shadow-xs transition-all focus:outline-none focus:ring-2 focus:ring-[#BAE6FD]/60 truncate min-h-[44px] sm:min-h-[38px]"
               >
                 <option value="Instagram & TikTok" className="bg-white text-black font-bold">Instagram & TikTok</option>
                 <option value="Instagram Only" className="bg-white text-black font-bold">Instagram Only</option>
@@ -231,7 +231,7 @@ export const DashboardControlCard: React.FC<DashboardControlCardProps> = ({
               <select
                 value={geo}
                 onChange={(e) => updateField({ geo: e.target.value })}
-                className="w-full appearance-none bg-[#F8FAFC] hover:bg-white focus:bg-white border border-[#CBD5E1] hover:border-black focus:border-black rounded-xl px-3.5 py-2.5 pr-9 text-xs font-black text-black cursor-pointer shadow-xs transition-all focus:outline-none focus:ring-2 focus:ring-[#BAE6FD]/60"
+                className="w-full appearance-none bg-[#F8FAFC] hover:bg-white focus:bg-white border border-[#CBD5E1] hover:border-black focus:border-black rounded-xl px-3.5 py-2.5 pr-10 text-[15px] sm:text-xs font-black text-black cursor-pointer shadow-xs transition-all focus:outline-none focus:ring-2 focus:ring-[#BAE6FD]/60 truncate min-h-[44px] sm:min-h-[38px]"
               >
                 {countries.map((c) => (
                   <option key={c} value={c} className="bg-white text-black font-bold">
@@ -251,7 +251,7 @@ export const DashboardControlCard: React.FC<DashboardControlCardProps> = ({
               <select
                 value={scale}
                 onChange={(e) => updateField({ scale: e.target.value })}
-                className="w-full appearance-none bg-[#F8FAFC] hover:bg-white focus:bg-white border border-[#CBD5E1] hover:border-black focus:border-black rounded-xl px-3.5 py-2.5 pr-9 text-xs font-black text-black cursor-pointer shadow-xs transition-all focus:outline-none focus:ring-2 focus:ring-[#BAE6FD]/60"
+                className="w-full appearance-none bg-[#F8FAFC] hover:bg-white focus:bg-white border border-[#CBD5E1] hover:border-black focus:border-black rounded-xl px-3.5 py-2.5 pr-10 text-[15px] sm:text-xs font-black text-black cursor-pointer shadow-xs transition-all focus:outline-none focus:ring-2 focus:ring-[#BAE6FD]/60 truncate min-h-[44px] sm:min-h-[38px]"
               >
                 <option value="Micro-Influencers (5k - 100k)" className="bg-white text-black font-bold">Micro-Influencers (5k - 100k)</option>
                 <option value="Nano-Influencers (1k - 5k)" className="bg-white text-black font-bold">Nano-Influencers (1k - 5k)</option>

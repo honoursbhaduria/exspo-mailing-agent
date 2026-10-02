@@ -78,7 +78,7 @@ class ProfileEnricher:
         pattern = r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$"
         if not re.match(pattern, email):
             return False
-        invalid_domains = ["collabstr.com", "example.com", "sentry.io", "w3.org", "domain.com"]
+        invalid_domains = ["collabstr.com", "example.com", "sentry.io", "w3.org", "domain.com", "lucide", "chart.js", ".png", ".jpg", ".webp", ".svg"]
         return not any(d in email.lower() for d in invalid_domains)
 
     def _extract_themes_from_bio(self, bio: str, niche: str) -> str:
