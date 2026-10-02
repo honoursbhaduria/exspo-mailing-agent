@@ -38,20 +38,36 @@ class InfluencerCleaningPipeline:
     def close_spider(self, spider):
         if self.items:
             df = pd.DataFrame(self.items)
-            # Remove duplicates by handle
             df = df.drop_duplicates(subset=["handle"], keep="first")
-            # Preserve existing verified emails from dataset
+            
+            # Load baseline/existing creators to preserve curated regional diversity (e.g. India creators)
+            base_dfs = []
+            seed_path = RAW_DATA_PATH.parent / "influencers_seed.csv"
+            if seed_path.exists():
+                try:
+                    base_dfs.append(pd.read_csv(seed_path))
+                except Exception:
+                    pass
             if RAW_DATA_PATH.exists():
                 try:
-                    old_df = pd.read_csv(RAW_DATA_PATH)
-                    if "contact_email" in old_df.columns:
-                        email_map = dict(zip(old_df["handle"], old_df["contact_email"]))
-                        for idx, row in df.iterrows():
-                            h = row.get("handle")
-                            if h in email_map and email_map[h] != "Not Found":
-                                df.at[idx, "contact_email"] = email_map[h]
-                except Exception as e:
-                    spider.logger.warning(f"Notice: could not merge previous emails: {e}")
+                    base_dfs.append(pd.read_csv(RAW_DATA_PATH))
+                except Exception:
+                    pass
+
+            if base_dfs:
+                existing_df = pd.concat(base_dfs).drop_duplicates(subset=["handle"], keep="first")
+                # Preserve verified emails
+                if "contact_email" in existing_df.columns:
+                    email_map = dict(zip(existing_df["handle"], existing_df["contact_email"]))
+                    for idx, row in df.iterrows():
+                        h = row.get("handle")
+                        if h in email_map and email_map[h] != "Not Found":
+                            df.at[idx, "contact_email"] = email_map[h]
+                combined = pd.concat([existing_df, df]).drop_duplicates(subset=["handle"], keep="first")
+                combined.to_csv(RAW_DATA_PATH, index=False)
+                spider.logger.info(f"Pipeline saved {len(combined)} unique influencers to {RAW_DATA_PATH}")
+                return
+
             df.to_csv(RAW_DATA_PATH, index=False)
             spider.logger.info(f"Pipeline saved {len(df)} unique influencers to {RAW_DATA_PATH}")
 

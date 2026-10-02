@@ -1,5 +1,4 @@
 import React from 'react';
-import { Activity } from 'lucide-react';
 
 export interface CreatorHighlight {
   name: string;
@@ -33,9 +32,6 @@ export const AudienceReachCard: React.FC<AudienceReachCardProps> = ({
       <div>
         <div className="flex justify-between items-center mb-4">
           <span className="font-extrabold text-base text-black">Audience Reach</span>
-          <span className="inline-flex items-center gap-1.5 bg-[#F1F5F9] text-black border border-[#CBD5E1] text-xs font-bold px-2.5 py-0.5 rounded-full">
-            <Activity className="w-3 h-3 text-black" /> LIVE
-          </span>
         </div>
 
         <div className="flex justify-between items-baseline mb-4">

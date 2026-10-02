@@ -106,15 +106,31 @@ class PlaywrightInfluencerScraper:
         except Exception as err:
             logger.error(f"Playwright engine execution notice: {err}. Preserving active dataset.")
 
-        # Merge newly discovered creators with existing dataset
+        # Merge newly discovered creators with existing and seed dataset
+        base_dfs = []
+        seed_path = RAW_DATA_PATH.parent / "influencers_seed.csv"
+        if seed_path.exists():
+            try:
+                base_dfs.append(pd.read_csv(seed_path))
+            except Exception:
+                pass
+        if RAW_DATA_PATH.exists():
+            try:
+                base_dfs.append(pd.read_csv(RAW_DATA_PATH))
+            except Exception:
+                pass
+
+        existing = pd.concat(base_dfs).drop_duplicates(subset=["handle"], keep="first") if base_dfs else pd.DataFrame()
+
         if len(discovered_creators) > 0:
             df = pd.DataFrame(discovered_creators)
             logger.info(f"Playwright successfully extracted {len(df)} authentic profiles.")
-            if RAW_DATA_PATH.exists():
-                existing = pd.read_csv(RAW_DATA_PATH)
-                # Keep existing verified emails
+            if not existing.empty:
                 email_map = dict(zip(existing["handle"], existing.get("contact_email", ["Not Found"] * len(existing))))
-                df["contact_email"] = df["handle"].map(lambda h: email_map.get(h, "Not Found"))
+                for idx, row in df.iterrows():
+                    h = row.get("handle")
+                    if h in email_map and email_map[h] != "Not Found":
+                        df.at[idx, "contact_email"] = email_map[h]
                 combined = pd.concat([existing, df]).drop_duplicates(subset=["handle"], keep="first")
                 combined.to_csv(RAW_DATA_PATH, index=False)
                 return combined
@@ -122,8 +138,9 @@ class PlaywrightInfluencerScraper:
             return df
         else:
             logger.info("Retaining verified high-quality raw dataset.")
-            if RAW_DATA_PATH.exists():
-                return pd.read_csv(RAW_DATA_PATH)
+            if not existing.empty:
+                existing.to_csv(RAW_DATA_PATH, index=False)
+                return existing
             return pd.DataFrame()
 
     def _extract_cards_from_page(self, content: str, page) -> List[Dict[str, Any]]:
