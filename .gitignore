@@ -5,3 +5,4 @@ __pycache__/
 .DS_Store
 .scrapy/
 *.egg-info/
+data/*.png
