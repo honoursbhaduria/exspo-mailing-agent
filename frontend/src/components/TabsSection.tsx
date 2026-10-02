@@ -546,10 +546,8 @@ export const TabsSection: React.FC<TabsSectionProps> = ({
                     {/* Header */}
                     <div className="flex items-start justify-between gap-3 border-b border-[#E2E8F0] pb-3 mb-4">
                       <div>
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="text-[10px] font-black uppercase tracking-wider text-black bg-[#E0F2FE] border border-[#BAE6FD] px-2 py-0.5 rounded-full">
-                            Direct Outreach Dispatch
-                          </span>
+                        <div className="text-[11px] font-bold text-[#64748B] mb-0.5">
+                          Direct Outreach Dispatch
                         </div>
                         <h3 className="text-lg font-black text-black">
                           Send Message to {directOutreachCreator.name}

@@ -22,7 +22,7 @@ DB_PATH = DATA_DIR / "edxso.db"
 # Optional PostgreSQL driver for Neon database
 try:
     import psycopg2
-    from psycopg2.extras import RealDictCursor
+    from psycopg2.extras import RealDictCursor, execute_values
     PSYCOPG2_AVAILABLE = True
 except ImportError:
     PSYCOPG2_AVAILABLE = False
@@ -218,20 +218,33 @@ class DatabaseManager:
         try:
             if self.is_postgres:
                 col_names = ", ".join(cols)
-                placeholders = ", ".join(["%s"] * len(cols))
                 update_set = ", ".join([f"{col} = EXCLUDED.{col}" for col in cols if col != "handle"])
                 sql = f"""
                 INSERT INTO influencers ({col_names})
-                VALUES ({placeholders})
+                VALUES %s
                 ON CONFLICT (handle) DO UPDATE SET {update_set}, updated_at = CURRENT_TIMESTAMP;
                 """
-                tuples = []
-                for r in records:
-                    tuples.append(tuple(
-                        r.get(c, "" if c not in ("follower_count", "engagement_rate", "rating") else 0)
-                        for c in cols
-                    ))
-                cursor.executemany(sql, tuples)
+                def _clean_val(c, val):
+                    if c == "follower_count":
+                        try:
+                            return int(val) if val not in ("", None) and not pd.isna(val) else 0
+                        except (ValueError, TypeError):
+                            return 0
+                    elif c in ("engagement_rate", "rating"):
+                        try:
+                            return float(val) if val not in ("", None) and not pd.isna(val) else (4.8 if c == "rating" else 2.0)
+                        except (ValueError, TypeError):
+                            return 4.8 if c == "rating" else 2.0
+                    else:
+                        if val is None or pd.isna(val):
+                            return ""
+                        return str(val)
+
+                tuples = [
+                    tuple(_clean_val(c, r.get(c)) for c in cols)
+                    for r in records
+                ]
+                execute_values(cursor, sql, tuples, page_size=1000)
             else:
                 col_names = ", ".join(cols)
                 placeholders = ", ".join(["?"] * len(cols))
@@ -241,12 +254,26 @@ class DatabaseManager:
                 VALUES ({placeholders})
                 ON CONFLICT(handle) DO UPDATE SET {update_set}, updated_at = CURRENT_TIMESTAMP;
                 """
-                tuples = []
-                for r in records:
-                    tuples.append(tuple(
-                        r.get(c, "" if c not in ("follower_count", "engagement_rate", "rating") else 0)
-                        for c in cols
-                    ))
+                def _clean_val(c, val):
+                    if c == "follower_count":
+                        try:
+                            return int(val) if val not in ("", None) and not pd.isna(val) else 0
+                        except (ValueError, TypeError):
+                            return 0
+                    elif c in ("engagement_rate", "rating"):
+                        try:
+                            return float(val) if val not in ("", None) and not pd.isna(val) else (4.8 if c == "rating" else 2.0)
+                        except (ValueError, TypeError):
+                            return 4.8 if c == "rating" else 2.0
+                    else:
+                        if val is None or pd.isna(val):
+                            return ""
+                        return str(val)
+
+                tuples = [
+                    tuple(_clean_val(c, r.get(c)) for c in cols)
+                    for r in records
+                ]
                 cursor.executemany(sql, tuples)
 
             conn.commit()

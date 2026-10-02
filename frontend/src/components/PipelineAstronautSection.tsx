@@ -99,10 +99,8 @@ export const PipelineAstronautSection: React.FC = () => {
       {/* Header matching standard dashboard card typography */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#E2E8F0] pb-4 mb-6">
         <div>
-          <div className="flex items-center gap-2 mb-1">
-            <span className="text-[10px] font-black uppercase tracking-wider text-black bg-[#E0F2FE] border border-[#BAE6FD] px-2.5 py-0.5 rounded-full">
-              Automated Pipeline Architecture
-            </span>
+          <div className="text-[11px] font-bold text-[#64748B] uppercase tracking-wider mb-1">
+            Automated Pipeline Architecture
           </div>
           <h2 className="text-xl font-black text-black tracking-tight">
             End-to-End Autonomous Outreach Flow
